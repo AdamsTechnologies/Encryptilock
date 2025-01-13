@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-// import 'package:sqflite/sqflite.dart'; //TODO confirm.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
@@ -40,7 +39,7 @@ class SQLite {
   }
 
   /// Opens a connection to the database
-  Future<void> _openConnection() async {
+  Future<void> openConnection() async {
     if (_db != null) return;
 
     try {
@@ -70,7 +69,7 @@ class SQLite {
 
   /// Exposes the raw sqflite database object - go on, do something cool.
   Future<Database> get rawDatabase async {
-    await _openConnection();
+    await openConnection();
     return _db!;
   }
 
@@ -79,7 +78,7 @@ class SQLite {
     required String tableName,
     required Map<String, String> schema,
   }) async {
-    await _openConnection();
+    await openConnection();
     // Generate the CREATE TABLE IF NOT EXISTS statement
     final columns = schema.entries
         .map((entry) => '${entry.key} ${entry.value}')
@@ -103,7 +102,7 @@ class SQLite {
     int? limit,
     int? offset,
   }) async {
-    await _openConnection();
+    await openConnection();
     try {
       return await _db!.query(
         table,
@@ -124,7 +123,7 @@ class SQLite {
 
   /// -----------RAWQUERY-----------
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<Object?>? arguments]) async {
-    await _openConnection();
+    await openConnection();
     try {
       return await _db!.rawQuery(sql, arguments);
     } catch (e) {
@@ -138,7 +137,7 @@ class SQLite {
     required Map<String, dynamic> values,
     ConflictAlgorithm conflictAlgorithm = ConflictAlgorithm.abort,
   }) async {
-    await _openConnection();
+    await openConnection();
     return await _db!.insert(
       table,
       values,
@@ -153,7 +152,7 @@ class SQLite {
   }) async {
     if (data.isEmpty) return;
 
-    await _openConnection();
+    await openConnection();
     final batch = _db!.batch();
 
     for (var row in data) {
@@ -175,7 +174,7 @@ class SQLite {
     required List<Object?> whereArgs,
     ConflictAlgorithm conflictAlgorithm = ConflictAlgorithm.abort,
   }) async {
-    await _openConnection();
+    await openConnection();
     return await _db!.update(
       table,
       values,
@@ -197,7 +196,7 @@ class SQLite {
       throw ArgumentError('Data and whereArgsList must have the same length and cannot be empty.');
     }
 
-    await _openConnection();
+    await openConnection();
     final batch = _db!.batch();
 
     for (int i = 0; i < data.length; i++) {
@@ -218,7 +217,7 @@ class SQLite {
     required Map<String, dynamic> values,
     required List<String> conflictColumns,
   }) async {
-    await _openConnection();
+    await openConnection();
 
     // Generate the `ON CONFLICT` clause
     final conflictClause = conflictColumns.map((col) => col).join(', ');
@@ -247,7 +246,7 @@ class SQLite {
     required List<Map<String, dynamic>> data,
     required List<String> conflictColumns,
   }) async {
-    await _openConnection();
+    await openConnection();
 
     final conflictClause = conflictColumns.map((col) => col).join(', ');
     final columnNames = data.first.keys.join(', ');
@@ -277,7 +276,7 @@ class SQLite {
     required String where,
     required List<Object?> whereArgs,
   }) async {
-    await _openConnection();
+    await openConnection();
     return await _db!.delete(
       table,
       where: where,
@@ -295,7 +294,7 @@ class SQLite {
       throw ArgumentError('WhereClauses and whereArgsList must have the same length and cannot be empty.');
     }
 
-    await _openConnection();
+    await openConnection();
     final batch = _db!.batch();
 
     for (int i = 0; i < whereClauses.length; i++) {
@@ -311,7 +310,7 @@ class SQLite {
 
   /// Executes SQL commands
   Future<void> executeCommand(String sql, [List<Object?>? arguments]) async {
-    await _openConnection();
+    await openConnection();
     try {
       await _db!.execute(sql, arguments);
     } catch (e) {
@@ -321,7 +320,7 @@ class SQLite {
 
   /// Executes multiple commands in a transaction
   Future<void> executeBatch(List<String> sqlCommands) async {
-    await _openConnection();
+    await openConnection();
     try {
       await _db!.transaction((txn) async {
         for (final sql in sqlCommands) {
@@ -352,7 +351,7 @@ class SQLite {
   Future<T> connectionManager<T>(
     Future<T> Function(Database db) operation,
   ) async {
-    await _openConnection();
+    await openConnection();
     try {
       return await operation(_db!);
     } catch (e) {

@@ -1,17 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/databaseManager/database_controller.dart';
-
+import 'package:passguard/backend/databaseManager/sqlite_controller.dart';
 
 void main() {
   group('SQLiteController Tests', () {
     late SQLiteController controller;
 
-    setUp(() async {
+    setUp(() {
       controller = SQLiteController(dbFile: ':memory:', verboseLogging: true);
     });
 
-    tearDown(() async {
-      await controller.database.close();
+    tearDown(() {
+      controller.database.close();
     });
 
     test('Convert Schema', () async {
@@ -41,8 +40,9 @@ void main() {
 
       await controller.createTableIfNotExists('users', schema);
 
-      final result = await controller.database.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type=? AND name=?;", ['table', 'users']
+      final result = controller.database.query(
+        "SELECT name FROM sqlite_master WHERE type=? AND name=?;",
+        ['table', 'users']
       );
       expect(result.isNotEmpty, true);
     });

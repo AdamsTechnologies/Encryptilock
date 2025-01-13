@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:passguard/backend/databaseManager/sql.dart';
+import 'package:passguard/backend/databaseManager/sqlite_db.dart';
 
 class SQLiteController {
-  late SQLite database;
+  late DartSqlite database;
   Map<String, String>? schema;
   List<String>? upsertKeys;
   String? tableName;
@@ -28,7 +28,7 @@ class SQLiteController {
 
   SQLiteController({
     required String dbFile,
-    SQLite? db,
+    DartSqlite? db,
     this.verboseLogging = true,
     this.logger,
     this.schema,
@@ -38,9 +38,11 @@ class SQLiteController {
     database = db ?? _establishConnection(dbFile);
   }
 
-  /// Establishes a new SQLite connection
-  SQLite _establishConnection(String dbFile) {
-    return SQLite(dbFile: dbFile);
+  /// Establishes a new DartSqlite connection
+  DartSqlite _establishConnection(String dbFile) {
+    final db = DartSqlite(dbFile: dbFile);
+    db.open();
+    return db;
   }
 
   /// Converts SQL92 schema to SQLite-compatible schema
@@ -77,7 +79,7 @@ class SQLiteController {
   /// Creates a table if it doesn't already exist
   Future<void> createTableIfNotExists(String tableName, Map<String, String> schema) async {
     final convertedSchema = await convertSchema(schema);
-    await database.createTableIfNotExists(tableName: tableName, schema: convertedSchema);
+    database.createTableIfNotExists(tableName, convertedSchema);
     _logMessage('Table $tableName created successfully.');
   }
 
@@ -96,7 +98,7 @@ class SQLiteController {
 
     for (int i = 0; i < data.length; i += batchSize) {
       final batchData = data.sublist(i, i + batchSize > data.length ? data.length : i + batchSize);
-      await database.batchInsert(tableName: tableName, data: batchData);
+      database.batchInsert(tableName, batchData);
     }
 
     _logMessage('Appended ${data.length} rows to $tableName.');
@@ -117,7 +119,7 @@ class SQLiteController {
     }
 
     for (final row in data) {
-      await database.upsert(table: tableName, values: row, conflictColumns: uniqueKeys);
+      database.upsert(tableName, row, uniqueKeys);
     }
 
     _logMessage('Upserted ${data.length} rows to $tableName.');
@@ -125,7 +127,7 @@ class SQLiteController {
 
   /// Retrieves all items from the table
   Future<List<Map<String, dynamic>>> getAllItems(String tableName) async {
-    return await database.query(tableName);
+    return database.query('SELECT * FROM $tableName');
   }
 
   /// Logs a message
@@ -134,7 +136,7 @@ class SQLiteController {
       if (logger != null) {
         logger!(message);
       } else {
-        print(message); // TODO
+        print(message);
       }
     }
   }
@@ -142,17 +144,19 @@ class SQLiteController {
   /// Retrieves the next batch number for a table
   Future<int?> getBatchNo(String tableName, String incrField) async {
     try {
-      final result = await database.query(
-        tableName,
-        columns: ['COALESCE(MAX($incrField), 0) + 1 AS max_batch_no'],
+      final result = database.query(
+        'SELECT COALESCE(MAX($incrField), 0) + 1 AS max_batch_no FROM $tableName',
       );
       return result.isNotEmpty ? result.first['max_batch_no'] as int? : 1;
     } catch (e) {
-      // Fallback to raw SQL for edge cases
-      final rawResult = await database.rawQuery(
-        'SELECT COALESCE(MAX($incrField), 0) + 1 AS max_batch_no FROM $tableName',
-      );
-      return rawResult.isNotEmpty ? rawResult.first['max_batch_no'] as int? : 1;
+      _logMessage('Error getting batch number: $e');
+      return null;
     }
+  }
+
+  /// Closes the database connection
+  void close() {
+    database.close();
+    _logMessage('Database connection closed.');
   }
 }

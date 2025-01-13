@@ -87,7 +87,7 @@ packages:
     source: hosted
     version: "1.11.1"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
@@ -446,7 +446,7 @@ packages:
     source: hosted
     version: "2.4.0"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
       sha256: c284434c408d207863800341298cadfde23abe074a0f01b19c9d8cce4edb8eaa

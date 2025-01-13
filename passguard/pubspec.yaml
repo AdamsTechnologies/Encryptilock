@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  crypto: ^3.0.0
+  sqlite3: ^2.6.0
   cryptography: ^2.7.0
   sqflite_common_ffi: ^2.2.1
   sqflite: ^2.4.1
