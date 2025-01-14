@@ -10,7 +10,6 @@ void main() {
 
       // Test with random salt
       final result = await generateKey(password);
-      print("result=$result");
       expect(result['key'], isA<String>());
       expect(result['salt'], isA<String>());
       expect(result['salt']!.length, greaterThan(0));

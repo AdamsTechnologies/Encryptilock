@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:passguard/backend/devsec/encrypto.dart';
 import 'package:passguard/backend/devsec/key_generator.dart';
-import 'package:passguard/backend/databaseManager/sqlite_db.dart';
+import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
 
 
 /// ORIGINAL CODE before debugging got serious!
@@ -49,7 +49,7 @@ class EncryptedDatabaseManager {
       await tempFile.writeAsBytes(decryptedBytes);
 
       final fileDb = sqlite3.open(tempPath);
-      await fileDb.backup(inMemoryDb.db!).drain();
+      await fileDb.backup(inMemoryDb.database).drain();
       fileDb.dispose();
 
       await tempFile.delete();
@@ -68,7 +68,7 @@ class EncryptedDatabaseManager {
 
     try {
       final fileDb = sqlite3.open(tempPath); // create a blank db in tempPath.
-      await inMemoryDb.db!.backup(fileDb).drain(); // back-up inMemoryDb to tempPath
+      await inMemoryDb.database.backup(fileDb).drain(); // back-up inMemoryDb to tempPath
       fileDb.dispose(); // close connection
 
       final rawBytes = await tempFile.readAsBytes();
