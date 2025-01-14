@@ -47,28 +47,22 @@ void main() {
       await manager.close(db);
     });
 
-    test('Encrypts and decrypts an existing database', () async { // failing test.
-      // Create an initial database and populate it
+    test('Encrypts and decrypts an existing database', () async {
       manager = EncryptedDatabaseManager(dbPath: dbPath, password: password);
       final db = await manager.open();
       String salt = manager.currentSalt;
       db.executeCommand('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)');
       db.insert('test', {'value': 'Persisted data!'});
       await manager.close(db);
-      // Verify that the encrypted database file exists
+
       final encryptedFile = File(dbPath);
       expect(await encryptedFile.exists(), true);
-      
 
-      // Reopen the encrypted database
       final reopenedManager = EncryptedDatabaseManager(dbPath: dbPath, password: password, providedSalt: salt);
       final reopenedDb = await reopenedManager.open();
-
-      // Verify the data was decrypted and loaded correctly
       final result = reopenedDb.query('SELECT * FROM test');
       expect(result.length, 1);
       expect(result.first['value'], 'Persisted data!');
-
       await reopenedManager.close(reopenedDb);
     });
 

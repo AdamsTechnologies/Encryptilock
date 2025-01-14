@@ -6,6 +6,8 @@ import 'package:passguard/backend/devsec/encrypto.dart';
 import 'package:passguard/backend/devsec/key_generator.dart';
 import 'package:passguard/backend/databaseManager/sqlite_db.dart';
 
+
+/// ORIGINAL CODE before debugging got serious!
 class EncryptedDatabaseManager {
   final String dbPath; // Path to the encrypted DB on disk
   final String password; // Password used for deriving encryption key
@@ -25,7 +27,6 @@ class EncryptedDatabaseManager {
   /// 2) Loads it into a DartSqlite instance backed by in-memory SQLite.
   /// 3) Returns the DartSqlite object for use.
   Future<DartSqlite> open() async {
-    // Generate encryption key
     final keyResult = await generateKey(
       password,
       providedSalt,
@@ -37,28 +38,22 @@ class EncryptedDatabaseManager {
     // Prepare temp path for decryption
     final tempPath = _generateTempFilePath();
     final file = File(dbPath);
-
-    // Initialize DartSqlite for in-memory DB
     final inMemoryDb = DartSqlite(dbFile: ':memory:');
     inMemoryDb.open();
 
     if (file.existsSync()) {
-      // Step 1: Decrypt the on-disk DB to a temporary file
       final encryptedBytes = await file.readAsBytes();
       final decryptedBytes = await _encrypto.decrypt(encryptedBytes);
 
       final tempFile = File(tempPath);
       await tempFile.writeAsBytes(decryptedBytes);
 
-      // Step 2: Use sqlite3 to open the decrypted file and backup to in-memory DB
       final fileDb = sqlite3.open(tempPath);
-      fileDb.backup(inMemoryDb.db!); // Use sqlite3's backup method directly
+      await fileDb.backup(inMemoryDb.db!).drain();
       fileDb.dispose();
 
-      // Step 3: Cleanup temporary file
       await tempFile.delete();
     }
-
     return inMemoryDb;
   }
 
@@ -72,23 +67,15 @@ class EncryptedDatabaseManager {
     final tempFile = File(tempPath);
 
     try {
-      final inmemResult = inMemoryDb.query('SELECT name FROM sqlite_master WHERE type="table"');
-      print("inMemoryDb: $inmemResult");
-      // Step 1: Backup the in-memory DB to a temporary file
       final fileDb = sqlite3.open(tempPath); // create a blank db in tempPath.
-      inMemoryDb.db!.backup(fileDb); // back-up inMemoryDb to tempPath
-      final result = fileDb.select('SELECT name FROM sqlite_master WHERE type="table"');
-      print("fileDb backedup: $result");
+      await inMemoryDb.db!.backup(fileDb).drain(); // back-up inMemoryDb to tempPath
       fileDb.dispose(); // close connection
 
-      // Step 2: Encrypt the temporary file
       final rawBytes = await tempFile.readAsBytes();
       final encryptedBytes = await _encrypto.encrypt(rawBytes);
 
-      // Step 3: Write the encrypted data back to the original on-disk DB
       await File(dbPath).writeAsBytes(encryptedBytes);
     } finally {
-      // Step 4: Cleanup
       inMemoryDb.close();
       if (await tempFile.exists()) {
         await tempFile.delete();
