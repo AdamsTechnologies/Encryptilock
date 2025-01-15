@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:encryptilock/frontend/providers/auth_provider.dart';
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
-import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
-import 'package:encryptilock/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:passguard/frontend/providers/auth_provider.dart';
+import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
+import 'package:passguard/backend/controllers/config_settings_controller.dart';
+import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
 
-import 'package:encryptilock/backend/devsec/deterministic_hash.dart';
+import 'package:passguard/backend/devsec/deterministic_hash.dart';
 
 /*
 class LoginScreen extends StatefulWidget {

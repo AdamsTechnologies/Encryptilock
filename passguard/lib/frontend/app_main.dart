@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:encryptilock/frontend/screens/passwords_screen.dart';
-import 'package:encryptilock/frontend/screens/settings_screen.dart';
-import 'package:encryptilock/frontend/screens/info_screen.dart';
+import 'package:passguard/frontend/screens/passwords_screen.dart';
+import 'package:passguard/frontend/screens/settings_screen.dart';
+import 'package:passguard/frontend/screens/info_screen.dart';
 
 class MainApp extends StatelessWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -17,7 +17,7 @@ class MainApp extends StatelessWidget {
           final tabController = DefaultTabController.of(context);
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Encryptilock'),
+              title: const Text('PassGuard'),
               bottom: isDesktop
                   ? null
                   : const TabBar(
