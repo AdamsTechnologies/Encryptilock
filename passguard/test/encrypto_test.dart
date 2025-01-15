@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
+import 'package:encryptilock/backend/devsec/encrypto.dart';
 
 void main() {
   group('Encrypto Tests', () {
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('encrypto() & decrypto() returns original string (UTF-8)', () async {
-      final testPlainText = 'PassGuard is secure!';
+      final testPlainText = 'encryptilock is secure!';
 
       final encryptedString = await encrypto.encrypto(testPlainText);
       final decrypted = await encrypto.decrypto(encryptedString);

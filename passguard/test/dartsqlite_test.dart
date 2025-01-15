@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
 
 void main() {
   group('DartSqlite Tests', () {

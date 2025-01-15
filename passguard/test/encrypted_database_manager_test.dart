@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:encryptilock/backend/databaseManager/encrypted_database_manager.dart';
 import 'package:path/path.dart' as p;
 
 void main() {

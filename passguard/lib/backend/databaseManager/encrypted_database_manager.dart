@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
-import 'package:passguard/backend/devsec/key_generator.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/devsec/encrypto.dart';
+import 'package:encryptilock/backend/devsec/key_generator.dart';
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
 
 
 /// ORIGINAL CODE before debugging got serious!

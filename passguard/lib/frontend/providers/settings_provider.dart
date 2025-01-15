@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
+import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
 
 
 class SettingsProvider extends ChangeNotifier {

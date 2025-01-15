@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/helpers/support_functs.dart';
+import 'package:encryptilock/backend/helpers/support_functs.dart';
 
 void main() {
   group('applyCasing Tests', () {

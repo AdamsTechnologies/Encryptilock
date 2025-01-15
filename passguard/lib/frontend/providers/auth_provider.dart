@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:encryptilock/backend/databaseManager/encrypted_database_manager.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;

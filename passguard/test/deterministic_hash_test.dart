@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/devsec/deterministic_hash.dart';
+import 'package:encryptilock/backend/devsec/deterministic_hash.dart';
 
 
 void main() {

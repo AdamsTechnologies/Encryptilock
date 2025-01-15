@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:passguard/backend/devsec/encrypto.dart';       // Or your actual EncryptionInterface
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';  // Your existing SQLiteController
+import 'package:encryptilock/backend/devsec/encrypto.dart';       // Or your actual EncryptionInterface
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';  // Your existing SQLiteController
 
 /// A simple controller for storing and retrieving password records.
 /// Depends on:

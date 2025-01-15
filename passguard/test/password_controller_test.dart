@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:math';
 import 'dart:convert';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
-import 'package:passguard/backend/controllers/password_controller.dart';
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/devsec/encrypto.dart';
+import 'package:encryptilock/backend/controllers/password_controller.dart';
 
 void main() {
   group('PasswordController Tests', () {
