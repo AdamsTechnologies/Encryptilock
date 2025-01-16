@@ -2,235 +2,301 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
-
 import 'package:passguard/backend/devsec/deterministic_hash.dart';
 
-/*
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
-              ),
-              TextField(
-                controller: passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _handleLogin,
-                child: const Text('Login'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  bool _isRegisterMode = false;
+  String? _passwordError;
 
-  Future<void> _handleLogin() async {
-    final username = hashObject(usernameController.text);
-    final password = hashObject(passwordController.text);
-
-    // Retrieve config settings
-    final settingsDb = DartSqlite(dbFile: 'configsettings.db');
-    settingsDb.open();
-    final configManager = ConfigSettingsController(settingsDb);
-
-    try {
-      // Get or create the salt
-      final salt = await configManager.getSetting('salt');
-
-      // Initialize EncryptedDatabaseManager
-      final encryptedDbManager = EncryptedDatabaseManager(
-        dbPath: 'datastore.db',
-        password: password,
-        providedSalt: salt,
-      );
-
-      // Decrypt the database
-      final inMemoryDb = await encryptedDbManager.open();
-      await configManager.setSetting('salt', encryptedDbManager.currentSalt);
-      // Ensure the widget is still mounted before accessing context
-      if (!mounted) return;
-
-      // Login and pass the in-memory DB
-      context.read<AuthProvider>().login(username, inMemoryDb);
-    } catch (e) {
-      // Handle errors gracefully
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
-      );
-    } finally {
-      print("Login Screen closing the settingsDb.");
-      settingsDb.close();
+  void _submitForm(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
-  }
-}
-*/
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  bool isNewUser = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkRegistrationStatus();
-  }
-
-  Future<void> _checkRegistrationStatus() async {
-    final settingsDb = DartSqlite(dbFile: 'configsettings.db');
-    settingsDb.open();
-    final configManager = ConfigSettingsController(settingsDb);
-
-    final username = await configManager.getSetting('username');
-    final isRegistered = await configManager.getSetting('is_registered') ?? '0';
-
-    if (username == null || isRegistered == '0') {
+    if (_isRegisterMode && _passwordController.text != _confirmPasswordController.text) {
       setState(() {
-        isNewUser = true;
+        _passwordError = "Passwords do not match";
       });
+      return;
     }
 
-    settingsDb.close();
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.login(
+      hashObject(_usernameController.text), // irreversibly hashes the input so app never has plaintexts
+      hashObject(_passwordController.text),
+    );
+
+    if (!mounted) return; // check if we mounted.
+
+    if (authProvider.isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/main');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final authProvider = context.watch<AuthProvider>();
+    final isDesktop = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400), // Restrict width
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                ),
-                TextField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                ),
-                if (isNewUser)
-                  TextField(
-                    controller: confirmPasswordController,
-                    decoration: const InputDecoration(labelText: 'Confirm Password'),
-                    obscureText: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          child: Container(
+            constraints: isDesktop ? BoxConstraints(maxWidth: 400) : null,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    _isRegisterMode ? 'Register' : 'Login',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _handleLoginOrRegister,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                  SizedBox(height: 24.0),
+                  TextFormField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your username';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (_isRegisterMode)
+                    Column(
+                      children: [
+                        SizedBox(height: 16.0),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            border: OutlineInputBorder(),
+                          ),
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            return null;
+                          },
+                        ),
+                        if (_passwordError != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _passwordError!,
+                              style: TextStyle(color: theme.colorScheme.error),
+                            ),
+                          ),
+                      ],
+                    ),
+                  SizedBox(height: 24.0),
+                  if (authProvider.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        authProvider.errorMessage!,
+                        style: TextStyle(color: theme.colorScheme.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ElevatedButton(
+                    onPressed: authProvider.isLoading
+                        ? null
+                        : () => _submitForm(context),
+                    child: authProvider.isLoading
+                        ? CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              theme.colorScheme.onPrimary,
+                            ),
+                          )
+                        : Text(_isRegisterMode ? 'Register' : 'Login'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isRegisterMode = !_isRegisterMode;
+                        _passwordError = null;
+                        _confirmPasswordController.clear();
+                      });
+                    },
+                    child: Text(
+                      _isRegisterMode
+                          ? 'Already have an account? Login'
+                          : 'Don’t have an account? Register',
                     ),
                   ),
-                  child: Text(isNewUser ? 'Register' : 'Login'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-  Future<void> _handleLoginOrRegister() async {
-    // Retrieve config settings
-    final settingsDb = DartSqlite(dbFile: 'configsettings.db');
-    settingsDb.open();
-    final configManager = ConfigSettingsController(settingsDb);
-    try {
-      final username = hashObject(usernameController.text);
-      final password = hashObject(passwordController.text);
 
-      if (isNewUser) {
-        final confirmPassword = hashObject(confirmPasswordController.text);
-        if (password != confirmPassword) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Passwords do not match!')),
-          );
-          await configManager.setSetting('username', username);
-          return;
-        }
-      }
-
-      await _handleUsername(username, configManager); // sets/validates username input.
-      // Get or create the salt
-      final salt = await configManager.getSetting('salt');
-
-      // Initialize EncryptedDatabaseManager
-      final encryptedDbManager = EncryptedDatabaseManager(
-        dbPath: 'datastore.db',
-        password: password,
-        providedSalt: salt,
-      );
-
-      // Decrypt the database
-      final inMemoryDb = await encryptedDbManager.open();
-      await configManager.setSetting('salt', encryptedDbManager.currentSalt);
-      // Ensure the widget is still mounted before accessing context
-      if (!mounted) return;
-      // Login and pass the in-memory DB
-      context.read<AuthProvider>().login(username, inMemoryDb);
-    } catch (e) {
-      // Handle errors gracefully
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
-      );
-    } finally {
-      print("Login Screen closing the settingsDb.");
-      settingsDb.close();
-    }
-  }
-  Future<void> _handleUsername(String username, ConfigSettingsController configManager) async {
-    final storedUsername = await configManager.getSetting('username');
-      if (storedUsername == null) {
-        await configManager.setSetting('username', username);
-        return;
-      } else if (storedUsername != username) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid username, check your spelling.')),
-          );
-      }
-      return;
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+
+// import 'package:passguard/frontend/providers/auth_provider.dart';
+// import 'package:passguard/backend/devsec/deterministic_hash.dart';
+
+// class LoginScreen extends StatefulWidget {
+//   @override
+//   _LoginScreenState createState() => _LoginScreenState();
+// }
+
+// class _LoginScreenState extends State<LoginScreen> {
+//   final _formKey = GlobalKey<FormState>();
+//   final TextEditingController _usernameController = TextEditingController();
+//   final TextEditingController _passwordController = TextEditingController();
+
+//   void _submitForm(BuildContext context) async {
+//     if (!_formKey.currentState!.validate()) {
+//       return;
+//     }
+
+//     final authProvider = context.read<AuthProvider>();
+//     await authProvider.login(
+//       hashObject(_usernameController.text), // irreversibly hashes the input so app never has plaintexts
+//       hashObject(_passwordController.text),
+//     );
+
+//     if (!mounted) return; // check if we mounted.
+
+//     if (authProvider.isLoggedIn) {
+//       Navigator.pushReplacementNamed(context, '/main');
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = Theme.of(context);
+//     final authProvider = context.watch<AuthProvider>();
+
+//     return Scaffold(
+//       body: Center(
+//         child: SingleChildScrollView(
+//           padding: EdgeInsets.symmetric(horizontal: 24.0),
+//           child: Form(
+//             key: _formKey,
+//             child: Column(
+//               mainAxisSize: MainAxisSize.min,
+//               crossAxisAlignment: CrossAxisAlignment.stretch,
+//               children: [
+//                 Text(
+//                   'Login',
+//                   style: theme.textTheme.headlineMedium?.copyWith(
+//                     color: theme.colorScheme.primary,
+//                   ),
+//                   textAlign: TextAlign.center,
+//                 ),
+//                 SizedBox(height: 24.0),
+//                 TextFormField(
+//                   controller: _usernameController,
+//                   decoration: InputDecoration(
+//                     labelText: 'Username',
+//                     border: OutlineInputBorder(),
+//                   ),
+//                   validator: (value) {
+//                     if (value == null || value.trim().isEmpty) {
+//                       return 'Please enter your username';
+//                     }
+//                     return null;
+//                   },
+//                 ),
+//                 SizedBox(height: 16.0),
+//                 TextFormField(
+//                   controller: _passwordController,
+//                   decoration: InputDecoration(
+//                     labelText: 'Password',
+//                     border: OutlineInputBorder(),
+//                   ),
+//                   obscureText: true,
+//                   validator: (value) {
+//                     if (value == null || value.isEmpty) {
+//                       return 'Please enter your password';
+//                     }
+//                     return null;
+//                   },
+//                 ),
+//                 SizedBox(height: 24.0),
+//                 if (authProvider.errorMessage != null)
+//                   Padding(
+//                     padding: const EdgeInsets.only(bottom: 16.0),
+//                     child: Text(
+//                       authProvider.errorMessage!,
+//                       style: TextStyle(color: theme.colorScheme.error),
+//                       textAlign: TextAlign.center,
+//                     ),
+//                   ),
+//                 ElevatedButton(
+//                   onPressed: authProvider.isLoading
+//                       ? null
+//                       : () => _submitForm(context),
+//                   child: authProvider.isLoading
+//                       ? CircularProgressIndicator(
+//                           valueColor: AlwaysStoppedAnimation<Color>(
+//                             theme.colorScheme.onPrimary,
+//                           ),
+//                         )
+//                       : Text('Login'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     _usernameController.dispose();
+//     _passwordController.dispose();
+//     super.dispose();
+//   }
+// }

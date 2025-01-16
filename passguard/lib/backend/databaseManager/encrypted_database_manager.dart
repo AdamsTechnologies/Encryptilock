@@ -6,8 +6,6 @@ import 'package:passguard/backend/devsec/encrypto.dart';
 import 'package:passguard/backend/devsec/key_generator.dart';
 import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
 
-
-/// ORIGINAL CODE before debugging got serious!
 class EncryptedDatabaseManager {
   final String dbPath; // Path to the encrypted DB on disk
   final String password; // Password used for deriving encryption key

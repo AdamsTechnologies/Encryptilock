@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:passguard/frontend/app_main.dart';
-import 'package:passguard/frontend/screens/login_screen.dart';
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
-
+import 'frontend/app_main.dart';
+import 'frontend/theme/theme_config.dart';
+// import 'frontend/screens/login_screen.dart';
+import 'frontend/providers/auth_provider.dart';
+import 'frontend/providers/theme_provider.dart';
+import 'backend/databaseManager/dart_sqlite.dart';
+import 'frontend/providers/settings_provider.dart';
+import 'backend/controllers/config_settings_controller.dart';
 
 
 void main() async {
@@ -22,11 +23,18 @@ void main() async {
   final initialTheme = await configManager.getSetting('theme') ?? 'light';
   final initialIdleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
 
+  // Parse borderRadius from configuration
+  final borderRadius = double.tryParse(
+        await configManager.getSetting('border_radius') ?? '${ThemeConfig.defaultBorderRadius}',
+      ) ??
+      ThemeConfig.defaultBorderRadius;
+
   runApp(MyApp(
     settingsDb: settingsDb,
     configManager: configManager,
     initialTheme: initialTheme,
     initialIdleTimeout: initialIdleTimeout,
+    borderRadius: borderRadius,
   ));
 }
 
@@ -35,6 +43,7 @@ class MyApp extends StatelessWidget {
   final ConfigSettingsController configManager;
   final String initialTheme;
   final int initialIdleTimeout;
+  final double borderRadius;
 
   const MyApp({
     Key? key,
@@ -42,6 +51,7 @@ class MyApp extends StatelessWidget {
     required this.configManager,
     required this.initialTheme,
     required this.initialIdleTimeout,
+    required this.borderRadius,
   }) : super(key: key);
 
   @override
@@ -50,27 +60,32 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) => SettingsProvider(
-            configManager, // Corrected argument
+            configManager,
             initialTheme: initialTheme,
             initialIdleTimeout: initialIdleTimeout,
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
+          create: (_) => AuthProvider(configManager: configManager),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(
+            ThemeConfig.getTheme(initialTheme, borderRadius: borderRadius),
+          ),
         ),
       ],
-      child: Consumer<SettingsProvider>(
-        builder: (context, settings, _) {
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
           return MaterialApp(
             title: 'PassGuard',
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
-            themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            theme: themeProvider.theme,
+            darkTheme: ThemeConfig.getTheme('dark', borderRadius: borderRadius),
+            themeMode: ThemeMode.light, // Update dynamically as needed
             home: Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                return auth.isLoggedIn
-                    ? MainApp() // Remove const for dynamic widget
-                    : LoginScreen(); // Remove const for dynamic widget
+              builder: (context, authProvider, _) {
+                return authProvider.isLoggedIn
+                    ? MainApp()
+                    : LoginScreen();
               },
             ),
           );
@@ -79,3 +94,79 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   // Initialize SQLite and settings manager
+//   final settingsDb = DartSqlite(dbFile: 'configsettings.db');
+//   settingsDb.open();
+//   final configManager = ConfigSettingsController(settingsDb);
+
+//   // Load initial settings
+//   final initialTheme = await configManager.getSetting('theme') ?? 'light';
+//   final initialIdleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
+
+//   runApp(MyApp(
+//     settingsDb: settingsDb,
+//     configManager: configManager,
+//     initialTheme: initialTheme,
+//     initialIdleTimeout: initialIdleTimeout,
+//   ));
+// }
+
+// class MyApp extends StatelessWidget {
+//   final DartSqlite settingsDb;
+//   final ConfigSettingsController configManager;
+//   final String initialTheme;
+//   final int initialIdleTimeout;
+
+//   const MyApp({
+//     Key? key,
+//     required this.settingsDb,
+//     required this.configManager,
+//     required this.initialTheme,
+//     required this.initialIdleTimeout,
+//   }) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(
+//           create: (_) => SettingsProvider(
+//             configManager,
+//             initialTheme: initialTheme,
+//             initialIdleTimeout: initialIdleTimeout,
+//           ),
+//         ),
+//         ChangeNotifierProvider(
+//           create: (_) => AuthProvider(configManager: configManager),
+//         ),
+//         ChangeNotifierProvider(
+//           create: (_) => ThemeProvider(
+//             ThemeConfig.getTheme(initialTheme),
+//           ),
+//         ),
+//       ],
+//       child: Consumer<ThemeProvider>(
+//         builder: (context, themeProvider, _) {
+//           return MaterialApp(
+//             title: 'PassGuard',
+//             theme: themeProvider.theme,
+//             darkTheme: ThemeConfig.getTheme('dark'),
+//             themeMode: ThemeMode.light, // Update dynamically as needed
+//             home: Consumer<AuthProvider>(
+//               builder: (context, authProvider, _) {
+//                 return authProvider.isLoggedIn
+//                     ? MainApp()
+//                     : LoginScreen();
+//               },
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
+
