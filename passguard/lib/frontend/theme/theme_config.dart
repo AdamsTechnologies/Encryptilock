@@ -12,9 +12,8 @@ class ThemeConfig {
   ];
 
   static double defaultBorderRadius = 4.0; // Default border radius
-
   static ThemeData getTheme(String themeName, {double? borderRadius}) {
-    final adjustedRadius = borderRadius ?? defaultBorderRadius;
+    final double adjustedRadius = borderRadius ?? defaultBorderRadius;
 
     switch (themeName) {
       case 'dark':

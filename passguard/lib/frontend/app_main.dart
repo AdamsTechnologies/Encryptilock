@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:passguard/frontend/screens/info_screen.dart';
 import 'package:passguard/frontend/screens/passwords_screen.dart';
 import 'package:passguard/frontend/screens/settings_screen.dart';
+import 'package:passguard/frontend/theme/theme_config.dart';
 
-class MainApp extends StatefulWidget {
+class MainApp extends StatefulWidget { // TODO search for "color: " and tweak the color schemes until you find a clean match.
   const MainApp({Key? key}) : super(key: key);
 
   @override
@@ -14,6 +15,9 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   int? hoveredIndex;
   bool isPointerInsideNavRegion = false;
   late TabController _tabController;
+
+  static const double _navRailWidth = 72;
+  static const double _drawerWidth = 250;
 
   @override
   void initState() {
@@ -49,22 +53,28 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       body: isDesktop
           ? Stack(
               children: [
-                Row(
-                  children: [
-                    _buildNavigationRail(),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: const [
-                          InfoScreen(),
-                          PasswordsScreen(),
-                          SettingsScreen(),
-                        ],
-                      ),
-                    ),
-                  ],
+                Positioned(
+                  left: _navRailWidth,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: const [
+                      InfoScreen(),
+                      PasswordsScreen(),
+                      SettingsScreen(),
+                    ],
+                  ),
                 ),
                 _buildExpandableDrawer(theme),
+                
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildNavigationRail(theme),
+                ),
               ],
             )
           : TabBarView(
@@ -78,10 +88,13 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildNavigationRail() {
+  Widget _buildNavigationRail(ThemeData theme) {
     final selectedIndex = _tabController.index;
 
+    final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
     return NavigationRail(
+      // selectedIconTheme: IconThemeData,
+      backgroundColor: theme.colorScheme.surfaceContainer,
       selectedIndex: selectedIndex,
       onDestinationSelected: (index) {
         setState(() {
@@ -94,17 +107,24 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
       ],
+      indicatorShape:BeveledRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(4))), // gives highlighted icon a rectangle shape
     );
   }
 
   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
     return NavigationRailDestination(
       icon: MouseRegion(
-        onEnter: (_) => setState(() => hoveredIndex = index),
+        onEnter: (_) {
+          setState(() {
+            hoveredIndex = index;
+            if (index != 0) isPointerInsideNavRegion = true;
+          });
+        },
         onExit: (_) {
-          if (!isPointerInsideNavRegion) {
-            setState(() => hoveredIndex = null);
-          }
+          setState(() {
+            hoveredIndex = null;
+            isPointerInsideNavRegion = false;
+          });
         },
         child: Icon(icon, color: hoveredIndex == index ? Theme.of(context).colorScheme.primary : null),
       ),
@@ -117,21 +137,49 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
 
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 300),
+      duration: showDrawer ? const Duration(milliseconds: 200) : const Duration(milliseconds: 1000),
       curve: Curves.easeInOut,
-      left: showDrawer ? 72 : -250,
+      left: showDrawer ? _navRailWidth+5 : -_drawerWidth,
       top: 0,
       bottom: 0,
-      width: 250,
+      width: _drawerWidth,
       child: Material(
         elevation: 4,
         color: theme.colorScheme.surface,
         child: showDrawer
-            ? _buildDrawerContent(hoveredIndex!, theme)
+            ? Container(
+              padding: EdgeInsets.fromLTRB(3, 5, 3, 5),
+                // color: theme.colorScheme.primary,
+                foregroundDecoration: BoxDecoration(
+                  border: Border(left: BorderSide(color: theme.colorScheme.primary.withOpacity(0.1), width:5))
+                ),
+                child: _buildDrawerContent(hoveredIndex!, theme),
+              )
             : const SizedBox.shrink(),
       ),
     );
   }
+
+  // Widget _buildExpandableDrawer(ThemeData theme) {
+  //   final selectedIndex = _tabController.index;
+  //   final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
+
+  //   return AnimatedPositioned(
+  //     duration: showDrawer ? const Duration(milliseconds: 200) : const Duration(milliseconds: 1000),
+  //     curve: Curves.easeInOut,
+  //     left: showDrawer ? _navRailWidth : -_drawerWidth,
+  //     top: 0,
+  //     bottom: 0,
+  //     width: _drawerWidth,
+  //     child: Material(
+  //       elevation: 4,
+  //       color: theme.colorScheme.surfaceDim,
+  //       child: showDrawer
+  //           ? _buildDrawerContent(hoveredIndex!, theme)
+  //           : const SizedBox.shrink(),
+  //     ),
+  //   );
+  // }
 
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
@@ -268,36 +316,24 @@ class LoginScreen extends StatelessWidget {
 //               ),
 //             ),
 //       body: isDesktop
-//           ? Row(
+//           ? Stack(
 //               children: [
-//                 MouseRegion(
-//                   onEnter: (_) {
-//                     setState(() => isPointerInsideNavRegion = true);
-//                   },
-//                   onExit: (_) {
-//                     setState(() {
-//                       isPointerInsideNavRegion = false;
-//                       hoveredIndex = null;
-//                     });
-//                   },
-//                   child: Row(
-//                     mainAxisSize: MainAxisSize.min,
-//                     children: [
-//                       _buildNavigationRail(),
-//                       _buildExpandableDrawer(theme),
-//                     ],
-//                   ),
+//                 Row(
+//                   children: [
+//                     _buildNavigationRail(),
+//                     Expanded(
+//                       child: TabBarView(
+//                         controller: _tabController,
+//                         children: const [
+//                           InfoScreen(),
+//                           PasswordsScreen(),
+//                           SettingsScreen(),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
 //                 ),
-//                 Expanded(
-//                   child: TabBarView(
-//                     controller: _tabController,
-//                     children: const [
-//                       InfoScreen(),
-//                       PasswordsScreen(),
-//                       SettingsScreen(),
-//                     ],
-//                   ),
-//                 ),
+//                 _buildExpandableDrawer(theme),
 //               ],
 //             )
 //           : TabBarView(
@@ -322,20 +358,36 @@ class LoginScreen extends StatelessWidget {
 //           _tabController.animateTo(index);
 //         });
 //       },
-//       destinations: const [
-//         NavigationRailDestination(
-//           icon: Icon(Icons.info),
-//           label: Text('Info'),
-//         ),
-//         NavigationRailDestination(
-//           icon: Icon(Icons.lock),
-//           label: Text('Passwords'),
-//         ),
-//         NavigationRailDestination(
-//           icon: Icon(Icons.settings),
-//           label: Text('Settings'),
-//         ),
+//       destinations: [
+//         _buildRailDestination(Icons.info, 'Info', 0),
+//         _buildRailDestination(Icons.lock, 'Passwords', 1),
+//         _buildRailDestination(Icons.settings, 'Settings', 2),
 //       ],
+//     );
+//   }
+
+//   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+//     return NavigationRailDestination(
+//       icon: MouseRegion(
+//         onEnter: (_) {
+//           print('Hovered over icon $index');
+//           setState(() { 
+//             hoveredIndex = index;
+//             if (index !=0) isPointerInsideNavRegion = true; // if hovering Info page, we don't want a navdrawer on Info.
+//           });
+//         },
+//         onExit: (_) {
+//           print('Exited icon $index');
+//           if (isPointerInsideNavRegion) {
+//             setState(() { 
+//               isPointerInsideNavRegion = false;
+//               hoveredIndex = null;
+//             });
+//           }
+//         },
+//         child: Icon(icon, color: hoveredIndex == index ? Theme.of(context).colorScheme.primary : null),
+//       ),
+//       label: Text(label),
 //     );
 //   }
 
@@ -343,14 +395,20 @@ class LoginScreen extends StatelessWidget {
 //     final selectedIndex = _tabController.index;
 //     final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
 
-//     return AnimatedContainer(
-//       duration: const Duration(milliseconds: 300),
+//     return AnimatedPositioned( // TODO RESOLVE THIS OVERLAY ISSUE!
+//       duration: const Duration(milliseconds: 600),
 //       curve: Curves.easeInOut,
-//       width: showDrawer ? 250 : 0,
-//       color: theme.colorScheme.surface,
-//       child: showDrawer
-//           ? _buildDrawerContent(hoveredIndex!, theme)
-//           : const SizedBox.shrink(),
+//       left: showDrawer ? 72 : -250,
+//       top: 0,
+//       bottom: 0,
+//       width: 250,
+//       child: Material(
+//         elevation: 4,
+//         color: theme.colorScheme.surface,
+//         child: showDrawer
+//             ? _buildDrawerContent(hoveredIndex!, theme)
+//             : const SizedBox.shrink(),
+//       ),
 //     );
 //   }
 
@@ -385,7 +443,10 @@ class LoginScreen extends StatelessWidget {
 //           child: ListView.builder(
 //             itemCount: 5,
 //             itemBuilder: (context, index) => ListTile(
-//               leading: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
+//               leading: SizedBox(
+//                 width: 24,
+//                 child: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
+//               ),
 //               title: Text('Password $index'),
 //               onTap: () {},
 //             ),
@@ -414,6 +475,29 @@ class LoginScreen extends StatelessWidget {
 //     );
 //   }
 // }
+
+// class LoginScreen extends StatelessWidget {
+//   const LoginScreen({Key? key}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('Login')),
+//       body: Center(
+//         child: ElevatedButton(
+//           onPressed: () {
+//             Navigator.pushReplacement(
+//               context,
+//               MaterialPageRoute(builder: (context) => const MainApp()),
+//             );
+//           },
+//           child: const Text('Login'),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --------------------------------------- STABLE BELOW , VISUALLY BETTER ABOVE.
