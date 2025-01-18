@@ -8,7 +8,7 @@ import 'package:passguard/backend/databaseManager/dart_sqlite.dart';  // Your ex
 /// Depends on:
 ///  - `SQLiteController` for DB operations
 ///  - `EncryptionInterface` (e.g., `Encrypto`) for encryption.
-class PasswordController {
+class PasswordController { //TODO Add note field!!
   /// The underlying SQLite controller that handles queries, upserts, etc.
   final DartSqlite dbController;
 

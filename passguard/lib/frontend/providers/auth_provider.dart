@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:passguard/backend/devsec/encrypto.dart';
 import 'package:passguard/backend/controllers/config_settings_controller.dart';
+import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
@@ -70,7 +71,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+  
   // Logout method
   Future<void> logout() async {
     _isLoading = true;
@@ -90,4 +91,6 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Encrypto? get encrypto => _encryptedDbManager?.encrypto;
 }

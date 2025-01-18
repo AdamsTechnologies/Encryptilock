@@ -97,4 +97,5 @@ class EncryptedDatabaseManager {
 
   /// Getter to access the current salt used in the encryption key.
   String get currentSalt => _currentSalt;
+  Encrypto get encrypto => _encrypto;
 }

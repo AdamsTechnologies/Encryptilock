@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 
 import 'frontend/app_main.dart';
 import 'frontend/theme/theme_config.dart';
-// import 'frontend/screens/login_screen.dart';
+import 'frontend/screens/login_screen.dart';
 import 'frontend/providers/auth_provider.dart';
 import 'frontend/providers/theme_provider.dart';
 import 'backend/databaseManager/dart_sqlite.dart';
 import 'frontend/providers/settings_provider.dart';
 import 'backend/controllers/config_settings_controller.dart';
-
+import 'frontend/providers/password_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,8 +26,7 @@ void main() async {
   // Parse borderRadius from configuration
   final borderRadius = double.tryParse(
         await configManager.getSetting('border_radius') ?? '${ThemeConfig.defaultBorderRadius}',
-      ) ??
-      ThemeConfig.defaultBorderRadius;
+      ) ?? ThemeConfig.defaultBorderRadius;
 
   runApp(MyApp(
     settingsDb: settingsDb,
@@ -68,6 +67,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(configManager: configManager),
         ),
+        ProxyProvider<AuthProvider, PasswordProvider>(
+          update: (_, authProvider, __) {
+            return PasswordProvider(authProvider: authProvider);
+          },
+        ),
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(
             ThemeConfig.getTheme(initialTheme, borderRadius: borderRadius),
@@ -95,6 +99,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+
+// import 'frontend/app_main.dart';
+// import 'frontend/theme/theme_config.dart';
+// import 'frontend/screens/login_screen.dart';
+// import 'frontend/providers/auth_provider.dart';
+// import 'frontend/providers/theme_provider.dart';
+// import 'backend/databaseManager/dart_sqlite.dart';
+// import 'frontend/providers/settings_provider.dart';
+// import 'backend/controllers/config_settings_controller.dart';
+
+
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
 
@@ -107,11 +124,18 @@ class MyApp extends StatelessWidget {
 //   final initialTheme = await configManager.getSetting('theme') ?? 'light';
 //   final initialIdleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
 
+//   // Parse borderRadius from configuration
+//   final borderRadius = double.tryParse(
+//         await configManager.getSetting('border_radius') ?? '${ThemeConfig.defaultBorderRadius}',
+//       ) ??
+//       ThemeConfig.defaultBorderRadius;
+
 //   runApp(MyApp(
 //     settingsDb: settingsDb,
 //     configManager: configManager,
 //     initialTheme: initialTheme,
 //     initialIdleTimeout: initialIdleTimeout,
+//     borderRadius: borderRadius,
 //   ));
 // }
 
@@ -120,6 +144,7 @@ class MyApp extends StatelessWidget {
 //   final ConfigSettingsController configManager;
 //   final String initialTheme;
 //   final int initialIdleTimeout;
+//   final double borderRadius;
 
 //   const MyApp({
 //     Key? key,
@@ -127,6 +152,7 @@ class MyApp extends StatelessWidget {
 //     required this.configManager,
 //     required this.initialTheme,
 //     required this.initialIdleTimeout,
+//     required this.borderRadius,
 //   }) : super(key: key);
 
 //   @override
@@ -145,7 +171,7 @@ class MyApp extends StatelessWidget {
 //         ),
 //         ChangeNotifierProvider(
 //           create: (_) => ThemeProvider(
-//             ThemeConfig.getTheme(initialTheme),
+//             ThemeConfig.getTheme(initialTheme, borderRadius: borderRadius),
 //           ),
 //         ),
 //       ],
@@ -154,7 +180,7 @@ class MyApp extends StatelessWidget {
 //           return MaterialApp(
 //             title: 'PassGuard',
 //             theme: themeProvider.theme,
-//             darkTheme: ThemeConfig.getTheme('dark'),
+//             darkTheme: ThemeConfig.getTheme('dark', borderRadius: borderRadius),
 //             themeMode: ThemeMode.light, // Update dynamically as needed
 //             home: Consumer<AuthProvider>(
 //               builder: (context, authProvider, _) {
@@ -169,4 +195,3 @@ class MyApp extends StatelessWidget {
 //     );
 //   }
 // }
-
