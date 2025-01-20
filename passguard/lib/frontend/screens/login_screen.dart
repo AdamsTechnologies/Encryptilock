@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       _isRegisterMode
                           ? 'Already have an account? Login'
-                          : 'Don’t have an account? Register',
+                          : "Don't have an account? Register",
                     ),
                   ),
                 ],

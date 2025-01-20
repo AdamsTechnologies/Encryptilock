@@ -29,12 +29,14 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
+    print("MainApp initializing");
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
+    print("MainApp disposing");
     _closeTimer?.cancel();
     _tabController.dispose();
     super.dispose();

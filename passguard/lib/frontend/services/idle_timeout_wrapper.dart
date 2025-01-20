@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:passguard/frontend/providers/idle_timeout_provider.dart';
+import 'package:passguard/frontend/providers/settings_provider.dart';
 
 class AppWithIdleTimeout extends StatefulWidget {
   final Widget child;
@@ -12,37 +13,50 @@ class AppWithIdleTimeout extends StatefulWidget {
 }
 
 class _AppWithIdleTimeoutState extends State<AppWithIdleTimeout> {
-  late IdleTimeoutProvider _idleTimeoutProvider;
+  IdleTimeoutProvider? _idleTimeoutProvider; // Make it nullable
 
   @override
   void initState() {
     super.initState();
-    // Retrieve and store the IdleTimeoutProvider reference
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initializeProvider(); // Initialize provider here
+      }
+    });
+  }
+
+  void _initializeProvider() {
     _idleTimeoutProvider = Provider.of<IdleTimeoutProvider>(context, listen: false);
-    _idleTimeoutProvider.startTracking(context);
+    _idleTimeoutProvider!.startTracking(context); // Use null assertion after check
   }
 
   @override
   void dispose() {
-    // Use the stored reference instead of context to stop tracking
-    _idleTimeoutProvider.stopTracking();
+    _idleTimeoutProvider?.stopTracking(); // Safely call stopTracking
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => _idleTimeoutProvider.resetOnInteraction(),
-      onPanDown: (_) => _idleTimeoutProvider.resetOnInteraction(),
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        _idleTimeoutProvider?.syncIdleTimeout(); // Call syncIdleTimeout safely
+
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) {
+            _idleTimeoutProvider?.resetOnInteraction(); //Safely call resetOnInteraction
+          },
+          onPointerMove: (_) {
+            _idleTimeoutProvider?.resetOnInteraction();//Safely call resetOnInteraction
+          },
+          child: child,
+        );
+      },
       child: widget.child,
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:passguard/frontend/providers/idle_timeout_provider.dart';
 
 // class AppWithIdleTimeout extends StatefulWidget {
 //   final Widget child;
@@ -54,26 +68,35 @@ class _AppWithIdleTimeoutState extends State<AppWithIdleTimeout> {
 // }
 
 // class _AppWithIdleTimeoutState extends State<AppWithIdleTimeout> {
+//   late IdleTimeoutProvider _idleTimeoutProvider;
+
 //   @override
 //   void initState() {
 //     super.initState();
-//     // Start idle tracking when the widget is initialized.
-//     Provider.of<IdleTimeoutProvider>(context, listen: false).startTracking(context);
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       if (mounted) {
+//         _idleTimeoutProvider = Provider.of<IdleTimeoutProvider>(context, listen: false);
+//         _idleTimeoutProvider.startTracking(context);
+//       }
+//     });
 //   }
 
 //   @override
 //   void dispose() {
-//     // Stop idle tracking when the widget is disposed.
-//     Provider.of<IdleTimeoutProvider>(context, listen: false).stopTracking();
+//     // No need to dispose the provider directly
 //     super.dispose();
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return GestureDetector(
+//     return Listener(
 //       behavior: HitTestBehavior.translucent,
-//       onTap: () => Provider.of<IdleTimeoutProvider>(context, listen: false).resetOnInteraction(),
-//       onPanDown: (_) => Provider.of<IdleTimeoutProvider>(context, listen: false).resetOnInteraction(),
+//       onPointerDown: (_) {
+//         _idleTimeoutProvider.resetOnInteraction();
+//       },
+//       onPointerMove: (_) {
+//         _idleTimeoutProvider.resetOnInteraction();
+//       },
 //       child: widget.child,
 //     );
 //   }
