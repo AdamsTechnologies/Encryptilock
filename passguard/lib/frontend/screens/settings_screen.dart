@@ -4,13 +4,15 @@ import 'package:passguard/frontend/providers/theme_provider.dart';
 import 'package:passguard/frontend/providers/settings_provider.dart';
 import 'package:passguard/frontend/theme/theme_config.dart';
 
+import 'package:passguard/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
     final isWideScreen = MediaQuery.of(context).size.width > 600;
-
+    
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Consumer2<SettingsProvider, ThemeProvider>(
@@ -20,7 +22,7 @@ class SettingsPage extends StatelessWidget {
               return isWideScreen
                   ? Row(
                       children: [
-                        Expanded(child: _buildAppearanceSection(context, themeProvider)),
+                        Expanded(child: _buildAppearanceSection(context, themeProvider, settingsProvider)),
                         const VerticalDivider(width: 1),
                         Expanded(
                           child: _buildIdleTimeoutSection(
@@ -35,7 +37,7 @@ class SettingsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildAppearanceSection(context, themeProvider),
+                          _buildAppearanceSection(context, themeProvider, settingsProvider),
                           const Divider(height: 32),
                           _buildIdleTimeoutSection(
                             settingsProvider,
@@ -51,7 +53,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
   /// Build the "Appearance" section
-  Widget _buildAppearanceSection(BuildContext context, ThemeProvider themeProvider) {
+  Widget _buildAppearanceSection(BuildContext context, ThemeProvider themeProvider, SettingsProvider settingsProvider) {
     return Card(
       margin: const EdgeInsets.all(16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -84,9 +86,11 @@ class SettingsPage extends StatelessWidget {
                 if (newThemeName != null) {
                   final newTheme = ThemeConfig.getTheme(newThemeName);
                   themeProvider.setTheme(newTheme);
+                  settingsProvider.updateTheme(newThemeName);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Theme updated to $newThemeName')),
                   );
+
                 }
               },
             ),

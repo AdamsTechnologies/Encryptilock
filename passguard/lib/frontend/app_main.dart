@@ -1,9 +1,18 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:passguard/frontend/screens/info_screen.dart';
 import 'package:passguard/frontend/screens/passwords_screen.dart';
 import 'package:passguard/frontend/screens/settings_screen.dart';
+
+
+import 'package:provider/provider.dart';
+import 'package:passguard/frontend/widgets/info_drawer_content.dart';
+import 'package:passguard/frontend/providers/auth_provider.dart';
 import 'package:passguard/frontend/theme/theme_config.dart';
+
+import 'package:passguard/frontend/widgets/password_list_view.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -17,6 +26,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   bool isIconHovered = false;
   bool isDrawerHovered = false;
   int? hoveredIndex;
+  int selectIndex = 0;
   Timer? _closeTimer;
   
   static const double _navRailWidth = 72;
@@ -104,6 +114,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       selectedIndex: _tabController.index,
       onDestinationSelected: (index) {
         setState(() {
+          // print('setting selectIndex: $selectIndex');
+          // selectIndex = _tabController.index; // TODO trying to get nav drawer to stay expanded when on selected tab.
           hoveredIndex = null;
           isIconHovered = false;
           isDrawerHovered = false;
@@ -133,7 +145,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
             _closeTimer?.cancel();
             setState(() {
               hoveredIndex = index;
-              if (index != 0) isIconHovered = true; // TODO update the index if we add a icon at top.
+              if (index != 2) isIconHovered = true; // index != Settings
             });
           },
           onExit: (event) {
@@ -161,6 +173,13 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       ),
       label: Text(label),
     );
+  }
+
+  void _launchWebsite() async {
+    Uri url = Uri.https('www.passguard9000.com', '');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
   }
 
   void _startCloseTimer() {
@@ -220,6 +239,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
+      case 0:
+        return _buildInfoDrawerContent(theme);
       case 1:
         return _buildPasswordsDrawerContent(theme);
       case 2:
@@ -229,37 +250,70 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildPasswordsDrawerContent(ThemeData theme) {
+  Widget _buildInfoDrawerContent(ThemeData theme) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Search Passwords',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
-            ),
-          ),
+        ListTile(
+          leading: Icon(Icons.web_asset),
+          title: const Text('Encryptilock Website'), // <-- website link
+          onTap: () {_launchWebsite();},
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => ListTile(
-              leading: SizedBox(
-                width: 24,
-                child: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-              ),
-              title: Text('Password $index'),
-              onTap: () {},
-            ),
-          ),
+        ListTile(
+          leading: Icon(Icons.logout),
+          title: const Text('Logout'),
+          subtitle: const Text('save and logout'),
+          onTap: () {
+            // TODO handle logout
+            print('logging out - actually needs implemented.');
+          },
         ),
       ],
     );
+  }
+
+  Widget _buildPasswordsDrawerContent(ThemeData theme) {
+    List<PasswordEntry> passwordEntries = [
+      PasswordEntry(
+        id:"1293A",
+        service:"Chase",
+        serviceType:"Banking",
+        username:"Encrypto",
+        creationDate:"2025-01-02",
+      ),
+      PasswordEntry(
+        id:"12395G",
+        service:"Qualstar",
+        serviceType:"Banking",
+        username:"Encrypto",
+        creationDate:"2025-01-01",
+      ),
+      PasswordEntry(
+        id:"030903MJ",
+        service:"Extra Gum",
+        serviceType:"Leisure",
+        username:"GumOnMyFace",
+        creationDate:"2003-06-29",
+      ),
+      PasswordEntry(
+        id:"203902MHD",
+        service:"Facebook",
+        serviceType:"Leisure",
+        username:"CharlieBitMe",
+        creationDate:"2010-12-03",
+      ),
+      PasswordEntry(
+        id:"2938JD1",
+        service:"Federal Union",
+        serviceType:"Banking",
+        username:"Bankzilla991",
+        creationDate:"2022-05-17",
+      ),
+    ];
+    return PasswordListView(passwordEntries: passwordEntries, onEntryTap: _onPasswordTap);
+  }
+  void _onPasswordTap(PasswordEntry entry) {
+
+    print("received entry: ${entry.service}");
   }
 
   Widget _buildSettingsDrawerContent(ThemeData theme) {

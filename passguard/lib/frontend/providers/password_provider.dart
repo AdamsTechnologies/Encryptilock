@@ -29,14 +29,16 @@ class PasswordProvider extends ChangeNotifier {
           dbController: authProvider.inMemoryDb,
           encrypto: authProvider.encrypto!,
           schema: {
-            "id": "nvarchar(50) PRIMARY KEY",
-            "username": "nvarchar(256)",
-            "password": "nvarchar(256)",
-            "service": "nvarchar(1000)",
-            "servicetype": "nvarchar(1000)",
-            "isactive": "bit",
-            "url": "nvarchar(MAX) NULL",
-            "dt": "datetime",
+            "id": "TEXT PRIMARY KEY",
+            "username": "TEXT",
+            "password": "TEXT",
+            "service": "TEXT",
+            "servicetype": "TEXT",
+            "url": "TEXT NULL",
+            "notes": "TEXT NULL",
+            "isactive": "INTEGER", // check if theres a bool type for SQLite
+            "createdt": "datetime",
+            "updatedt": "datetime",
           },
         );
 
@@ -59,7 +61,7 @@ class PasswordProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       _passwords =
-          await _passwordController.getAllRecords(decryptFields: ['password']);
+          await _passwordController.getAllRecords(); // .getAllRecords(decryptFields: ['password']) // TODO we don't want to decrypt the password on retrieval of all items.
       _errorMessage = null;
     } catch (e) {
       _errorMessage = 'Error fetching passwords: $e';
@@ -81,6 +83,7 @@ class PasswordProvider extends ChangeNotifier {
         service: data['service'],
         servicetype: data['servicetype'],
         url: data['url'],
+        notes: data['notes'],
         isactive: data['isactive'] ?? true,
       );
       await fetchPasswords();
@@ -106,7 +109,11 @@ class PasswordProvider extends ChangeNotifier {
       _setLoading(false);
     }
   }
-
+  
+  Future<void> decryptPassword(String encryptedPassword) async {
+    return _passwordController.encrypto.decrypto(encryptedPassword); // TODO Confirm this works.
+  }
+  
   /// Clear all passwords from memory
   void clearMemory() {
     _passwords = [];

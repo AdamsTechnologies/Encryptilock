@@ -15,7 +15,7 @@ class PasswordEntry {
     required this.creationDate,
   });
 }
-
+// TODO this should just dynamically retrieve the list from the password provider.
 class PasswordListView extends StatefulWidget {
   final List<PasswordEntry> passwordEntries;
   final void Function(PasswordEntry entry) onEntryTap;
@@ -59,7 +59,7 @@ class _PasswordListViewState extends State<PasswordListView> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(8, 8, 2, 8),//const EdgeInsets.all(8.0),
           child: TextField(
             onChanged: _filterEntries,
             decoration: InputDecoration(
@@ -77,14 +77,14 @@ class _PasswordListViewState extends State<PasswordListView> {
             itemBuilder: (context, index) {
               final entry = filteredEntries[index];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                margin: const EdgeInsets.fromLTRB(8, 2, 2, 2),//const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: ListTile(
                   onTap: () => widget.onEntryTap(entry),
                   title: Text(entry.service, style: theme.textTheme.bodyLarge),
-                  subtitle: Text("${entry.serviceType} \u2022 ${entry.creationDate}"),
+                  subtitle: Text(entry.serviceType), // "${entry.serviceType} \u2022 ${entry.username}" can concat other stuff.. but I don't think thats necessary.
                   trailing: Icon(Icons.arrow_forward_ios, color: theme.colorScheme.secondary),
                 ),
               );

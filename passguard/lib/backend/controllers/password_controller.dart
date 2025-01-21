@@ -57,7 +57,7 @@ class PasswordController { //TODO Add note field!!
 
   /// Retrieves a single field from the record, typically the 'password'.
   /// If [decrypt] is true, the returned field is decrypted.
-  Future<String?> getPassword(String id, {bool decrypt = false}) async { // TODO see if decrypt should be true by default.
+  Future<String?> getPassword(String id, {bool decrypt = false}) async {
     // We'll rely on a method like "getItem" or a raw query from the dbController.
     // Adjust as needed to match your 'getItem' logic in SQLiteController 
     // or a raw query approach.
@@ -122,6 +122,7 @@ class PasswordController { //TODO Add note field!!
     String? service,
     String? servicetype,
     String? url,
+    String? notes,
     bool isactive = true,
   }) async {
     id ??= _generateUniqueId();
@@ -137,9 +138,11 @@ class PasswordController { //TODO Add note field!!
       'password': encryptedPass,
       'service': service,
       'servicetype': servicetype,
-      'isactive': isactive ? 1 : 0,
       'url': url,
-      'dt': now,
+      "notes": notes,
+      'isactive': isactive ? 1 : 0,
+      'createdt': now, // TODO Need to check if record exists, then don't touch. else now
+      'updatedt': now,
     };
 
     dbController.upsert(
@@ -156,10 +159,10 @@ class PasswordController { //TODO Add note field!!
     for (final item in data) {
       final clone = Map<String, dynamic>.from(item);
       clone['id'] ??= _generateUniqueId();
-      if (clone['password'] is String) {
+      if (clone['password'] is String) { // TODO check this logic.
         clone['password'] = await encrypto.encrypto(clone['password'] as String);
       }
-      clone['dt'] = DateTime.now().toUtc().toIso8601String();
+      clone['updatedt'] = DateTime.now().toUtc().toIso8601String();
       transformedData.add(clone);
     }
     // Then pass them in one go, if we want:
@@ -188,7 +191,7 @@ class PasswordController { //TODO Add note field!!
 
 
   /// Generates a random pseudo-unique ID. 
-  /// Alternatively, you can store a real UUID from a library, 
+  /// Alternatively, TODO you can store a real UUID from a library, 
   /// or rely on your DB to auto-generate.
   String _generateUniqueId() {
     final random = Random.secure();
