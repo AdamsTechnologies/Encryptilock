@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 import 'package:passguard/frontend/screens/info_screen.dart';
 import 'package:passguard/frontend/screens/passwords_screen.dart';
@@ -114,18 +114,22 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       selectedIndex: _tabController.index,
       onDestinationSelected: (index) {
         setState(() {
-          // print('setting selectIndex: $selectIndex');
-          // selectIndex = _tabController.index; // TODO trying to get nav drawer to stay expanded when on selected tab.
-          hoveredIndex = null;
-          isIconHovered = false;
-          isDrawerHovered = false;
-          _tabController.animateTo(index);
+          if (index == 3) {_appLogout(context);}
+          else {
+            // print('setting selectIndex: $selectIndex');
+            // selectIndex = _tabController.index; // TODO trying to get nav drawer to stay expanded when on selected tab.
+            hoveredIndex = null;
+            isIconHovered = false;
+            isDrawerHovered = false;
+            _tabController.animateTo(index);
+          }
         });
       },
       destinations: [
         _buildRailDestination(Icons.info, 'Info', 0),
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
+        _buildLogoutRailDestination(),
       ],
       indicatorShape: BeveledRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -175,11 +179,19 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     );
   }
 
-  void _launchWebsite() async {
-    Uri url = Uri.https('www.passguard9000.com', '');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
+  // Add a new function to build the logout destination
+  NavigationRailDestination _buildLogoutRailDestination() {
+    return NavigationRailDestination(
+      icon: Icon(Icons.power_settings_new),
+      label: const Text('Logout'),
+    );
+  }
+
+  void _appLogout(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.logout();
+    print("logging out and closing the app");
+    SystemNavigator.pop();
   }
 
   void _startCloseTimer() {
@@ -240,7 +252,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
       case 0:
-        return _buildInfoDrawerContent(theme);
+        return InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
+        // return _buildInfoDrawerContent(theme);
       case 1:
         return _buildPasswordsDrawerContent(theme);
       case 2:
@@ -250,26 +263,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildInfoDrawerContent(ThemeData theme) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Icon(Icons.web_asset),
-          title: const Text('Encryptilock Website'), // <-- website link
-          onTap: () {_launchWebsite();},
-        ),
-        ListTile(
-          leading: Icon(Icons.logout),
-          title: const Text('Logout'),
-          subtitle: const Text('save and logout'),
-          onTap: () {
-            // TODO handle logout
-            print('logging out - actually needs implemented.');
-          },
-        ),
-      ],
-    );
-  }
 
   Widget _buildPasswordsDrawerContent(ThemeData theme) {
     List<PasswordEntry> passwordEntries = [

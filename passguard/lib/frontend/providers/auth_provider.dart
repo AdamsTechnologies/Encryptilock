@@ -22,6 +22,7 @@ class AuthProvider extends ChangeNotifier {
   String? get username => _username;
   dynamic get inMemoryDb => _inMemoryDb;
 
+
   // Login method
   Future<void> login(String username, String password) async {
     _isLoading = true;
@@ -32,7 +33,8 @@ class AuthProvider extends ChangeNotifier {
       // Retrieve stored username and salt from config
       final storedUsername = await configManager.getSetting('username');
       final storedSalt = await configManager.getSetting('salt');
-
+      print('AuthProvider: storedUsername=$storedUsername');
+      print('AuthProvider: storedSalt=$storedSalt');
       // Validate username
       if (storedUsername != null && storedUsername != username) {
         throw Exception('Username does not match stored username.');
@@ -44,31 +46,35 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         providedSalt: storedSalt,
       );
-
+      print('AuthProvider: _encryptedDbManager initialized.. trying to open inmemory db.');
       // Open the encrypted database
       _inMemoryDb = await _encryptedDbManager!.open();
-
-      // Update login state
-      _isLoggedIn = true;
+      print('AuthProvider: _inMemoryDb opened.');
       _username = username;
-
+      
       // Check and update the salt if it has changed
       final newSalt = _encryptedDbManager!.currentSalt;
       if (storedSalt != newSalt) {
+        print('AuthProvider: newSalt != storedSalt. setting: newSalt=$newSalt');
         await configManager.setSetting('salt', newSalt);
       }
-
       // Update stored username if not already set
       if (storedUsername == null) {
+        print('AuthProvider: storedUsername null. setting: username=$username');
         await configManager.setSetting('username', username);
       }
+
+      _isLoggedIn = true;
+      print('AuthProvider: Login successful, _isLoggedIn set to true');
     } catch (error) {
       // Handle login errors
       _errorMessage = error.toString();
+      print('AuthProvider: error encountered: $_errorMessage');
       _isLoggedIn = false;
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('AuthProvider: Notified listeners of login');
     }
   }
   
@@ -79,6 +85,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       if (_encryptedDbManager != null && _inMemoryDb != null) {
+        print("AuthProvider closing up the database and logging out.");
         await _encryptedDbManager!.close(_inMemoryDb);
       }
     } catch (error) {
@@ -88,9 +95,12 @@ class AuthProvider extends ChangeNotifier {
       _username = null;
       _inMemoryDb = null;
       _isLoading = false;
+      print('AuthProvider: Logout executed, _isLoggedIn set to false');
       notifyListeners();
+      print('AuthProvider: Notified listeners of logout');
     }
   }
 
   Encrypto? get encrypto => _encryptedDbManager?.encrypto;
 }
+

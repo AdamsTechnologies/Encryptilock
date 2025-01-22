@@ -44,12 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
         hashObject(_usernameController.text),
         hashObject(_passwordController.text),
       );
-
+      if (!authProvider.isLoggedIn) return; // break if we didn't successfully login.
       if (!mounted) return; // Check if widget is still in the tree
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainApp()),
-      );
+      Navigator.pushReplacementNamed(context, '/home'); // TODO
     } catch (error) {
       if (!mounted) return;
       setState(() {
