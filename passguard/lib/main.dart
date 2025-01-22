@@ -72,24 +72,9 @@ class MyApp extends StatelessWidget {
           title: 'Encryptilock',
           theme: ThemeData.light(),
           home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
-          // initialRoute: auth.isLoggedIn ? '/home' : '/login',
-          // routes: {
-          //   '/login': (_) => LoginScreen(),
-          //   '/home': (_) => const IdleWrapper(child: MainApp()),
-          // },
         );
       }
     );
-    // return MaterialApp(
-    //   title: 'PassGuard Idle Demo',
-    //   theme: ThemeData.light(),
-    //   // Provide named routes for login & home:
-    //   initialRoute: '/login',
-      // routes: {
-      //   '/login': (_) => LoginScreen(),
-      //   '/home': (_) => const IdleWrapper(child: MainApp()),
-      // },
-    // );
   }
 }
 
