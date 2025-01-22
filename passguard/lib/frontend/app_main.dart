@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:passguard/frontend/screens/info_screen.dart';
 import 'package:passguard/frontend/screens/passwords_screen.dart';
 import 'package:passguard/frontend/screens/settings_screen.dart';
+import 'package:passguard/frontend/widgets/permanent_snackbar.dart';
 
 
 import 'package:provider/provider.dart';
 import 'package:passguard/frontend/widgets/info_drawer_content.dart';
 import 'package:passguard/frontend/providers/auth_provider.dart';
+import 'package:passguard/frontend/providers/snackbar_provider.dart';
 import 'package:passguard/frontend/theme/theme_config.dart';
 
 import 'package:passguard/frontend/widgets/password_list_view.dart';
@@ -57,6 +59,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
+    final snackBarProvider = context.watch<SnackBarProvider>();
     return Scaffold(
       appBar: isDesktop
           ? null
@@ -95,6 +98,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                   bottom: 0,
                   child: _buildNavigationRail(theme),
                 ),
+                PermanentSnackBar(snackBarProvider: snackBarProvider),
               ],
             )
           : TabBarView(
@@ -252,7 +256,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
       case 0:
-        return InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
+        context.read<SnackBarProvider>().showMessage('Opened the info tab!');
+        return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
         // return _buildInfoDrawerContent(theme);
       case 1:
         return _buildPasswordsDrawerContent(theme);
