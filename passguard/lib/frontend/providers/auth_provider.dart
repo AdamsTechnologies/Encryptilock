@@ -31,7 +31,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Login method
   Future<void> login(String username, String password) async {
-    _snackBarProvider.showMessage('logging in...');
+    _snackBarProvider.showMessage('decrypting database');
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -54,7 +54,7 @@ class AuthProvider extends ChangeNotifier {
       // Open the encrypted database
       _inMemoryDb = await _encryptedDbManager!.open();
       _username = username;
-      
+
       // Check and update the salt if it has changed
       final newSalt = _encryptedDbManager!.currentSalt;
       if (storedSalt != newSalt) {
@@ -66,6 +66,7 @@ class AuthProvider extends ChangeNotifier {
       }
 
       _isLoggedIn = true;
+      _snackBarProvider.showMessage('login successful');
     } catch (error) {
       // Handle login errors
       if (error.runtimeType.toString() == 'IncorrectUsernameException') _snackBarProvider.showMessage('invalid username');
@@ -77,9 +78,10 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   // Logout method
   Future<void> logout() async {
+    _snackBarProvider.showMessage('cleaning up');
     _isLoading = true;
     notifyListeners();
 
@@ -96,10 +98,9 @@ class AuthProvider extends ChangeNotifier {
       _inMemoryDb = null;
       _isLoading = false;
       notifyListeners();
+      _snackBarProvider.showMessage('logout successful');
     }
   }
-  
+
   Encrypto? get encrypto => _encryptedDbManager?.encrypto;
 }
-
-

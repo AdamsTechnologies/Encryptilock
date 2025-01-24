@@ -12,7 +12,7 @@ import 'package:passguard/frontend/theme/theme_config.dart';
 import 'package:passguard/frontend/screens/login_screen.dart';
 import 'package:passguard/frontend/app_main.dart';
 
-void main() async  {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize SQLite and settings manager
   final settingsDb = DartSqlite(dbFile: 'configsettings.db');
@@ -26,7 +26,8 @@ void main() async  {
   // Parse borderRadius from configuration
   final borderRadius = double.tryParse(
         await configManager.getSetting('border_radius') ?? '${ThemeConfig.defaultBorderRadius}',
-      ) ?? ThemeConfig.defaultBorderRadius;
+      ) ??
+      ThemeConfig.defaultBorderRadius;
 
   runApp(
     MultiProvider(
@@ -36,12 +37,30 @@ void main() async  {
         // Provide AuthProvider:
         ChangeNotifierProxyProvider<SnackBarProvider, AuthProvider>(
           create: (_) => AuthProvider(configManager: configManager), // create the AuthProvider
-          update: (_, snackBarProvider, authProvider) =>
-              authProvider!..updateSnackBarProvider(snackBarProvider),
+          update: (_, snackBarProvider, authProvider) => authProvider!..updateSnackBarProvider(snackBarProvider),
         ),
         // Provide SettingsProvider (with an idleTimeout default):
         ChangeNotifierProvider(create: (_) => SettingsProvider(configManager, initialTheme: initialTheme, initialIdleTimeout: initialIdleTimeout)),
-        
+        // Provide ThemeProvider (depends on SettingsProvider)
+        ChangeNotifierProxyProvider<SettingsProvider, ThemeProvider>(
+          create: (context) {
+            final settings = Provider.of<SettingsProvider>(context, listen: false);
+            // Build an initial ThemeData based on the settings
+            final themeData = ThemeConfig.getTheme(
+              settings.settingsTheme,
+              borderRadius: borderRadius,
+            );
+            return ThemeProvider(themeData);
+          },
+          update: (context, settings, themeProvider) {
+            final newThemeData = ThemeConfig.getTheme(
+              settings.settingsTheme,
+              borderRadius: borderRadius,
+            );
+            themeProvider?.setTheme(newThemeData);
+            return themeProvider!;
+          },
+        ),
         // Provide IdleTimeoutService, re-wiring references from Auth & Settings:
         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider, IdleTimeoutService>(
           create: (_) => IdleTimeoutService(),
@@ -68,15 +87,13 @@ class MyApp extends StatelessWidget {
   /// Return the top-level MaterialApp with named routes.
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (ctx, auth, _) {
-        return MaterialApp(
-          title: 'Encryptilock',
-          theme: ThemeData.light(),
-          home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
-        );
-      }
-    );
+    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
+      return MaterialApp(
+        title: 'Encryptilock',
+        theme: themeProvider.theme,
+        home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
+      );
+    });
   }
 }
 

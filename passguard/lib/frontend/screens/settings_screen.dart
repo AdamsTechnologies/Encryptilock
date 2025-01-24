@@ -6,23 +6,34 @@ import 'package:passguard/frontend/theme/theme_config.dart';
 
 import 'package:passguard/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
-  
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  double? _temporaryIdleTimeout;
+
   @override
   Widget build(BuildContext context) {
     final isWideScreen = MediaQuery.of(context).size.width > 600;
-    
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Consumer2<SettingsProvider, ThemeProvider>(
         builder: (context, settingsProvider, themeProvider, _) {
+          _temporaryIdleTimeout ??= settingsProvider.idleTimeout.toDouble();
+
           return LayoutBuilder(
             builder: (context, constraints) {
               return isWideScreen
                   ? Row(
                       children: [
-                        Expanded(child: _buildAppearanceSection(context, themeProvider, settingsProvider)),
+                        Expanded(
+                          child: _buildAppearanceSection(context, themeProvider, settingsProvider),
+                        ),
                         const VerticalDivider(width: 1),
                         Expanded(
                           child: _buildIdleTimeoutSection(
@@ -52,6 +63,7 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
+
   /// Build the "Appearance" section
   Widget _buildAppearanceSection(BuildContext context, ThemeProvider themeProvider, SettingsProvider settingsProvider) {
     return Card(
@@ -87,10 +99,7 @@ class SettingsPage extends StatelessWidget {
                   final newTheme = ThemeConfig.getTheme(newThemeName);
                   themeProvider.setTheme(newTheme);
                   settingsProvider.updateTheme(newThemeName);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Theme updated to $newThemeName')),
-                  );
-
+                  context.read<SnackBarProvider>().showMessage('Theme updated to $newThemeName');
                 }
               },
             ),
@@ -101,8 +110,7 @@ class SettingsPage extends StatelessWidget {
   }
 
   /// Build the "Idle Timeout" section
-  Widget _buildIdleTimeoutSection(
-      SettingsProvider settingsProvider, ThemeData theme) {
+  Widget _buildIdleTimeoutSection(SettingsProvider settingsProvider, ThemeData theme) {
     return Card(
       margin: const EdgeInsets.all(16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -120,18 +128,20 @@ class SettingsPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Slider(
-                    value: settingsProvider.idleTimeout.toDouble(),
+                    value: _temporaryIdleTimeout ?? settingsProvider.idleTimeout.toDouble(),
                     min: 1,
                     max: 60,
                     divisions: 59,
-                    label: '${settingsProvider.idleTimeout} minutes',
+                    label: '${_temporaryIdleTimeout?.toInt()} minutes',
                     onChanged: (value) {
-                      settingsProvider.updateIdleTimeout(value.toInt());
+                      setState(() {
+                        _temporaryIdleTimeout = value; // Update the temporary value
+                      });
                     },
                   ),
                 ),
                 Text(
-                  '${settingsProvider.idleTimeout} min',
+                  '${_temporaryIdleTimeout?.toInt()} min',
                   style: theme.textTheme.bodyLarge,
                 ),
               ],
@@ -139,13 +149,8 @@ class SettingsPage extends StatelessWidget {
             Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Idle timeout updated to ${settingsProvider.idleTimeout} minutes',
-                      ),
-                    ),
-                  );
+                  settingsProvider.updateIdleTimeout(_temporaryIdleTimeout!.toInt());
+                  context.read<SnackBarProvider>().showMessage('Idle timeout updated to ${_temporaryIdleTimeout!.toInt()} minutes');
                 },
                 child: const Text('Save Timeout'),
               ),
@@ -158,124 +163,143 @@ class SettingsPage extends StatelessWidget {
 }
 
 // class SettingsScreen extends StatelessWidget {
-//   const SettingsScreen({Key? key}) : super(key: key);
+//   const SettingsPage({Key? key}) : super(key: key);
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final isDesktop = MediaQuery.of(context).size.width > 600;
-//     final settingsProvider = context.watch<SettingsProvider>();
-//     final themeProvider = context.watch<ThemeProvider>();
+//     final isWideScreen = MediaQuery.of(context).size.width > 600;
 
-//     return isDesktop
-//         ? Padding(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Row(
-//               children: [
-//                 Expanded(
-//                   flex: 1,
-//                   child: ListView(
-//                     children: _buildSettingsTiles(context, settingsProvider, themeProvider),
-//                   ),
-//                 ),
-//                 const Expanded(
-//                   flex: 2,
-//                   child: Center(
-//                     child: Text(
-//                       'Settings Panel',
-//                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           )
-//         : ListView(
-//             padding: const EdgeInsets.all(16.0),
-//             children: _buildSettingsTiles(context, settingsProvider, themeProvider),
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('Settings')),
+//       body: Consumer2<SettingsProvider, ThemeProvider>(
+//         builder: (context, settingsProvider, themeProvider, _) {
+//           return LayoutBuilder(
+//             builder: (context, constraints) {
+//               return isWideScreen
+//                   ? Row(
+//                       children: [
+//                         Expanded(child: _buildAppearanceSection(context, themeProvider, settingsProvider)),
+//                         const VerticalDivider(width: 1),
+//                         Expanded(
+//                           child: _buildIdleTimeoutSection(
+//                             settingsProvider,
+//                             themeProvider.theme,
+//                           ),
+//                         ),
+//                       ],
+//                     )
+//                   : SingleChildScrollView(
+//                       padding: const EdgeInsets.all(16.0),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           _buildAppearanceSection(context, themeProvider, settingsProvider),
+//                           const Divider(height: 32),
+//                           _buildIdleTimeoutSection(
+//                             settingsProvider,
+//                             themeProvider.theme,
+//                           ),
+//                         ],
+//                       ),
+//                     );
+//             },
 //           );
+//         },
+//       ),
+//     );
 //   }
 
-//   List<Widget> _buildSettingsTiles(
-//       BuildContext context, SettingsProvider settingsProvider, ThemeProvider themeProvider) {
-//     return [
-//       // Theme Selection
-//       ListTile(
-//             title: const Text('App Theme'),
-//             subtitle: DropdownButton<String>(
+//   /// Build the "Appearance" section
+//   Widget _buildAppearanceSection(BuildContext context, ThemeProvider themeProvider, SettingsProvider settingsProvider) {
+//     return Card(
+//       margin: const EdgeInsets.all(16.0),
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+//       child: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               'Appearance',
+//               style: themeProvider.theme.textTheme.titleLarge,
+//             ),
+//             const SizedBox(height: 16),
+//             DropdownButtonFormField<String>(
 //               value: ThemeConfig.themes.firstWhere(
-//                 (themeName) => themeProvider.theme == ThemeConfig.getTheme(themeName),
+//                 (themeName) => ThemeConfig.getTheme(themeName) == themeProvider.theme,
 //                 orElse: () => 'light',
 //               ),
-//               onChanged: (themeName) {
-//                 if (themeName != null) {
-//                   themeProvider.setTheme(ThemeConfig.getTheme(themeName));
-//                 }
-//               },
 //               items: ThemeConfig.themes
 //                   .map((themeName) => DropdownMenuItem(
 //                         value: themeName,
 //                         child: Text(themeName),
 //                       ))
 //                   .toList(),
-//             ),
-//           ),
-//       // Dark Mode
-//       SwitchListTile(
-//         title: const Text('Dark Mode'),
-//         value: settingsProvider.isDarkMode,
-//         onChanged: (value) {
-//           settingsProvider.updateTheme(value);
-//         },
-//       ),
-//       // Idle Timeout
-//       ListTile(
-//         title: const Text('Idle Timeout (minutes)'),
-//         subtitle: Text('${settingsProvider.idleTimeout} minutes'),
-//         onTap: () {
-//           _showIdleTimeoutDialog(context, settingsProvider);
-//         },
-//       ),
-//       // Advanced Theme Editor
-//       ListTile(
-//         title: const Text('Advanced Theme Editor'),
-//         trailing: const Icon(Icons.color_lens),
-//         onTap: () {
-//           // Navigate to Advanced Theme Editor (to be implemented in Step 6)
-//         },
-//       ),
-//     ];
-//   }
-
-//   void _showIdleTimeoutDialog(BuildContext context, SettingsProvider provider) {
-//     final controller = TextEditingController(text: provider.idleTimeout.toString());
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         return AlertDialog(
-//           title: const Text('Set Idle Timeout'),
-//           content: TextField(
-//             controller: controller,
-//             keyboardType: TextInputType.number,
-//             decoration: const InputDecoration(labelText: 'Minutes'),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () => Navigator.pop(context),
-//               child: const Text('Cancel'),
-//             ),
-//             TextButton(
-//               onPressed: () {
-//                 final value = int.tryParse(controller.text);
-//                 if (value != null && value > 0) {
-//                   provider.updateIdleTimeout(value);
+//               decoration: const InputDecoration(
+//                 labelText: 'Select Theme',
+//                 border: OutlineInputBorder(),
+//               ),
+//               onChanged: (newThemeName) {
+//                 if (newThemeName != null) {
+//                   final newTheme = ThemeConfig.getTheme(newThemeName);
+//                   themeProvider.setTheme(newTheme);
+//                   settingsProvider.updateTheme(newThemeName);
+//                   context.read<SnackBarProvider>().showMessage('Theme updated to $newThemeName');
 //                 }
-//                 Navigator.pop(context);
 //               },
-//               child: const Text('Save'),
 //             ),
 //           ],
-//         );
-//       },
+//         ),
+//       ),
+//     );
+//   }
+
+//   /// Build the "Idle Timeout" section
+//   Widget _buildIdleTimeoutSection(SettingsProvider settingsProvider, ThemeData theme) {
+//     return Card(
+//       margin: const EdgeInsets.all(16.0),
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+//       child: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(
+//               'Security / Timeout',
+//               style: theme.textTheme.titleLarge,
+//             ),
+//             const SizedBox(height: 16),
+//             Row(
+//               children: [
+//                 Expanded(
+//                   child: Slider(
+//                     value: settingsProvider.idleTimeout.toDouble(),
+//                     min: 1,
+//                     max: 60,
+//                     divisions: 59,
+//                     label: '${settingsProvider.idleTimeout} minutes',
+//                     onChanged: (value) {
+//                       settingsProvider.updateIdleTimeout(value.toInt()); // This should go to the onPressed for the Elevated Button
+//                     },
+//                   ),
+//                 ),
+//                 Text(
+//                   '${settingsProvider.idleTimeout} min',
+//                   style: theme.textTheme.bodyLarge,
+//                 ),
+//               ],
+//             ),
+//             Builder(
+//               builder: (context) => ElevatedButton(
+//                 onPressed: () {
+//                   context.read<SnackBarProvider>().showMessage('Idle timeout updated to ${settingsProvider.idleTimeout} minutes');
+//                 },
+//                 child: const Text('Save Timeout'),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
 //     );
 //   }
 // }
