@@ -6,12 +6,10 @@ import 'package:passguard/frontend/providers/password_provider.dart'; // For Pas
 class PasswordCreationEditPage extends StatefulWidget {
   final Map<String, dynamic>? existingRecord; // Null for creation mode
 
-  const PasswordCreationEditPage({Key? key, this.existingRecord})
-      : super(key: key);
+  const PasswordCreationEditPage({Key? key, this.existingRecord}) : super(key: key);
 
   @override
-  State<PasswordCreationEditPage> createState() =>
-      _PasswordCreationEditPageState();
+  State<PasswordCreationEditPage> createState() => _PasswordCreationEditPageState();
 }
 
 class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
@@ -67,18 +65,17 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
   Future<void> _savePassword() async {
     if (_formKey.currentState!.validate()) {
       final data = {
-        'serviceName': _serviceNameController.text,
+        'service': _serviceNameController.text,
         'username': _usernameController.text,
         'password': _passwordController.text,
-        'serviceType': _serviceTypeController.text,
+        'servicetype': _serviceTypeController.text,
         'url': _urlController.text,
-        'note': _noteController.text,
-        'isActive': _isActive,
+        'notes': _noteController.text,
+        'isactive': _isActive,
       };
 
       try {
-        final passwordProvider =
-            Provider.of<PasswordProvider>(context, listen: false);
+        final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
         if (widget.existingRecord == null) {
           await passwordProvider.addOrUpdatePassword(data);
         } else {
@@ -100,8 +97,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Delete Password'),
-          content: Text(
-              'Are you sure you want to delete the password for "${widget.existingRecord!['serviceName']}"?'),
+          content: Text('Are you sure you want to delete the password for "${widget.existingRecord!['serviceName']}"?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -116,8 +112,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       );
       if (confirmed == true) {
         try {
-          final passwordProvider =
-              Provider.of<PasswordProvider>(context, listen: false);
+          final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
           await passwordProvider.deletePassword(widget.existingRecord!['id']);
           Navigator.pop(context); // Navigate back on success
         } catch (e) {
@@ -135,9 +130,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingRecord == null
-            ? 'Create Password'
-            : 'Edit Password'),
+        title: Text(widget.existingRecord == null ? 'Create Password' : 'Edit Password'),
         actions: widget.existingRecord != null
             ? [
                 IconButton(
@@ -158,15 +151,13 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                 TextFormField(
                   controller: _serviceNameController,
                   decoration: InputDecoration(labelText: 'Service Name'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Service name is required' : null,
+                  validator: (value) => value!.isEmpty ? 'Service name is required' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _usernameController,
                   decoration: InputDecoration(labelText: 'Username'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Username is required' : null,
+                  validator: (value) => value!.isEmpty ? 'Username is required' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -179,8 +170,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                     ),
                   ),
                   obscureText: true,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Password is required' : null,
+                  validator: (value) => value!.isEmpty ? 'Password is required' : null,
                 ),
                 if (widget.existingRecord == null) ...[
                   const SizedBox(height: 16),
@@ -188,9 +178,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                     controller: _confirmPasswordController,
                     decoration: InputDecoration(labelText: 'Confirm Password'),
                     obscureText: true,
-                    validator: (value) => value != _passwordController.text
-                        ? 'Passwords do not match'
-                        : null,
+                    validator: (value) => value != _passwordController.text ? 'Passwords do not match' : null,
                   ),
                 ],
                 const SizedBox(height: 16),

@@ -3,31 +3,64 @@ import 'auth_provider.dart'; // For database connection state
 import 'package:passguard/backend/controllers/password_controller.dart';
 
 class PasswordProvider extends ChangeNotifier {
-  final AuthProvider authProvider;
-  late PasswordController _passwordController;
+  AuthProvider? _authProvider;
+  PasswordController? _passwordController;
 
   // State properties
   List<Map<String, dynamic>> _passwords = [];
+  String? _selectedPasswordId; // active password
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Constructor
-  PasswordProvider({required this.authProvider}) {
-    _initializeController();
+  // Expose the selected password
+  Map<String, dynamic>? get selectedPassword {
+    if (_selectedPasswordId == null) return null;
+    return _passwords.firstWhere(
+      (pw) => pw['id'] == _selectedPasswordId,
+      orElse: () => {},
+    );
   }
 
-  // Getters
   List<Map<String, dynamic>> get passwords => _passwords;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Initialize the PasswordController and load initial data
+  // --------------------------------------------------------------------------
+  // NEW: This method is called by main.dart's ProxyProvider update()
+  // --------------------------------------------------------------------------
+  void updateAuthProvider(AuthProvider newAuth) {
+    // If it's a new auth reference or login state changed, re-initialize
+    final hadAuth = _authProvider;
+    _authProvider = newAuth;
+
+    // If the user just logged in (or if references changed), re-initialize
+    if (_authProvider!.isLoggedIn && hadAuth?.isLoggedIn != _authProvider!.isLoggedIn) {
+      _initializeController();
+    }
+    // If user just logged out, clear memory
+    else if (!_authProvider!.isLoggedIn) {
+      _passwordController = null;
+      _passwords.clear();
+      _selectedPasswordId = null;
+      notifyListeners();
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Core logic
+  // --------------------------------------------------------------------------
   Future<void> _initializeController() async {
-    if (authProvider.isLoggedIn && authProvider.inMemoryDb != null) {
+    if (_authProvider == null) {
+      _errorMessage = 'No AuthProvider available.';
+      notifyListeners();
+      return;
+    }
+
+    if (_authProvider!.isLoggedIn && _authProvider!.inMemoryDb != null) {
       try {
         _passwordController = PasswordController(
-          dbController: authProvider.inMemoryDb,
-          encrypto: authProvider.encrypto!,
+          dbController: _authProvider!.inMemoryDb!,
+          encrypto: _authProvider!.encrypto!,
           schema: {
             "id": "TEXT PRIMARY KEY",
             "username": "TEXT",
@@ -36,13 +69,12 @@ class PasswordProvider extends ChangeNotifier {
             "servicetype": "TEXT",
             "url": "TEXT NULL",
             "notes": "TEXT NULL",
-            "isactive": "INTEGER", // check if theres a bool type for SQLite
+            "isactive": "INTEGER",
             "createdt": "datetime",
             "updatedt": "datetime",
           },
         );
-
-        await _passwordController.init();
+        await _passwordController!.init();
         await fetchPasswords(); // Load initial data
       } catch (e) {
         _errorMessage = 'Error initializing PasswordProvider: $e';
@@ -54,14 +86,12 @@ class PasswordProvider extends ChangeNotifier {
     }
   }
 
-  /// Fetch all passwords from the database
   Future<void> fetchPasswords() async {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
     try {
-      _passwords =
-          await _passwordController.getAllRecords(); // .getAllRecords(decryptFields: ['password']) // TODO we don't want to decrypt the password on retrieval of all items.
+      _passwords = await _passwordController!.getAllRecords();
       _errorMessage = null;
     } catch (e) {
       _errorMessage = 'Error fetching passwords: $e';
@@ -70,13 +100,12 @@ class PasswordProvider extends ChangeNotifier {
     }
   }
 
-  /// Add or update a password
   Future<void> addOrUpdatePassword(Map<String, dynamic> data) async {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
     try {
-      await _passwordController.upsertRecord(
+      await _passwordController!.upsertRecord(
         id: data['id'],
         username: data['username'],
         password: data['password'],
@@ -94,13 +123,12 @@ class PasswordProvider extends ChangeNotifier {
     }
   }
 
-  /// Delete a password by its ID
   Future<void> deletePassword(String id) async {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
     try {
-      await _passwordController.removeRecord(id);
+      await _passwordController!.removeRecord(id);
       _passwords.removeWhere((record) => record['id'] == id);
       notifyListeners();
     } catch (e) {
@@ -109,20 +137,19 @@ class PasswordProvider extends ChangeNotifier {
       _setLoading(false);
     }
   }
-  
-  Future<void> decryptPassword(String encryptedPassword) async {
-    return _passwordController.encrypto.decrypto(encryptedPassword); // TODO Confirm this works.
+
+  Future<String> decryptPassword(String encryptedPassword) async {
+    return await _passwordController!.encrypto.decrypto(encryptedPassword);
   }
-  
-  /// Clear all passwords from memory
+
   void clearMemory() {
     _passwords = [];
+    _selectedPasswordId = null;
     notifyListeners();
   }
 
-  /// Validate the database connection
   bool _validateDbConnection() {
-    if (!authProvider.isLoggedIn || authProvider.inMemoryDb == null) {
+    if (_authProvider == null || !_authProvider!.isLoggedIn || _authProvider!.inMemoryDb == null) {
       _errorMessage = 'No active database connection.';
       notifyListeners();
       return false;
@@ -130,7 +157,11 @@ class PasswordProvider extends ChangeNotifier {
     return true;
   }
 
-  /// Set the loading state and notify listeners
+  void selectPasswordId(String? id) {
+    _selectedPasswordId = id;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
