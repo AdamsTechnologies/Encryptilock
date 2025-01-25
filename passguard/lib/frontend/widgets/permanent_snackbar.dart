@@ -10,7 +10,7 @@ class PermanentSnackBar extends StatelessWidget {
 
   const PermanentSnackBar({
     Key? key,
-    this.height = 40.0,
+    this.height = 30.0,
     this.backgroundColor,
     this.textStyle,
     this.leftPaddingWhenDrawerOpen = 0.0,

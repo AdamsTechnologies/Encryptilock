@@ -11,6 +11,13 @@ class PasswordProvider extends ChangeNotifier {
   String? _selectedPasswordId; // active password
   bool _isLoading = false;
   String? _errorMessage;
+  String _mode = 'list'; // 'list' | 'detail' | 'create' | 'edit'
+
+  String get mode => _mode;
+  bool get isListMode => _mode == 'list';
+  bool get isCreateMode => _mode == 'create';
+  bool get isEditMode => _mode == 'edit';
+  bool get isDetailMode => _mode == 'detail';
 
   // Expose the selected password
   Map<String, dynamic>? get selectedPassword {
@@ -157,8 +164,14 @@ class PasswordProvider extends ChangeNotifier {
     return true;
   }
 
+  void setMode(String newMode) {
+    _mode = newMode;
+    notifyListeners();
+  }
+
   void selectPasswordId(String? id) {
     _selectedPasswordId = id;
+    _mode = (id != null) ? 'detail' : 'list';
     notifyListeners();
   }
 

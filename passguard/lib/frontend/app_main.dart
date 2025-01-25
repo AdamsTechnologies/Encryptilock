@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:passguard/backend/abstracts/abstract_objects.dart';
 import 'package:provider/provider.dart';
 
 // import 'package:passguard/frontend/theme/theme_config.dart';
@@ -16,6 +17,7 @@ import 'package:passguard/frontend/screens/settings_screen.dart';
 import 'package:passguard/frontend/widgets/permanent_snackbar.dart';
 import 'package:passguard/frontend/widgets/info_drawer_content.dart';
 import 'package:passguard/frontend/widgets/password_list_view.dart';
+import 'package:passguard/frontend/widgets/password_create_edit_page.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -103,13 +105,13 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                 controller: _tabController,
                 children: [
                   Padding(padding: EdgeInsets.only(), child: const InfoScreen()),
-                  Padding(padding: EdgeInsets.only(left: shouldShiftContent ? _drawerWidth : 0), child: const PasswordsScreen()),
+                  Padding(padding: EdgeInsets.only(left: _drawerWidth), child: const PasswordsScreen()), // left: shouldShiftContent ? _drawerWidth : 0
                   Padding(padding: EdgeInsets.only(), child: const SettingsScreen()),
                 ],
               ),
             ),
             PermanentSnackBar(
-              height: 30.0,
+              // height: 30.0,
               backgroundColor: theme.colorScheme.surface,
             ),
             _buildExpandableDrawer(),
@@ -184,6 +186,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           },
           onExit: (_) {
             // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
+            // if (pinnedIndex == index) return; // Maybe necessary - test first.
             _startCloseTimer();
           },
           child: Center(
@@ -278,27 +281,17 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildPasswordsDrawerContent(ThemeData theme) {
-    return Consumer<PasswordProvider>(
-      builder: (context, passwordProv, child) {
-        final records = passwordProv.passwords;
-        final passwordEntries = records.map((record) {
-          return PasswordEntry(
-            id: record['id'],
-            service: record['service'] ?? '',
-            serviceType: record['servicetype'] ?? '',
-            username: record['username'] ?? '',
-            creationDate: record['createdt'] ?? '',
-          );
-        }).toList();
-
-        return PasswordListView(
-          passwordEntries: passwordEntries,
-          onEntryTap: (entry) {
-            context.read<SnackBarProvider>().showMessage('Selected password: ${entry.service}');
-            passwordProv.selectPasswordId(entry.id);
-            _tabController.index == 1;
-          },
-        );
+    return PasswordListView(
+      onItemSelected: (int itemSelect) {
+        // itemSelect of 0 == a password list item was selected, just open the passwordScreen.
+        // itemSelect of 1 == the Create new password button was selected.
+        pinnedIndex = 1;
+        _tabController.index = 1;
+        // if (itemSelect == 1) {
+        //   Navigator.of(context).push(
+        //     MaterialPageRoute(builder: (_) => const PasswordCreationEditPage()),
+        //   );
+        // }
       },
     );
   }
