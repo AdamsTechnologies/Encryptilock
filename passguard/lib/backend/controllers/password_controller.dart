@@ -117,7 +117,7 @@ class PasswordController {
   /// Upserts a password record.
   /// If [id] is not provided, we generate one.
   /// The password is encrypted before storing.
-  Future<void> upsertRecord({
+  Future<String> upsertRecord({
     String? id,
     required String username,
     required String password,
@@ -125,6 +125,7 @@ class PasswordController {
     String? servicetype,
     String? url,
     String? notes,
+    String? createdt,
     bool isactive = true,
   }) async {
     id ??= _generateUniqueId();
@@ -132,7 +133,7 @@ class PasswordController {
 
     // Encrypt the password
     final encryptedPass = await encrypto.encrypto(password);
-
+    print("upsertRecord encryptedPass: $encryptedPass");
     // Create the row data
     final row = <String, dynamic>{
       // TODO align schemas..
@@ -144,15 +145,16 @@ class PasswordController {
       'url': url,
       "notes": notes,
       'isactive': isactive ? 1 : 0,
-      'createdt': now, // TODO Need to check if record exists, then don't touch. else now
+      'createdt': createdt ?? now,
       'updatedt': now,
     };
-
+    print("PasswordController upsertRecord: $row");
     dbController.upsert(
       tableName,
       row,
       uniqueKeys,
     );
+    return id;
   }
 
   /// Upserts multiple password records, ignoring errors or logging them.
@@ -177,6 +179,7 @@ class PasswordController {
 
   /// Removes a record by [id].
   Future<void> removeRecord(String id) async {
+    print("deleting record, id: $id");
     dbController.delete(tableName, "id = ?", [
       id
     ]);

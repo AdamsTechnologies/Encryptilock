@@ -103,23 +103,14 @@ class PasswordProvider extends ChangeNotifier {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
+    print("addOrUpdatePassword executed.");
     try {
-      await _passwordController!.upsertRecord(
-        id: data['id'],
-        username: data['username'],
-        password: data['password'],
-        service: data['service'],
-        servicetype: data['servicetype'],
-        url: data['url'],
-        notes: data['notes'],
-        isactive: data['isactive'] ?? true,
-      );
+      print("addOrUpdatePassword recordId: ${data['id']}");
+      String upsertedId = await _passwordController!.upsertRecord(id: data['id'], username: data['username'], password: data['password'], service: data['service'], servicetype: data['servicetype'], url: data['url'], notes: data['notes'], isactive: data['isactive'] ?? true, createdt: data['createdt']);
+      print("addOrUpdatePassword upserted recordId: $upsertedId");
       await fetchPasswords();
       if (_mode == 'create') {
-        // After creation, select the newly created password
-        // Assuming the controller returns the new ID or you have a way to get it
-        String newId = data['id'] ?? _passwords.last['id'];
-        selectPasswordId(newId);
+        selectPasswordId(upsertedId);
       }
     } catch (e) {
       _errorMessage = 'Error saving password: $e';
@@ -146,7 +137,14 @@ class PasswordProvider extends ChangeNotifier {
   }
 
   Future<String> decryptPassword(String encryptedPassword) async {
-    return await _passwordController!.encrypto.decrypto(encryptedPassword);
+    print("PProvider-decryptPassword: decrypting!");
+
+    print("PProvider-decryptPassword: encryptedPassword=$encryptedPassword");
+
+    String decryptedPassword = await _passwordController!.encrypto.decrypto(encryptedPassword);
+    print("PProvider-decryptPassword: decryptedPassword! $decryptedPassword");
+    return decryptedPassword;
+    // return await _passwordController!.encrypto.decrypto(encryptedPassword);
   }
 
   void clearMemory() {
@@ -355,93 +353,6 @@ class PasswordProvider extends ChangeNotifier {
 //     notifyListeners();
 //   }
 
-//   void _setLoading(bool value) {
-//     _isLoading = value;
-//     notifyListeners();
-//   }
-// }
-
-// -------------------------------------------------------------------------------------------------------------------------------------------------
-
-// import 'package:flutter/material.dart';
-// import 'dart:async';
-// import 'package:passguard/backend/controllers/password_controller.dart';
-
-// class PasswordProvider extends ChangeNotifier {
-//   final PasswordController passwordController;
-
-//   List<Map<String, dynamic>> _passwords = [];
-//   bool _isLoading = false;
-//   String? _errorMessage;
-
-//   List<Map<String, dynamic>> get passwords => _passwords;
-//   bool get isLoading => _isLoading;
-//   String? get errorMessage => _errorMessage;
-
-//   PasswordProvider({required this.passwordController});
-
-//   /// Initialize the provider, fetch passwords from the database
-//   Future<void> initialize() async {
-//     _setLoading(true);
-//     try {
-//       _passwords = await passwordController.getAllRecords(decryptFields: ['password']);
-//       _errorMessage = null;
-//     } catch (e) {
-//       _errorMessage = 'Failed to load passwords: $e';
-//     } finally {
-//       _setLoading(false);
-//     }
-//   }
-
-//   /// Fetch passwords (refresh the list)
-//   Future<void> fetchPasswords() async {
-//     _setLoading(true);
-//     try {
-//       _passwords = await passwordController.getAllRecords(decryptFields: ['password']);
-//       _errorMessage = null;
-//     } catch (e) {
-//       _errorMessage = 'Error fetching passwords: $e';
-//     } finally {
-//       _setLoading(false);
-//     }
-//   }
-
-//   /// Add or update a password record
-//   Future<void> addOrUpdatePassword(Map<String, dynamic> data) async { // TODO Handle notes + createdDate and updatedDate
-//     try { 
-//       await passwordController.upsertRecord(
-//         id: data['id'],
-//         username: data['username'],
-//         password: data['password'],
-//         service: data['service'],
-//         servicetype: data['servicetype'],
-//         url: data['url'],
-//         isactive: data['isactive'] ?? true,
-//       );
-
-//       // Refresh or update the local list
-//       await fetchPasswords();
-//     } catch (e) {
-//       _errorMessage = 'Error saving password: $e';
-//       notifyListeners();
-//     }
-//   }
-
-//   /// Delete a password record by its ID
-//   Future<void> deletePassword(String id) async {
-//     try {
-//       await passwordController.removeRecord(id);
-
-//       // Remove from local list
-//       _passwords.removeWhere((record) => record['id'] == id);
-//       notifyListeners();
-//     } catch (e) {
-//       _errorMessage = 'Error deleting password: $e';
-//       notifyListeners();
-//     }
-//   }
-
-//   /// Internal utility to set loading state
 //   void _setLoading(bool value) {
 //     _isLoading = value;
 //     notifyListeners();

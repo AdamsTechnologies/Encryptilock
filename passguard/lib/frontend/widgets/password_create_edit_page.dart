@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:passguard/frontend/providers/password_provider.dart';
+import 'package:passguard/frontend/providers/snackbar_provider.dart';
 
 class PasswordCreationEditPage extends StatefulWidget {
   final Map<String, dynamic>? existingRecord; // Null for creation mode
@@ -81,19 +82,23 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       'servicetype': _serviceTypeController.text,
       'url': _urlController.text,
       'notes': _noteController.text,
-      'isactive': _isActive ? 1 : 0,
+      'isactive': _isActive ? true : false,
     };
 
+    final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
     try {
       final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-
       String newOrUpdatedId;
       if (isEditMode) {
+        snackbarProvider.showMessage("Updating password");
+        print("updating password ${data}");
         data['id'] = widget.existingRecord!['id'];
         await passwordProvider.addOrUpdatePassword(data);
         newOrUpdatedId = (data['id']) as String;
       } else {
         // Creation
+        snackbarProvider.showMessage("Creating password");
+        print("Creating new password $data");
         await passwordProvider.addOrUpdatePassword(data);
         // Assuming the new ID is generated and the last password in the list is the new one
         newOrUpdatedId = passwordProvider.passwords.last['id'];
@@ -102,9 +107,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       // Call the onSaveComplete callback if provided
       widget.onSaveComplete?.call(newOrUpdatedId);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving password: $e')),
-      );
+      snackbarProvider.showMessage("Error");
     }
   }
 

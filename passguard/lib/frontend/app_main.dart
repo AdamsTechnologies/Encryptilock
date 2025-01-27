@@ -287,11 +287,10 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         // itemSelect of 1 == the Create new password button was selected.
         pinnedIndex = 1;
         _tabController.index = 1;
-        // if (itemSelect == 1) {
-        //   Navigator.of(context).push(
-        //     MaterialPageRoute(builder: (_) => const PasswordCreationEditPage()),
-        //   );
-        // }
+        if (itemSelect == 1) {
+          final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+          passwordProvider.setMode('create');
+        }
       },
     );
   }
