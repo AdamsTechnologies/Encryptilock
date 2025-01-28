@@ -68,7 +68,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   /// Only if displayedDrawerIndex is 0 (Info) or 1 (Passwords).
   bool get shouldShowDrawer {
     final di = displayedDrawerIndex;
-    return di == 0 || di == 1;
+    // return di == 0 || di == 1;
+    return di == 1;
   }
 
   /// Do we shift the main content?
@@ -179,7 +180,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           onEnter: (_) {
             // Only hover Info(0) or Passwords(1).
             // We don't do a drawer for Settings(2).
-            if (index == 0 || index == 1) {
+            if (index == 1) {
+              // if (index == 0 || index == 1) {
               _closeTimer?.cancel();
               setState(() => hoveredIndex = index);
             }
@@ -269,9 +271,9 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   /// We only build drawer content for Info(0) and Passwords(1).
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
-      case 0:
-        // Info drawer content
-        return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
+      // case 0:
+      //   // Info drawer content
+      //   return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
       case 1:
         // Password drawer content
         return _buildPasswordsDrawerContent(theme);

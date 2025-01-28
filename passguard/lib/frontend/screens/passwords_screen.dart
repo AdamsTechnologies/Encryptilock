@@ -65,12 +65,7 @@ class PasswordsScreen extends StatelessWidget {
           return const Center(child: Text('No password selected.'));
         }
         return PasswordDetailCard(
-          serviceName: selected['service'] ?? '',
-          username: selected['username'] ?? '',
-          password: selected['password'] ?? '',
-          url: selected['url'],
-          creationDate: selected['createdt'] ?? '',
-          serviceType: selected['servicetype'] ?? '',
+          key: ValueKey(passwordProv.selectedPassword?['id']),
           onEdit: () => passwordProv.setMode('edit'),
           onClose: () => passwordProv.selectPasswordId(null),
         );
@@ -125,12 +120,7 @@ class PasswordsScreen extends StatelessWidget {
           return const Center(child: Text('No password selected.'));
         }
         return PasswordDetailCard(
-          serviceName: selected['service'] ?? '',
-          username: selected['username'] ?? '',
-          password: selected['password'] ?? '',
-          url: selected['url'],
-          creationDate: selected['createdt'] ?? '',
-          serviceType: selected['servicetype'] ?? '',
+          key: ValueKey(passwordProv.selectedPassword?['id']),
           onEdit: () => passwordProv.setMode('edit'),
           onClose: () => passwordProv.setMode('list'),
         );
