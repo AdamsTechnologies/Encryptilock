@@ -126,25 +126,30 @@ class PasswordController {
     String? url,
     String? notes,
     String? createdt,
-    bool isactive = true,
+    bool passwordChanged = false,
+    int isactive = 1,
   }) async {
     id ??= _generateUniqueId();
     final now = DateTime.now().toUtc().toIso8601String();
+    String pass;
+    if (passwordChanged) {
+      pass = await encrypto.encrypto(password);
+    } else {
+      pass = password;
+    }
 
-    // Encrypt the password
-    final encryptedPass = await encrypto.encrypto(password);
-    print("upsertRecord encryptedPass: $encryptedPass");
+    print("upsertRecord encryptedPass: $pass");
     // Create the row data
     final row = <String, dynamic>{
       // TODO align schemas..
       'id': id,
       'username': username,
-      'password': encryptedPass,
+      'password': pass,
       'service': service,
       'servicetype': servicetype,
       'url': url,
       "notes": notes,
-      'isactive': isactive ? 1 : 0,
+      'isactive': isactive,
       'createdt': createdt ?? now,
       'updatedt': now,
     };
@@ -204,6 +209,7 @@ class PasswordController {
   /// Alternatively, TODO you can store a real UUID from a library,
   /// or rely on your DB to auto-generate.
   String _generateUniqueId() {
+    print("generating a new UUID");
     final random = Random.secure();
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     return base64Url.encode(bytes).replaceAll('=', '');
