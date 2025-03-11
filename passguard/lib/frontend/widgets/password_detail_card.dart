@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:passguard/frontend/providers/password_provider.dart';
+import 'package:passguard/frontend/providers/settings_provider.dart';
 import 'package:passguard/frontend/providers/snackbar_provider.dart';
 
 /// A card displaying the *currently selected* password from PasswordProvider.
@@ -126,11 +127,68 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
     }
   }
 
+  /// Handles the delete action. If "Do Not Ask Before Deleting" is true,
+  /// it deletes immediately. Otherwise, shows a small confirmation prompt.
+  void _onDeletePassword(BuildContext context, String passwordId) async {
+    final settingsProv = Provider.of<SettingsProvider>(context, listen: false);
+    final skipConfirm = settingsProv.skipDeleteConfirmation;
+    final passwordProv = Provider.of<PasswordProvider>(context, listen: false);
+    final snackBarProv = Provider.of<SnackBarProvider>(context, listen: false);
+
+    // Delete immediately if skipConfirm is on
+    if (skipConfirm) {
+      await passwordProv.deletePassword(passwordId);
+      snackBarProv.showMessage('Password deleted');
+      widget.onClose(); // Close detail card automatically if desired
+    } else {
+      // Ask for confirmation
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this password?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await passwordProv.deletePassword(passwordId);
+        snackBarProv.showMessage('Password deleted');
+        widget.onClose();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Consumer<PasswordProvider>(
-      builder: (ctx, passwordProv, _) {
+    // return Consumer<PasswordProvider>(
+    //   builder: (ctx, passwordProv, _) {
+    //     final selected = passwordProv.selectedPassword;
+
+    //     // If no password is selected, show a simple placeholder
+    //     if (selected == null) {
+    //       return Center(
+    //         child: Padding(
+    //           padding: const EdgeInsets.all(16.0),
+    //           child: Text(
+    //             "No password selected",
+    //             style: theme.textTheme.bodyMedium,
+    //           ),
+    //         ),
+    //       );
+    //     }
+    return Consumer3<PasswordProvider, SettingsProvider, SnackBarProvider>(
+      builder: (ctx, passwordProv, settingsProv, snackbarProv, _) {
         final selected = passwordProv.selectedPassword;
 
         // If no password is selected, show a simple placeholder
@@ -145,7 +203,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
             ),
           );
         }
-
         // Extract all fields
         final serviceName = selected['service'] ?? '';
         final username = selected['username'] ?? '';
@@ -153,6 +210,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
         final url = selected['url'] ?? '';
         final creationDate = selected['createdt'] ?? '';
         final serviceType = selected['servicetype'] ?? '';
+        final passwordId = selected['id'];
 
         DateTime createDateParsed = DateTime.parse(creationDate);
         String formattedDate = '${createDateParsed.year}-${createDateParsed.month.toString().padLeft(2, '0')}-${createDateParsed.day.toString().padLeft(2, '0')}';
@@ -308,6 +366,16 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                     Row(
                       mainAxisSize: MainAxisSize.min, // Ensures buttons only take the space they need
                       children: [
+                        if (settingsProv.showDeleteButtonMainView)
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            color: theme.colorScheme.error,
+                            tooltip: 'Delete',
+                            onPressed: () {
+                              _onDeletePassword(context, passwordId);
+                            },
+                          ),
+                        const SizedBox(width: 32.0),
                         IconButton(
                           icon: Icon(Icons.edit, color: theme.colorScheme.primary),
                           tooltip: 'Edit',

@@ -35,14 +35,12 @@ class PasswordProvider extends ChangeNotifier {
 
   /// Updates the AuthProvider reference and initializes the PasswordController if logged in.
   void updateAuthProvider(AuthProvider newAuth) {
-    final hadAuth = _authProvider;
+    // final hadAuth = _authProvider;
     _authProvider = newAuth;
-
-    print("PasswordProvider: updateAuthProvider called. hadAuth.isLoggedIn=${hadAuth?.isLoggedIn}, new isLoggedIn=${_authProvider!.isLoggedIn}");
-
-    if (_authProvider!.isLoggedIn && hadAuth?.isLoggedIn != _authProvider!.isLoggedIn) {
+    print("PasswordProvider: _authProvider!.isLoggedIn=${_authProvider!.isLoggedIn}. _authProvider!.isLoading=${_authProvider!.isLoading}");
+    if (_authProvider!.isLoggedIn && !_authProvider!.isLoading) {
       print("PasswordProvider: User logged in. Initializing controller.");
-      _initializeController(); // Initiate async operation without awaiting
+      _initializeController();
     } else if (!_authProvider!.isLoggedIn) {
       print("PasswordProvider: User logged out. Clearing data.");
       _passwordController = null;
