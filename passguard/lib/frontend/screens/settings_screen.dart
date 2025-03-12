@@ -136,6 +136,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ThemeProvider themeProvider,
     SettingsProvider settingsProvider,
   ) {
+    // Figure out which themeName currently matches the active ThemeData
+    final currentThemeName = ThemeConfig.themes.firstWhere(
+      (themeName) => ThemeConfig.getTheme(themeName) == themeProvider.theme,
+      orElse: () => 'light',
+    );
+
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -146,27 +152,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Appearance', style: themeProvider.theme.textTheme.titleLarge),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: ThemeConfig.themes.firstWhere(
-                (themeName) => ThemeConfig.getTheme(themeName) == themeProvider.theme,
-                orElse: () => 'light',
-              ),
-              items: ThemeConfig.themes
-                  .map((themeName) => DropdownMenuItem(
-                        value: themeName,
-                        child: Text(themeName),
-                      ))
-                  .toList(),
-              decoration: const InputDecoration(
-                labelText: 'Select Theme',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (newThemeName) {
-                if (newThemeName != null) {
-                  final newTheme = ThemeConfig.getTheme(newThemeName);
+
+            // Rewritten to use DropdownMenu (M3) instead of DropdownButtonFormField
+            DropdownMenu<String>(
+              width: double.infinity,
+              initialSelection: currentThemeName,
+              label: const Text('Select Theme'),
+              // "Entries" is how we define each menu item in the new widget
+              dropdownMenuEntries: ThemeConfig.themes.map((themeName) {
+                return DropdownMenuEntry(
+                  value: themeName,
+                  label: themeName,
+                );
+              }).toList(),
+              onSelected: (selectedName) {
+                if (selectedName != null) {
+                  final newTheme = ThemeConfig.getTheme(selectedName);
                   themeProvider.setTheme(newTheme);
-                  settingsProvider.updateTheme(newThemeName);
-                  context.read<SnackBarProvider>().showMessage('Theme updated to $newThemeName');
+                  settingsProvider.updateTheme(selectedName);
+                  context.read<SnackBarProvider>().showMessage('Theme updated to $selectedName');
                 }
               },
             ),
