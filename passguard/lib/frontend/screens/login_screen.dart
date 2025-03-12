@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// Make sure you've imported your PermanentSnackBar and SnackBarProvider
 import 'package:passguard/frontend/widgets/permanent_snackbar.dart';
 import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/frontend/providers/password_provider.dart';
 
 import 'package:passguard/frontend/providers/auth_provider.dart';
 import 'package:passguard/backend/devsec/deterministic_hash.dart';
@@ -49,13 +47,11 @@ class _LoginScreenState extends State<LoginScreen> {
         hashObject(_usernameController.text),
         hashObject(_passwordController.text),
       );
-      //await context.read<PasswordProvider>().fetchPasswords(); // TODO THIS SHOULD NOT BE NEEDED.
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
       });
-      // Also show the snack bar message (optional)
       context.read<SnackBarProvider>().showMessage("Login failed: $error");
     } finally {
       if (!mounted) return;
