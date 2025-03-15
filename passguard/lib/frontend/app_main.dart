@@ -49,7 +49,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // 3 tabs -> Info(0), Passwords(1), Settings(2)
+    // 4 tabs -> Info(0), Passwords(1), Settings(2), Logout(3)
     _tabController = TabController(length: 3, vsync: this);
   }
 
@@ -66,7 +66,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     }
     return hoveredIndex;
   }
-  // int? get displayedDrawerIndex => hoveredIndex ?? pinnedIndex;
 
   bool get shouldShowDrawer {
     final di = displayedDrawerIndex;

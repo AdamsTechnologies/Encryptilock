@@ -81,6 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Image.asset(
+                      //   'assets/icon/encryptilockIcon.png',
+                      //   width: 100, // Adjust width/height to your liking
+                      //   height: 100,
+                      // ),
                       Text(
                         _isRegisterMode ? 'Register' : 'Login',
                         style: theme.textTheme.headlineMedium?.copyWith(
