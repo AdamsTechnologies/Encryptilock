@@ -60,12 +60,14 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  /// Which tab's drawer should we currently display, if any?
-  /// Priority: hoveredIndex over pinnedIndex.
-  int? get displayedDrawerIndex => hoveredIndex ?? pinnedIndex;
+  int? get displayedDrawerIndex {
+    if (pinnedIndex == 1) {
+      return 1;
+    }
+    return hoveredIndex;
+  }
+  // int? get displayedDrawerIndex => hoveredIndex ?? pinnedIndex;
 
-  /// Do we show a drawer at all?
-  /// Only if displayedDrawerIndex is 0 (Info) or 1 (Passwords).
   bool get shouldShowDrawer {
     final di = displayedDrawerIndex;
     // return di == 0 || di == 1;
@@ -164,7 +166,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         _buildRailDestination(Icons.info, 'Info', 0),
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
-        _buildLogoutRailDestination(),
+        _buildRailDestination(Icons.power_settings_new, "Logout", 3),
       ],
       indicatorShape: const BeveledRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(4)),
@@ -178,23 +180,17 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         width: _navRailWidth,
         child: MouseRegion(
           onEnter: (_) {
-            // Only hover Info(0) or Passwords(1).
-            // We don't do a drawer for Settings(2).
-            if (index == 1) {
-              // if (index == 0 || index == 1) {
-              _closeTimer?.cancel();
-              setState(() => hoveredIndex = index);
-            }
+            // Let all icons highlight on hover
+            _closeTimer?.cancel();
+            setState(() => hoveredIndex = index);
           },
           onExit: (_) {
-            // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
-            // if (pinnedIndex == index) return; // Maybe necessary - test first.
             _startCloseTimer();
           },
           child: Center(
             child: Icon(
               icon,
-              color: (pinnedIndex == index || hoveredIndex == index) ? Theme.of(context).colorScheme.primary : null,
+              color: _iconColorFor(index), // see helper below
             ),
           ),
         ),
@@ -203,12 +199,46 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     );
   }
 
-  NavigationRailDestination _buildLogoutRailDestination() {
-    return const NavigationRailDestination(
-      icon: Icon(Icons.power_settings_new),
-      label: Text('Logout'),
-    );
+  /// Helper to decide an icon’s color:
+  Color? _iconColorFor(int index) {
+    final isSelected = (_tabController.index == index);
+    final isPinned = (pinnedIndex == index);
+    final isHovered = (hoveredIndex == index);
+
+    return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
   }
+  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+  //   return NavigationRailDestination(
+  //     icon: SizedBox(
+  //       width: _navRailWidth,
+  //       child: MouseRegion(
+  //         onEnter: (_) {
+  //           // Only hover Info(0) or Passwords(1).
+  //           // We don't do a drawer for Settings(2).
+  //           _closeTimer?.cancel();
+  //           setState(() => hoveredIndex = index);
+  //           // if (index == 1) {
+  //           //   // if (index == 0 || index == 1) {
+  //           //   _closeTimer?.cancel();
+  //           //   setState(() => hoveredIndex = index);
+  //           // }
+  //         },
+  //         onExit: (_) {
+  //           // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
+  //           // if (pinnedIndex == index) return; // Maybe necessary - test first.
+  //           _startCloseTimer();
+  //         },
+  //         child: Center(
+  //           child: Icon(
+  //             icon,
+  //             color: (pinnedIndex == index || hoveredIndex == index) ? Theme.of(context).colorScheme.primary : null,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //     label: Text(label),
+  //   );
+  // }
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);

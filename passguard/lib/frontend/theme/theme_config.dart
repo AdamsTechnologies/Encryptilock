@@ -35,29 +35,7 @@ class ThemeConfig {
       // ======================== DARK THEMES ============================
       // ---------------------------------------------------------------------
       case 'Dark':
-        return ThemeData.dark(useMaterial3: true).copyWith(
-          colorScheme: const ColorScheme.dark(
-            surface: Color(0xFF1B1B1B),
-            onSurface: Color(0xFFE0E0E0),
-            primary: Color(0xFFD81B60),
-            secondary: Color(0xFF9C2747),
-            tertiary: Color(0xFFF06292),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFD81B60),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-              ),
-            ),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(adjustedRadius),
-            ),
-          ),
-        );
+        return ThemeData.dark(useMaterial3: true);
       case 'Lock':
         return ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.dark(
@@ -366,7 +344,7 @@ class ThemeConfig {
         return ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.dark(
             primary: Color(0xFFD50000), // Fierce red
-            secondary: Color(0xFF00E676), // Neon green
+            secondary: Color.fromARGB(255, 226, 230, 0), // Neon green
             surface: Color(0xFF1A1A1A),
             tertiary: Color(0xFFFF9100), // Vibrant orange
             onPrimary: Colors.white,
@@ -422,24 +400,7 @@ class ThemeConfig {
       // ========================= LIGHT THEMES =============================
       // ---------------------------------------------------------------------
       case 'Light':
-        return ThemeData.light(useMaterial3: true).copyWith(
-          colorScheme: const ColorScheme.light(
-            surface: Color(0xFFFDFDFD),
-            onSurface: Color(0xFF3C3C3C),
-            primary: Color(0xFF2196F3),
-            secondary: Color(0xFF03A9F4),
-            tertiary: Color(0xFFB3E5FC),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF2196F3),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-              ),
-            ),
-          ),
-        );
+        return ThemeData.light(useMaterial3: true);
 
       case 'bubblegum':
         return ThemeData.light(useMaterial3: true).copyWith(
@@ -774,7 +735,7 @@ class ThemeConfig {
             hintStyle: const TextStyle(color: Color(0xFF666666)),
           ),
         );
-
+      case "Default":
       default:
         return ThemeData.light(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.light(

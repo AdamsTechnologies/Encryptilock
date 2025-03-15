@@ -238,7 +238,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                     if (copyable)
                       IconButton(
                         tooltip: 'Copy $label',
-                        icon: Icon(Icons.copy, color: theme.colorScheme.secondary),
+                        icon: Icon(Icons.copy, color: theme.colorScheme.primary),
                         onPressed: () => _copyToClipboard(context, value, label),
                       ),
                     if (onSuffixTap != null && suffixIconData != null)
@@ -277,7 +277,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                       // Copy -> copies encrypted password
                       IconButton(
                         tooltip: 'Copy Password',
-                        icon: Icon(Icons.copy, color: theme.colorScheme.secondary),
+                        icon: Icon(Icons.copy, color: theme.colorScheme.primary),
                         onPressed: () => _decryptPasswordToClipboard(context, encryptedPass),
                       ),
                     ],
@@ -307,7 +307,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                 // Copy plaintext
                 copyButton = IconButton(
                   tooltip: 'Copy Password',
-                  icon: Icon(Icons.copy, color: theme.colorScheme.secondary),
+                  icon: Icon(Icons.copy, color: theme.colorScheme.primary),
                   onPressed: () => _decryptPasswordToClipboard(context, encryptedPass),
                 );
               }
