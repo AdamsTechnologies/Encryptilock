@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
 
-import 'package:passguard/frontend/widgets/password_detail_card.dart';
-import 'package:passguard/frontend/widgets/password_create_edit_page.dart';
-import 'package:passguard/frontend/widgets/password_list_view.dart';
+import 'package:Encryptilock/frontend/widgets/password_detail_card.dart';
+import 'package:Encryptilock/frontend/widgets/password_create_edit_page.dart';
+import 'package:Encryptilock/frontend/widgets/password_list_view.dart';
 
 class PasswordsScreen extends StatelessWidget {
   const PasswordsScreen({Key? key}) : super(key: key);

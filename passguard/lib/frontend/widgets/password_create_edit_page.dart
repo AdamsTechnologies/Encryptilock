@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
-import 'package:passguard/frontend/providers/password_provider.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
-import 'package:passguard/frontend/widgets/password_generator_dialog.dart';
-import 'package:passguard/backend/helpers/password_generator.dart'; // For PasswordFactory
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/widgets/password_generator_dialog.dart';
+import 'package:Encryptilock/backend/helpers/password_generator.dart'; // For PasswordFactory
 
 class PasswordCreationEditPage extends StatefulWidget {
   final Map<String, dynamic>? existingRecord; // Null for creation mode

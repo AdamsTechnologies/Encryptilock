@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
 
 // import 'package:flutter/services.dart';
 // import 'package:provider/provider.dart';
-// import 'package:passguard/frontend/screens/login_screen.dart';
+// import 'package:Encryptilock/frontend/screens/login_screen.dart';
 
 class IdleTimeoutService with ChangeNotifier {
   AuthProvider? _auth;

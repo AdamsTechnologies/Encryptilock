@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:passguard/frontend/widgets/permanent_snackbar.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
 
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/backend/devsec/deterministic_hash.dart';
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/backend/devsec/deterministic_hash.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/backend/helpers/custom_exceptions.dart';
+import 'package:Encryptilock/backend/devsec/encrypto.dart';
+import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
+import 'package:Encryptilock/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/backend/helpers/custom_exceptions.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;

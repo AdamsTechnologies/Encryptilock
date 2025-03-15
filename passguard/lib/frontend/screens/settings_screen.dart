@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:passguard/frontend/providers/theme_provider.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
-import 'package:passguard/frontend/theme/theme_config.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
+import 'package:Encryptilock/frontend/providers/theme_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/theme/theme_config.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);

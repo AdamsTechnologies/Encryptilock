@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:passguard/frontend/app_main.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
+import 'package:Encryptilock/frontend/app_main.dart';
+import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
 
-import 'package:passguard/frontend/services/idle_timeout_service.dart';
+import 'package:Encryptilock/frontend/services/idle_timeout_service.dart';
 
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
-import 'package:passguard/frontend/providers/theme_provider.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/providers/theme_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
 
-import 'package:passguard/frontend/screens/login_screen.dart';
-import 'package:passguard/frontend/theme/theme_config.dart';
+import 'package:Encryptilock/frontend/screens/login_screen.dart';
+import 'package:Encryptilock/frontend/theme/theme_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

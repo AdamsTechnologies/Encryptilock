@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:passguard/backend/abstracts/abstract_objects.dart';
+import 'package:Encryptilock/backend/abstracts/abstract_objects.dart';
 import 'package:provider/provider.dart';
 
-// import 'package:passguard/frontend/theme/theme_config.dart';
+// import 'package:Encryptilock/frontend/theme/theme_config.dart';
 
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
-import 'package:passguard/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
 
-import 'package:passguard/frontend/screens/info_screen.dart';
-import 'package:passguard/frontend/screens/passwords_screen.dart';
-import 'package:passguard/frontend/screens/settings_screen.dart';
+import 'package:Encryptilock/frontend/screens/info_screen.dart';
+import 'package:Encryptilock/frontend/screens/passwords_screen.dart';
+import 'package:Encryptilock/frontend/screens/settings_screen.dart';
 
-import 'package:passguard/frontend/widgets/permanent_snackbar.dart';
-import 'package:passguard/frontend/widgets/info_drawer_content.dart';
-import 'package:passguard/frontend/widgets/password_list_view.dart';
-import 'package:passguard/frontend/widgets/password_create_edit_page.dart';
+import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:Encryptilock/frontend/widgets/info_drawer_content.dart';
+import 'package:Encryptilock/frontend/widgets/password_list_view.dart';
+import 'package:Encryptilock/frontend/widgets/password_create_edit_page.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);

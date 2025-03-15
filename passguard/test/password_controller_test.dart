@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:math';
 import 'dart:convert';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
-import 'package:passguard/backend/controllers/password_controller.dart';
+import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:Encryptilock/backend/devsec/encrypto.dart';
+import 'package:Encryptilock/backend/controllers/password_controller.dart';
 
 void main() {
   group('PasswordController Tests', () {
@@ -38,7 +38,9 @@ void main() {
         dbController: db,
         encrypto: realEncrypto,
         tableName: 'pm',
-        uniqueKeys: ['id'],
+        uniqueKeys: [
+          'id'
+        ],
         schema: schema, // We want it to create the table if not exists
       );
 
@@ -60,7 +62,9 @@ void main() {
       );
 
       // retrieve record with decryption
-      final record = await passwordController.getRecord('abc', decryptFields: ['password']);
+      final record = await passwordController.getRecord('abc', decryptFields: [
+        'password'
+      ]);
       expect(record, isNotNull);
       expect(record!['id'], 'abc');
       expect(record['username'], 'alice');
@@ -99,7 +103,9 @@ void main() {
       );
 
       // Retrieve all, decrypt the 'password' field
-      final all = await passwordController.getAllRecords(decryptFields: ['password']);
+      final all = await passwordController.getAllRecords(decryptFields: [
+        'password'
+      ]);
       expect(all.length, 2);
 
       final rec1 = all.firstWhere((r) => r['id'] == 'id1');
@@ -126,8 +132,12 @@ void main() {
       await passwordController.upsertMultipleRecords(data);
 
       // Check them
-      final rec1 = await passwordController.getRecord('r1', decryptFields: ['password']);
-      final rec2 = await passwordController.getRecord('r2', decryptFields: ['password']);
+      final rec1 = await passwordController.getRecord('r1', decryptFields: [
+        'password'
+      ]);
+      final rec2 = await passwordController.getRecord('r2', decryptFields: [
+        'password'
+      ]);
 
       expect(rec1!['username'], equals('u1'));
       expect(rec1['password'], equals('p1'));

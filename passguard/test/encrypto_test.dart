@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
+import 'package:Encryptilock/backend/devsec/encrypto.dart';
 
 void main() {
   group('Encrypto Tests', () {
@@ -47,7 +47,14 @@ void main() {
 
     test('encrypto() & decrypto() returns original raw bytes (non-UTF8)', () async {
       // Create some raw bytes that won't decode as valid UTF-8.
-      final originalBytes = Uint8List.fromList([0xFF, 0xD8, 0x00, 0xFE, 0x01, 0x02]);
+      final originalBytes = Uint8List.fromList([
+        0xFF,
+        0xD8,
+        0x00,
+        0xFE,
+        0x01,
+        0x02
+      ]);
 
       final encryptedString = await encrypto.encrypto(originalBytes);
       final decrypted = await encrypto.decrypto(encryptedString);
@@ -65,7 +72,11 @@ void main() {
 
     test('Decrypt invalid data should throw an error', () async {
       // Not enough bytes for nonce + MAC
-      final invalidData = Uint8List.fromList([1, 2, 3]);
+      final invalidData = Uint8List.fromList([
+        1,
+        2,
+        3
+      ]);
       await expectLater(() => encrypto.decrypt(invalidData), throwsArgumentError);
     });
 

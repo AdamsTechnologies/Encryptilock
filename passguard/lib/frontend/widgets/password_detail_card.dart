@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:passguard/frontend/providers/password_provider.dart';
-import 'package:passguard/frontend/providers/settings_provider.dart';
-import 'package:passguard/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
 
 /// A card displaying the *currently selected* password from PasswordProvider.
 /// If a new password is selected while this is open, the fields update and
