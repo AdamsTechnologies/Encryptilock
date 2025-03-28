@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:passguard/backend/devsec/encrypto.dart';       // Or your actual EncryptionInterface
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';  // Your existing SQLiteController
+import 'package:Encryptilock/backend/devsec/encrypto.dart'; // Or your actual EncryptionInterface
+import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart'; // Your existing SQLiteController
 
 /// A simple controller for storing and retrieving password records.
 /// Depends on:
 ///  - `SQLiteController` for DB operations
 ///  - `EncryptionInterface` (e.g., `Encrypto`) for encryption.
 class PasswordController {
+  //TODO Add note field!!
   /// The underlying SQLite controller that handles queries, upserts, etc.
   final DartSqlite dbController;
 
@@ -22,7 +23,7 @@ class PasswordController {
   final List<String> uniqueKeys;
 
   /// If you want to create a table on initialization, you can store the schema here.
-  /// For example: 
+  /// For example:
   /// {
   ///   "id": "nvarchar(50) PRIMARY KEY",
   ///   "username": "nvarchar(256)",
@@ -39,12 +40,14 @@ class PasswordController {
     required this.dbController,
     required this.encrypto,
     this.tableName = 'pm',
-    this.uniqueKeys = const ['id'],
+    this.uniqueKeys = const [
+      'id'
+    ],
     this.schema,
   });
 
   /// Optionally call this after constructing the controller, to ensure
-  /// the table is created if it doesn't exist. 
+  /// the table is created if it doesn't exist.
   /// e.g.:
   ///   await passwordController.init();
   Future<void> init() async {
@@ -54,19 +57,18 @@ class PasswordController {
     }
   }
 
-
   /// Retrieves a single field from the record, typically the 'password'.
   /// If [decrypt] is true, the returned field is decrypted.
-  Future<String?> getPassword(String id, {bool decrypt = false}) async { // TODO see if decrypt should be true by default.
+  Future<String?> getPassword(String id, {bool decrypt = false}) async {
     // We'll rely on a method like "getItem" or a raw query from the dbController.
-    // Adjust as needed to match your 'getItem' logic in SQLiteController 
+    // Adjust as needed to match your 'getItem' logic in SQLiteController
     // or a raw query approach.
     final record = await _getRecordById(id);
     if (record == null) {
       throw Exception("No record found for id=$id");
     }
     final encValue = record['password'] as String?;
-    
+
     if (encValue == null) return null;
     if (decrypt == true) {
       return await encrypto.decrypto(encValue);
@@ -112,41 +114,52 @@ class PasswordController {
     return results;
   }
 
-  /// Upserts a password record. 
-  /// If [id] is not provided, we generate one. 
+  /// Upserts a password record.
+  /// If [id] is not provided, we generate one.
   /// The password is encrypted before storing.
-  Future<void> upsertRecord({
+  Future<String> upsertRecord({
     String? id,
     required String username,
     required String password,
     String? service,
     String? servicetype,
     String? url,
-    bool isactive = true,
+    String? notes,
+    String? createdt,
+    bool passwordChanged = false,
+    int isactive = 1,
   }) async {
     id ??= _generateUniqueId();
     final now = DateTime.now().toUtc().toIso8601String();
+    String pass;
+    if (passwordChanged) {
+      pass = await encrypto.encrypto(password);
+    } else {
+      pass = password;
+    }
 
-    // Encrypt the password
-    final encryptedPass = await encrypto.encrypto(password);
-
+    print("upsertRecord encryptedPass: $pass");
     // Create the row data
-    final row = <String, dynamic>{ // TODO align schemas..
+    final row = <String, dynamic>{
+      // TODO align schemas..
       'id': id,
       'username': username,
-      'password': encryptedPass,
+      'password': pass,
       'service': service,
       'servicetype': servicetype,
-      'isactive': isactive ? 1 : 0,
       'url': url,
-      'dt': now,
+      "notes": notes,
+      'isactive': isactive,
+      'createdt': createdt ?? now,
+      'updatedt': now,
     };
-
+    print("PasswordController upsertRecord: $row");
     dbController.upsert(
       tableName,
-      row, 
+      row,
       uniqueKeys,
     );
+    return id;
   }
 
   /// Upserts multiple password records, ignoring errors or logging them.
@@ -157,9 +170,10 @@ class PasswordController {
       final clone = Map<String, dynamic>.from(item);
       clone['id'] ??= _generateUniqueId();
       if (clone['password'] is String) {
+        // TODO check this logic.
         clone['password'] = await encrypto.encrypto(clone['password'] as String);
       }
-      clone['dt'] = DateTime.now().toUtc().toIso8601String();
+      clone['updatedt'] = DateTime.now().toUtc().toIso8601String();
       transformedData.add(clone);
     }
     // Then pass them in one go, if we want:
@@ -170,7 +184,10 @@ class PasswordController {
 
   /// Removes a record by [id].
   Future<void> removeRecord(String id) async {
-    dbController.delete(tableName, "id = ?", [id]);
+    print("deleting record, id: $id");
+    dbController.delete(tableName, "id = ?", [
+      id
+    ]);
   }
 
   // --------------------------------------------------------------------------
@@ -181,16 +198,18 @@ class PasswordController {
   Future<Map<String, dynamic>?> _getRecordById(String id) async {
     // We can do a raw query via dbController:
     final sql = "SELECT * FROM $tableName WHERE id = ?";
-    final results = dbController.query(sql, [id]);
+    final results = dbController.query(sql, [
+      id
+    ]);
     if (results.isEmpty) return null;
     return results.first;
   }
 
-
-  /// Generates a random pseudo-unique ID. 
-  /// Alternatively, you can store a real UUID from a library, 
+  /// Generates a random pseudo-unique ID.
+  /// Alternatively, TODO you can store a real UUID from a library,
   /// or rely on your DB to auto-generate.
   String _generateUniqueId() {
+    print("generating a new UUID");
     final random = Random.secure();
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     return base64Url.encode(bytes).replaceAll('=', '');

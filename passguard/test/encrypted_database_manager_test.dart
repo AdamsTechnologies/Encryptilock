@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:Encryptilock/backend/databaseManager/encrypted_database_manager.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
@@ -36,7 +36,9 @@ void main() {
       // Write to the database
       // final db = manager.database;
       db.executeCommand('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)');
-      db.insert('test', {'value': 'Hello, Encrypted World!'});
+      db.insert('test', {
+        'value': 'Hello, Encrypted World!'
+      });
 
       // Verify data can be read back
       final result = db.query('SELECT * FROM test');
@@ -52,7 +54,9 @@ void main() {
       final db = await manager.open();
       String salt = manager.currentSalt;
       db.executeCommand('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)');
-      db.insert('test', {'value': 'Persisted data!'});
+      db.insert('test', {
+        'value': 'Persisted data!'
+      });
       await manager.close(db);
 
       final encryptedFile = File(dbPath);
@@ -111,7 +115,9 @@ void main() {
       manager = EncryptedDatabaseManager(dbPath: dbPath, password: password);
       final db = await manager.open();
       db.executeCommand('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)');
-      db.insert('test', {'value': 'Secure data!'});
+      db.insert('test', {
+        'value': 'Secure data!'
+      });
       await manager.close(db);
 
       // Attempt to reopen with the wrong password

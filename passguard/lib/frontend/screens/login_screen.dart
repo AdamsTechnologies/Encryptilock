@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:passguard/frontend/providers/auth_provider.dart';
-import 'package:passguard/backend/devsec/deterministic_hash.dart';
+import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/backend/devsec/deterministic_hash.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -16,6 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isRegisterMode = false;
+  bool _isLoading = false;
+  String? _errorMessage;
   String? _passwordError;
 
   void _submitForm(BuildContext context) async {
@@ -30,76 +35,96 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     final authProvider = context.read<AuthProvider>();
-    await authProvider.login(
-      hashObject(_usernameController.text), // irreversibly hashes the input so app never has plaintexts
-      hashObject(_passwordController.text),
-    );
 
-    if (!mounted) return; // check if we mounted.
-
-    if (authProvider.isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/main');
+    try {
+      await authProvider.login(
+        hashObject(_usernameController.text),
+        hashObject(_passwordController.text),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+      });
+      context.read<SnackBarProvider>().showMessage("Login failed: $error");
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final authProvider = context.watch<AuthProvider>();
+    final snackBarProvider = context.watch<SnackBarProvider>();
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
-          child: Container(
-            constraints: isDesktop ? BoxConstraints(maxWidth: 400) : null,
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    _isRegisterMode ? 'Register' : 'Login',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24.0),
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter your username';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16.0),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
-                  if (_isRegisterMode)
-                    Column(
-                      children: [
+      body: Stack(
+        children: [
+          Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Container(
+                constraints: isDesktop ? BoxConstraints(maxWidth: 400) : null,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Image.asset(
+                      //   'assets/icon/encryptilockIcon.png',
+                      //   width: 100, // Adjust width/height to your liking
+                      //   height: 100,
+                      // ),
+                      Text(
+                        _isRegisterMode ? 'Register' : 'Login',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 24.0),
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your username';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submitForm(context),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
+                      ),
+                      if (_isRegisterMode) ...[
                         SizedBox(height: 16.0),
                         TextFormField(
                           controller: _confirmPasswordController,
@@ -108,6 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             border: OutlineInputBorder(),
                           ),
                           obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submitForm(context),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please confirm your password';
@@ -124,48 +151,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                       ],
-                    ),
-                  SizedBox(height: 24.0),
-                  if (authProvider.errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        authProvider.errorMessage!,
-                        style: TextStyle(color: theme.colorScheme.error),
-                        textAlign: TextAlign.center,
+                      SizedBox(height: 24.0),
+                      if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: theme.colorScheme.error),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : () => _submitForm(context),
+                        child: _isLoading
+                            ? CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  theme.colorScheme.onPrimary,
+                                ),
+                              )
+                            : Text(_isRegisterMode ? 'Register' : 'Login'),
                       ),
-                    ),
-                  ElevatedButton(
-                    onPressed: authProvider.isLoading
-                        ? null
-                        : () => _submitForm(context),
-                    child: authProvider.isLoading
-                        ? CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              theme.colorScheme.onPrimary,
-                            ),
-                          )
-                        : Text(_isRegisterMode ? 'Register' : 'Login'),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _isRegisterMode = !_isRegisterMode;
+                            _passwordError = null;
+                            _confirmPasswordController.clear();
+                          });
+                        },
+                        child: Text(
+                          _isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register",
+                        ),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isRegisterMode = !_isRegisterMode;
-                        _passwordError = null;
-                        _confirmPasswordController.clear();
-                      });
-                    },
-                    child: Text(
-                      _isRegisterMode
-                          ? 'Already have an account? Login'
-                          : 'Don’t have an account? Register',
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+
+          // --- PermanentSnackBar goes on top ---
+          PermanentSnackBar(),
+        ],
       ),
     );
   }
@@ -178,125 +205,3 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 }
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// import 'package:passguard/frontend/providers/auth_provider.dart';
-// import 'package:passguard/backend/devsec/deterministic_hash.dart';
-
-// class LoginScreen extends StatefulWidget {
-//   @override
-//   _LoginScreenState createState() => _LoginScreenState();
-// }
-
-// class _LoginScreenState extends State<LoginScreen> {
-//   final _formKey = GlobalKey<FormState>();
-//   final TextEditingController _usernameController = TextEditingController();
-//   final TextEditingController _passwordController = TextEditingController();
-
-//   void _submitForm(BuildContext context) async {
-//     if (!_formKey.currentState!.validate()) {
-//       return;
-//     }
-
-//     final authProvider = context.read<AuthProvider>();
-//     await authProvider.login(
-//       hashObject(_usernameController.text), // irreversibly hashes the input so app never has plaintexts
-//       hashObject(_passwordController.text),
-//     );
-
-//     if (!mounted) return; // check if we mounted.
-
-//     if (authProvider.isLoggedIn) {
-//       Navigator.pushReplacementNamed(context, '/main');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-//     final authProvider = context.watch<AuthProvider>();
-
-//     return Scaffold(
-//       body: Center(
-//         child: SingleChildScrollView(
-//           padding: EdgeInsets.symmetric(horizontal: 24.0),
-//           child: Form(
-//             key: _formKey,
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               crossAxisAlignment: CrossAxisAlignment.stretch,
-//               children: [
-//                 Text(
-//                   'Login',
-//                   style: theme.textTheme.headlineMedium?.copyWith(
-//                     color: theme.colorScheme.primary,
-//                   ),
-//                   textAlign: TextAlign.center,
-//                 ),
-//                 SizedBox(height: 24.0),
-//                 TextFormField(
-//                   controller: _usernameController,
-//                   decoration: InputDecoration(
-//                     labelText: 'Username',
-//                     border: OutlineInputBorder(),
-//                   ),
-//                   validator: (value) {
-//                     if (value == null || value.trim().isEmpty) {
-//                       return 'Please enter your username';
-//                     }
-//                     return null;
-//                   },
-//                 ),
-//                 SizedBox(height: 16.0),
-//                 TextFormField(
-//                   controller: _passwordController,
-//                   decoration: InputDecoration(
-//                     labelText: 'Password',
-//                     border: OutlineInputBorder(),
-//                   ),
-//                   obscureText: true,
-//                   validator: (value) {
-//                     if (value == null || value.isEmpty) {
-//                       return 'Please enter your password';
-//                     }
-//                     return null;
-//                   },
-//                 ),
-//                 SizedBox(height: 24.0),
-//                 if (authProvider.errorMessage != null)
-//                   Padding(
-//                     padding: const EdgeInsets.only(bottom: 16.0),
-//                     child: Text(
-//                       authProvider.errorMessage!,
-//                       style: TextStyle(color: theme.colorScheme.error),
-//                       textAlign: TextAlign.center,
-//                     ),
-//                   ),
-//                 ElevatedButton(
-//                   onPressed: authProvider.isLoading
-//                       ? null
-//                       : () => _submitForm(context),
-//                   child: authProvider.isLoading
-//                       ? CircularProgressIndicator(
-//                           valueColor: AlwaysStoppedAnimation<Color>(
-//                             theme.colorScheme.onPrimary,
-//                           ),
-//                         )
-//                       : Text('Login'),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   void dispose() {
-//     _usernameController.dispose();
-//     _passwordController.dispose();
-//     super.dispose();
-//   }
-// }

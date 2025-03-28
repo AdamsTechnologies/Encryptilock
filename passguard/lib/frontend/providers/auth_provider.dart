@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:passguard/backend/databaseManager/encrypted_database_manager.dart';
-import 'package:passguard/backend/controllers/config_settings_controller.dart';
+import 'package:Encryptilock/backend/devsec/encrypto.dart';
+import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
+import 'package:Encryptilock/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/backend/helpers/custom_exceptions.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
@@ -11,6 +14,7 @@ class AuthProvider extends ChangeNotifier {
   dynamic _inMemoryDb; // Replace with your in-memory database type
 
   final ConfigSettingsController configManager;
+  late SnackBarProvider _snackBarProvider;
 
   AuthProvider({required this.configManager});
 
@@ -21,8 +25,13 @@ class AuthProvider extends ChangeNotifier {
   String? get username => _username;
   dynamic get inMemoryDb => _inMemoryDb;
 
+  void updateSnackBarProvider(SnackBarProvider snackBarProvider) {
+    _snackBarProvider = snackBarProvider;
+  }
+
   // Login method
   Future<void> login(String username, String password) async {
+    _snackBarProvider.showMessage('decrypting database');
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -31,10 +40,9 @@ class AuthProvider extends ChangeNotifier {
       // Retrieve stored username and salt from config
       final storedUsername = await configManager.getSetting('username');
       final storedSalt = await configManager.getSetting('salt');
-
       // Validate username
       if (storedUsername != null && storedUsername != username) {
-        throw Exception('Username does not match stored username.');
+        throw IncorrectUsernameException('Username does not match stored username.');
       }
 
       // Initialize EncryptedDatabaseManager with the retrieved salt
@@ -43,12 +51,8 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         providedSalt: storedSalt,
       );
-
       // Open the encrypted database
       _inMemoryDb = await _encryptedDbManager!.open();
-
-      // Update login state
-      _isLoggedIn = true;
       _username = username;
 
       // Check and update the salt if it has changed
@@ -56,13 +60,17 @@ class AuthProvider extends ChangeNotifier {
       if (storedSalt != newSalt) {
         await configManager.setSetting('salt', newSalt);
       }
-
       // Update stored username if not already set
       if (storedUsername == null) {
         await configManager.setSetting('username', username);
       }
+
+      _isLoggedIn = true;
+      _snackBarProvider.showMessage('login successful');
     } catch (error) {
       // Handle login errors
+      if (error.runtimeType.toString() == 'IncorrectUsernameException') _snackBarProvider.showMessage('invalid username');
+      if (error.runtimeType.toString() == 'SecretBoxAuthenticationError') _snackBarProvider.showMessage('invalid password');
       _errorMessage = error.toString();
       _isLoggedIn = false;
     } finally {
@@ -73,11 +81,13 @@ class AuthProvider extends ChangeNotifier {
 
   // Logout method
   Future<void> logout() async {
+    _snackBarProvider.showMessage('cleaning up');
     _isLoading = true;
     notifyListeners();
 
     try {
       if (_encryptedDbManager != null && _inMemoryDb != null) {
+        print("AuthProvider closing up the database and logging out.");
         await _encryptedDbManager!.close(_inMemoryDb);
       }
     } catch (error) {
@@ -88,6 +98,9 @@ class AuthProvider extends ChangeNotifier {
       _inMemoryDb = null;
       _isLoading = false;
       notifyListeners();
+      _snackBarProvider.showMessage('logout successful');
     }
   }
+
+  Encrypto? get encrypto => _encryptedDbManager?.encrypto;
 }

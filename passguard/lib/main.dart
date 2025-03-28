@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'frontend/app_main.dart';
-import 'frontend/theme/theme_config.dart';
-// import 'frontend/screens/login_screen.dart';
-import 'frontend/providers/auth_provider.dart';
-import 'frontend/providers/theme_provider.dart';
-import 'backend/databaseManager/dart_sqlite.dart';
-import 'frontend/providers/settings_provider.dart';
-import 'backend/controllers/config_settings_controller.dart';
+import 'package:Encryptilock/frontend/app_main.dart';
+import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
 
+import 'package:Encryptilock/frontend/services/idle_timeout_service.dart';
+
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:Encryptilock/frontend/providers/theme_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
+
+import 'package:Encryptilock/frontend/screens/login_screen.dart';
+import 'package:Encryptilock/frontend/theme/theme_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,154 +24,76 @@ void main() async {
   settingsDb.open();
   final configManager = ConfigSettingsController(settingsDb);
 
-  // Load initial settings
-  final initialTheme = await configManager.getSetting('theme') ?? 'light';
-  final initialIdleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
-
-  // Parse borderRadius from configuration
-  final borderRadius = double.tryParse(
-        await configManager.getSetting('border_radius') ?? '${ThemeConfig.defaultBorderRadius}',
-      ) ??
-      ThemeConfig.defaultBorderRadius;
-
-  runApp(MyApp(
-    settingsDb: settingsDb,
-    configManager: configManager,
-    initialTheme: initialTheme,
-    initialIdleTimeout: initialIdleTimeout,
-    borderRadius: borderRadius,
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SnackBarProvider()),
+        ChangeNotifierProxyProvider<SnackBarProvider, AuthProvider>(
+          create: (_) => AuthProvider(configManager: configManager),
+          update: (_, snackBarProvider, authProvider) => authProvider!..updateSnackBarProvider(snackBarProvider),
+        ),
+        ChangeNotifierProvider(create: (_) => SettingsProvider(configManager)..loadSettings()),
+        ChangeNotifierProxyProvider<SettingsProvider, ThemeProvider>(
+          create: (context) {
+            final settings = Provider.of<SettingsProvider>(context, listen: false);
+            final themeData = ThemeConfig.getTheme(settings.settingsTheme);
+            return ThemeProvider(themeData);
+          },
+          update: (context, settings, themeProvider) {
+            themeProvider?.setTheme(ThemeConfig.getTheme(settings.settingsTheme));
+            return themeProvider!;
+          },
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider, IdleTimeoutService>(
+          create: (_) => IdleTimeoutService(),
+          update: (_, auth, settings, idleService) {
+            idleService ??= IdleTimeoutService();
+            idleService.configure(authProvider: auth, settingsProvider: settings);
+            return idleService;
+          },
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, PasswordProvider>(
+          create: (_) => PasswordProvider(),
+          update: (_, auth, passwordProvider) {
+            passwordProvider ??= PasswordProvider();
+            passwordProvider.updateAuthProvider(auth);
+            return passwordProvider;
+          },
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  final DartSqlite settingsDb;
-  final ConfigSettingsController configManager;
-  final String initialTheme;
-  final int initialIdleTimeout;
-  final double borderRadius;
-
-  const MyApp({
-    Key? key,
-    required this.settingsDb,
-    required this.configManager,
-    required this.initialTheme,
-    required this.initialIdleTimeout,
-    required this.borderRadius,
-  }) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => SettingsProvider(
-            configManager,
-            initialTheme: initialTheme,
-            initialIdleTimeout: initialIdleTimeout,
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(configManager: configManager),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ThemeProvider(
-            ThemeConfig.getTheme(initialTheme, borderRadius: borderRadius),
-          ),
-        ),
-      ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
-          return MaterialApp(
-            title: 'PassGuard',
-            theme: themeProvider.theme,
-            darkTheme: ThemeConfig.getTheme('dark', borderRadius: borderRadius),
-            themeMode: ThemeMode.light, // Update dynamically as needed
-            home: Consumer<AuthProvider>(
-              builder: (context, authProvider, _) {
-                return authProvider.isLoggedIn
-                    ? MainApp()
-                    : LoginScreen();
-              },
-            ),
-          );
-        },
-      ),
-    );
+    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
+      return MaterialApp(
+        title: 'Encryptilock',
+        theme: themeProvider.theme,
+        home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
+      );
+    });
   }
 }
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
+class IdleWrapper extends StatelessWidget {
+  final Widget child;
+  const IdleWrapper({Key? key, required this.child}) : super(key: key);
 
-//   // Initialize SQLite and settings manager
-//   final settingsDb = DartSqlite(dbFile: 'configsettings.db');
-//   settingsDb.open();
-//   final configManager = ConfigSettingsController(settingsDb);
+  @override
+  Widget build(BuildContext context) {
+    final idleService = Provider.of<IdleTimeoutService>(context, listen: false);
 
-//   // Load initial settings
-//   final initialTheme = await configManager.getSetting('theme') ?? 'light';
-//   final initialIdleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
-
-//   runApp(MyApp(
-//     settingsDb: settingsDb,
-//     configManager: configManager,
-//     initialTheme: initialTheme,
-//     initialIdleTimeout: initialIdleTimeout,
-//   ));
-// }
-
-// class MyApp extends StatelessWidget {
-//   final DartSqlite settingsDb;
-//   final ConfigSettingsController configManager;
-//   final String initialTheme;
-//   final int initialIdleTimeout;
-
-//   const MyApp({
-//     Key? key,
-//     required this.settingsDb,
-//     required this.configManager,
-//     required this.initialTheme,
-//     required this.initialIdleTimeout,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MultiProvider(
-//       providers: [
-//         ChangeNotifierProvider(
-//           create: (_) => SettingsProvider(
-//             configManager,
-//             initialTheme: initialTheme,
-//             initialIdleTimeout: initialIdleTimeout,
-//           ),
-//         ),
-//         ChangeNotifierProvider(
-//           create: (_) => AuthProvider(configManager: configManager),
-//         ),
-//         ChangeNotifierProvider(
-//           create: (_) => ThemeProvider(
-//             ThemeConfig.getTheme(initialTheme),
-//           ),
-//         ),
-//       ],
-//       child: Consumer<ThemeProvider>(
-//         builder: (context, themeProvider, _) {
-//           return MaterialApp(
-//             title: 'PassGuard',
-//             theme: themeProvider.theme,
-//             darkTheme: ThemeConfig.getTheme('dark'),
-//             themeMode: ThemeMode.light, // Update dynamically as needed
-//             home: Consumer<AuthProvider>(
-//               builder: (context, authProvider, _) {
-//                 return authProvider.isLoggedIn
-//                     ? MainApp()
-//                     : LoginScreen();
-//               },
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => idleService.resetTimer(),
+      onPointerMove: (_) => idleService.resetTimer(),
+      child: child,
+    );
+  }
+}

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:passguard/backend/helpers/password_generator.dart';
+import 'package:Encryptilock/backend/helpers/password_generator.dart';
 
 void main() {
   group('PasswordFactory Tests', () {
@@ -20,7 +20,6 @@ void main() {
       final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
       final hasDigit = RegExp(r'\d').hasMatch(password);
       final hasPunctuation = RegExp(r"[!@#$%^&*()_+\-=\[\]{}|;:\',<>./?]").hasMatch(password);
-
 
       expect(hasUppercase, isTrue, reason: 'Password should contain at least one uppercase letter.');
       expect(hasLowercase, isTrue, reason: 'Password should contain at least one lowercase letter.');

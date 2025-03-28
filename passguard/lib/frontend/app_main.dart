@@ -1,10 +1,25 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:passguard/frontend/screens/info_screen.dart';
-import 'package:passguard/frontend/screens/passwords_screen.dart';
-import 'package:passguard/frontend/screens/settings_screen.dart';
-import 'package:passguard/frontend/theme/theme_config.dart';
+import 'package:flutter/services.dart';
+import 'package:Encryptilock/backend/abstracts/abstract_objects.dart';
+import 'package:provider/provider.dart';
 
-class MainApp extends StatefulWidget { // TODO search for "color: " and tweak the color schemes until you find a clean match.
+// import 'package:Encryptilock/frontend/theme/theme_config.dart';
+
+import 'package:Encryptilock/frontend/providers/auth_provider.dart';
+import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:Encryptilock/frontend/providers/password_provider.dart';
+
+import 'package:Encryptilock/frontend/screens/info_screen.dart';
+import 'package:Encryptilock/frontend/screens/passwords_screen.dart';
+import 'package:Encryptilock/frontend/screens/settings_screen.dart';
+
+import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:Encryptilock/frontend/widgets/info_drawer_content.dart';
+import 'package:Encryptilock/frontend/widgets/password_list_view.dart';
+import 'package:Encryptilock/frontend/widgets/password_create_edit_page.dart';
+
+class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
 
   @override
@@ -12,35 +27,64 @@ class MainApp extends StatefulWidget { // TODO search for "color: " and tweak th
 }
 
 class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
-  int? hoveredIndex;
-  bool isPointerInsideNavRegion = false;
   late TabController _tabController;
+
+  /// Pinned index -> which tab is "locked" open.
+  /// We'll only ever pin tab #1 (Passwords).
+  int? pinnedIndex;
+
+  /// Hovered index -> which tab is hovered, if any.
+  /// We'll use 0 or 1 for Info or Passwords. We'll ignore 2 (Settings).
+  int? hoveredIndex;
+
+  bool isDrawerHovered = false;
+  Timer? _closeTimer;
 
   static const double _navRailWidth = 72;
   static const double _drawerWidth = 250;
+  static const Duration _closeDelay = Duration(milliseconds: 200);
+
+  bool get isDesktop => MediaQuery.of(context).size.width > 600;
 
   @override
   void initState() {
     super.initState();
+    // 4 tabs -> Info(0), Passwords(1), Settings(2), Logout(3)
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
+    _closeTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
 
+  int? get displayedDrawerIndex {
+    if (pinnedIndex == 1) {
+      return 1;
+    }
+    return hoveredIndex;
+  }
+
+  bool get shouldShowDrawer {
+    final di = displayedDrawerIndex;
+    // return di == 0 || di == 1;
+    return di == 1;
+  }
+
+  /// Do we shift the main content?
+  /// Only if the pinned tab is #1 (Passwords) is currently displayed.
+  bool get shouldShiftContent => pinnedIndex == 1;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDesktop = MediaQuery.of(context).size.width > 600;
-
     return Scaffold(
       appBar: isDesktop
           ? null
           : AppBar(
-              title: const Text('PassGuard'),
+              title: const Text('Encryptilock'),
               bottom: TabBar(
                 controller: _tabController,
                 tabs: const [
@@ -50,34 +94,39 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
-      body: isDesktop
-          ? Stack(
-              children: [
-                Positioned(
-                  left: _navRailWidth,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: const [
-                      InfoScreen(),
-                      PasswordsScreen(),
-                      SettingsScreen(),
-                    ],
-                  ),
-                ),
-                _buildExpandableDrawer(theme),
-                
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildNavigationRail(theme),
-                ),
-              ],
-            )
-          : TabBarView(
+      body: Stack(
+        children: [
+          // --- Desktop layout ---
+          if (isDesktop) ...[
+            Positioned(
+              left: _navRailWidth,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Padding(padding: EdgeInsets.only(), child: const InfoScreen()),
+                  Padding(padding: EdgeInsets.only(left: _drawerWidth), child: const PasswordsScreen()), // left: shouldShiftContent ? _drawerWidth : 0
+                  Padding(padding: EdgeInsets.only(), child: const SettingsScreen()),
+                ],
+              ),
+            ),
+            PermanentSnackBar(
+              // height: 30.0,
+              backgroundColor: theme.colorScheme.surface,
+            ),
+            _buildExpandableDrawer(),
+            // The nav rail pinned at left
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: _buildNavigationRail(),
+            ),
+          ] else ...[
+            // --- Mobile layout ---
+            TabBarView(
               controller: _tabController,
               children: const [
                 InfoScreen(),
@@ -85,626 +134,195 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                 SettingsScreen(),
               ],
             ),
+            PermanentSnackBar(),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _buildNavigationRail(ThemeData theme) {
-    final selectedIndex = _tabController.index;
-
-    final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
+  Widget _buildNavigationRail() {
+    final theme = Theme.of(context);
     return NavigationRail(
-      // selectedIconTheme: IconThemeData,
-      backgroundColor: theme.colorScheme.surfaceContainer,
-      selectedIndex: selectedIndex,
+      backgroundColor: theme.colorScheme.surface,
+      selectedIndex: _tabController.index,
       onDestinationSelected: (index) {
         setState(() {
-          hoveredIndex = null;
-          _tabController.animateTo(index);
+          if (index == 3) {
+            _appLogout(context);
+          } else {
+            _tabController.animateTo(index);
+            if (index == 1) {
+              pinnedIndex = 1;
+            } else {
+              pinnedIndex = null;
+            }
+            hoveredIndex = null;
+          }
         });
       },
       destinations: [
         _buildRailDestination(Icons.info, 'Info', 0),
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
+        _buildRailDestination(Icons.power_settings_new, "Logout", 3),
       ],
-      indicatorShape:BeveledRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(4))), // gives highlighted icon a rectangle shape
+      indicatorShape: const BeveledRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(4)),
+      ),
     );
   }
 
   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
     return NavigationRailDestination(
-      icon: MouseRegion(
-        onEnter: (_) {
-          setState(() {
-            hoveredIndex = index;
-            if (index != 0) isPointerInsideNavRegion = true;
-          });
-        },
-        onExit: (_) {
-          setState(() {
-            hoveredIndex = null;
-            isPointerInsideNavRegion = false;
-          });
-        },
-        child: Icon(icon, color: hoveredIndex == index ? Theme.of(context).colorScheme.primary : null),
+      icon: SizedBox(
+        width: _navRailWidth,
+        child: MouseRegion(
+          onEnter: (_) {
+            // Let all icons highlight on hover
+            _closeTimer?.cancel();
+            setState(() => hoveredIndex = index);
+          },
+          onExit: (_) {
+            _startCloseTimer();
+          },
+          child: Center(
+            child: Icon(
+              icon,
+              color: _iconColorFor(index), // see helper below
+            ),
+          ),
+        ),
       ),
       label: Text(label),
     );
   }
 
-  Widget _buildExpandableDrawer(ThemeData theme) {
-    final selectedIndex = _tabController.index;
-    final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
+  /// Helper to decide an icon’s color:
+  Color? _iconColorFor(int index) {
+    final isSelected = (_tabController.index == index);
+    final isPinned = (pinnedIndex == index);
+    final isHovered = (hoveredIndex == index);
 
+    return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
+  }
+  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+  //   return NavigationRailDestination(
+  //     icon: SizedBox(
+  //       width: _navRailWidth,
+  //       child: MouseRegion(
+  //         onEnter: (_) {
+  //           // Only hover Info(0) or Passwords(1).
+  //           // We don't do a drawer for Settings(2).
+  //           _closeTimer?.cancel();
+  //           setState(() => hoveredIndex = index);
+  //           // if (index == 1) {
+  //           //   // if (index == 0 || index == 1) {
+  //           //   _closeTimer?.cancel();
+  //           //   setState(() => hoveredIndex = index);
+  //           // }
+  //         },
+  //         onExit: (_) {
+  //           // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
+  //           // if (pinnedIndex == index) return; // Maybe necessary - test first.
+  //           _startCloseTimer();
+  //         },
+  //         child: Center(
+  //           child: Icon(
+  //             icon,
+  //             color: (pinnedIndex == index || hoveredIndex == index) ? Theme.of(context).colorScheme.primary : null,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //     label: Text(label),
+  //   );
+  // }
+
+  void _appLogout(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.logout();
+    SystemNavigator.pop();
+  }
+
+  void _startCloseTimer() {
+    _closeTimer?.cancel();
+    _closeTimer = Timer(_closeDelay, () {
+      if (!mounted) return;
+      if (!isDrawerHovered) {
+        setState(() {
+          hoveredIndex = null;
+        });
+      }
+    });
+  }
+
+  Widget _buildExpandableDrawer() {
+    final theme = Theme.of(context);
     return AnimatedPositioned(
-      duration: showDrawer ? const Duration(milliseconds: 200) : const Duration(milliseconds: 1000),
+      duration: shouldShowDrawer ? const Duration(milliseconds: 200) : const Duration(milliseconds: 800),
       curve: Curves.easeInOut,
-      left: showDrawer ? _navRailWidth+5 : -_drawerWidth,
+      left: shouldShowDrawer ? _navRailWidth + 5 : _navRailWidth - _drawerWidth,
       top: 0,
       bottom: 0,
       width: _drawerWidth,
-      child: Material(
-        elevation: 4,
-        color: theme.colorScheme.surface,
-        child: showDrawer
-            ? Container(
-              padding: EdgeInsets.fromLTRB(3, 5, 3, 5),
-                // color: theme.colorScheme.primary,
-                foregroundDecoration: BoxDecoration(
-                  border: Border(left: BorderSide(color: theme.colorScheme.primary.withOpacity(0.1), width:5))
-                ),
-                child: _buildDrawerContent(hoveredIndex!, theme),
-              )
-            : const SizedBox.shrink(),
+      child: MouseRegion(
+        onEnter: (_) {
+          _closeTimer?.cancel();
+          setState(() => isDrawerHovered = true);
+        },
+        onExit: (_) {
+          setState(() => isDrawerHovered = false);
+          _startCloseTimer();
+        },
+        child: Material(
+          elevation: 4,
+          color: theme.colorScheme.surface,
+          child: shouldShowDrawer && displayedDrawerIndex != null
+              ? Container(
+                  padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
+                  foregroundDecoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+                  child: _buildDrawerContent(displayedDrawerIndex!, theme),
+                )
+              : const SizedBox.shrink(),
+        ),
       ),
     );
   }
 
-  // Widget _buildExpandableDrawer(ThemeData theme) {
-  //   final selectedIndex = _tabController.index;
-  //   final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
-
-  //   return AnimatedPositioned(
-  //     duration: showDrawer ? const Duration(milliseconds: 200) : const Duration(milliseconds: 1000),
-  //     curve: Curves.easeInOut,
-  //     left: showDrawer ? _navRailWidth : -_drawerWidth,
-  //     top: 0,
-  //     bottom: 0,
-  //     width: _drawerWidth,
-  //     child: Material(
-  //       elevation: 4,
-  //       color: theme.colorScheme.surfaceDim,
-  //       child: showDrawer
-  //           ? _buildDrawerContent(hoveredIndex!, theme)
-  //           : const SizedBox.shrink(),
-  //     ),
-  //   );
-  // }
-
+  /// We only build drawer content for Info(0) and Passwords(1).
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
+      // case 0:
+      //   // Info drawer content
+      //   return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
       case 1:
+        // Password drawer content
         return _buildPasswordsDrawerContent(theme);
-      case 2:
-        return _buildSettingsDrawerContent(theme);
       default:
         return const SizedBox.shrink();
     }
   }
 
   Widget _buildPasswordsDrawerContent(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Search Passwords',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
-            ),
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => ListTile(
-              leading: SizedBox(
-                width: 24,
-                child: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-              ),
-              title: Text('Password $index'),
-              onTap: () {},
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsDrawerContent(ThemeData theme) {
-    return Column(
-      children: [
-        ListTile(
-          title: const Text('Toggle Dark Mode'),
-          trailing: Switch(
-            value: false,
-            onChanged: (val) {},
-          ),
-        ),
-        ListTile(
-          title: const Text('Idle Timeout'),
-          subtitle: const Text('5 minutes'),
-          onTap: () {},
-        ),
-      ],
+    return PasswordListView(
+      onItemSelected: (int itemSelect) {
+        // itemSelect of 0 == a password list item was selected, just open the passwordScreen.
+        // itemSelect of 1 == the Create new password button was selected.
+        pinnedIndex = 1;
+        _tabController.index = 1;
+        if (itemSelect == 1) {
+          final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+          passwordProvider.setMode('create');
+        }
+      },
     );
   }
 }
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainApp()),
-            );
-          },
-          child: const Text('Login'),
-        ),
-      ),
-    );
-  }
-}
-
-// import 'package:flutter/material.dart';
-// import 'package:passguard/frontend/screens/info_screen.dart';
-// import 'package:passguard/frontend/screens/passwords_screen.dart';
-// import 'package:passguard/frontend/screens/settings_screen.dart';
-
-// class MainApp extends StatefulWidget {
-//   const MainApp({Key? key}) : super(key: key);
-
-//   @override
-//   State<MainApp> createState() => _MainAppState();
-// }
-
-// class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
-//   int? hoveredIndex;
-//   bool isPointerInsideNavRegion = false;
-//   late TabController _tabController;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _tabController = TabController(length: 3, vsync: this);
-//   }
-
-//   @override
-//   void dispose() {
-//     _tabController.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-//     final isDesktop = MediaQuery.of(context).size.width > 600;
-
-//     return Scaffold(
-//       appBar: isDesktop
-//           ? null
-//           : AppBar(
-//               title: const Text('PassGuard'),
-//               bottom: TabBar(
-//                 controller: _tabController,
-//                 tabs: const [
-//                   Tab(icon: Icon(Icons.info), text: 'Info'),
-//                   Tab(icon: Icon(Icons.lock), text: 'Passwords'),
-//                   Tab(icon: Icon(Icons.settings), text: 'Settings'),
-//                 ],
-//               ),
-//             ),
-//       body: isDesktop
-//           ? Stack(
-//               children: [
-//                 Row(
-//                   children: [
-//                     _buildNavigationRail(),
-//                     Expanded(
-//                       child: TabBarView(
-//                         controller: _tabController,
-//                         children: const [
-//                           InfoScreen(),
-//                           PasswordsScreen(),
-//                           SettingsScreen(),
-//                         ],
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//                 _buildExpandableDrawer(theme),
-//               ],
-//             )
-//           : TabBarView(
-//               controller: _tabController,
-//               children: const [
-//                 InfoScreen(),
-//                 PasswordsScreen(),
-//                 SettingsScreen(),
-//               ],
-//             ),
-//     );
-//   }
-
-//   Widget _buildNavigationRail() {
-//     final selectedIndex = _tabController.index;
-
-//     return NavigationRail(
-//       selectedIndex: selectedIndex,
-//       onDestinationSelected: (index) {
-//         setState(() {
-//           hoveredIndex = null;
-//           _tabController.animateTo(index);
-//         });
-//       },
-//       destinations: [
-//         _buildRailDestination(Icons.info, 'Info', 0),
-//         _buildRailDestination(Icons.lock, 'Passwords', 1),
-//         _buildRailDestination(Icons.settings, 'Settings', 2),
-//       ],
-//     );
-//   }
-
-//   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-//     return NavigationRailDestination(
-//       icon: MouseRegion(
-//         onEnter: (_) {
-//           print('Hovered over icon $index');
-//           setState(() { 
-//             hoveredIndex = index;
-//             if (index !=0) isPointerInsideNavRegion = true; // if hovering Info page, we don't want a navdrawer on Info.
-//           });
-//         },
-//         onExit: (_) {
-//           print('Exited icon $index');
-//           if (isPointerInsideNavRegion) {
-//             setState(() { 
-//               isPointerInsideNavRegion = false;
-//               hoveredIndex = null;
-//             });
-//           }
-//         },
-//         child: Icon(icon, color: hoveredIndex == index ? Theme.of(context).colorScheme.primary : null),
-//       ),
-//       label: Text(label),
-//     );
-//   }
-
-//   Widget _buildExpandableDrawer(ThemeData theme) {
-//     final selectedIndex = _tabController.index;
-//     final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
-
-//     return AnimatedPositioned( // TODO RESOLVE THIS OVERLAY ISSUE!
-//       duration: const Duration(milliseconds: 600),
-//       curve: Curves.easeInOut,
-//       left: showDrawer ? 72 : -250,
-//       top: 0,
-//       bottom: 0,
-//       width: 250,
-//       child: Material(
-//         elevation: 4,
-//         color: theme.colorScheme.surface,
-//         child: showDrawer
-//             ? _buildDrawerContent(hoveredIndex!, theme)
-//             : const SizedBox.shrink(),
-//       ),
-//     );
-//   }
-
-//   Widget _buildDrawerContent(int index, ThemeData theme) {
-//     switch (index) {
-//       case 1:
-//         return _buildPasswordsDrawerContent(theme);
-//       case 2:
-//         return _buildSettingsDrawerContent(theme);
-//       default:
-//         return const SizedBox.shrink();
-//     }
-//   }
-
-//   Widget _buildPasswordsDrawerContent(ThemeData theme) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Padding(
-//           padding: const EdgeInsets.all(8.0),
-//           child: TextField(
-//             decoration: InputDecoration(
-//               labelText: 'Search Passwords',
-//               border: OutlineInputBorder(
-//                 borderRadius: BorderRadius.circular(4.0),
-//               ),
-//               prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
-//             ),
-//           ),
-//         ),
-//         Expanded(
-//           child: ListView.builder(
-//             itemCount: 5,
-//             itemBuilder: (context, index) => ListTile(
-//               leading: SizedBox(
-//                 width: 24,
-//                 child: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-//               ),
-//               title: Text('Password $index'),
-//               onTap: () {},
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-
-//   Widget _buildSettingsDrawerContent(ThemeData theme) {
-//     return Column(
-//       children: [
-//         ListTile(
-//           title: const Text('Toggle Dark Mode'),
-//           trailing: Switch(
-//             value: false,
-//             onChanged: (val) {},
-//           ),
-//         ),
-//         ListTile(
-//           title: const Text('Idle Timeout'),
-//           subtitle: const Text('5 minutes'),
-//           onTap: () {},
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-// class LoginScreen extends StatelessWidget {
-//   const LoginScreen({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Login')),
-//       body: Center(
-//         child: ElevatedButton(
-//           onPressed: () {
-//             Navigator.pushReplacement(
-//               context,
-//               MaterialPageRoute(builder: (context) => const MainApp()),
-//             );
-//           },
-//           child: const Text('Login'),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-// --------------------------------------- STABLE BELOW , VISUALLY BETTER ABOVE.
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-// import 'package:flutter/material.dart';
-// import 'package:passguard/frontend/screens/passwords_screen.dart';
-// import 'package:passguard/frontend/screens/settings_screen.dart';
-// import 'package:passguard/frontend/screens/info_screen.dart';
-// import 'package:passguard/frontend/widgets/password_list_view.dart'; // Import PasswordListView
-
-// class MainApp extends StatefulWidget {
-//   const MainApp({Key? key}) : super(key: key);
-
-//   @override
-//   State<MainApp> createState() => _MainAppState();
-// }
-
-// class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
-//   int? hoveredIndex;
-//   bool isPointerInsideNavRegion = false;
-//   late TabController _tabController;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _tabController = TabController(length: navItems.length, vsync: this);
-//   }
-
-//   @override
-//   void dispose() {
-//     _tabController.dispose();
-//     super.dispose();
-//   }
-
-//   final List<_NavItem> navItems = const [
-//     _NavItem(label: 'Info', icon: Icons.info),
-//     _NavItem(label: 'Passwords', icon: Icons.lock),
-//     _NavItem(label: 'Settings', icon: Icons.settings),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-//     final isDesktop = MediaQuery.of(context).size.width > 600;
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('PassGuard'),
-//         bottom: isDesktop
-//             ? null
-//             : TabBar(
-//                 controller: _tabController,
-//                 tabs: navItems.map((item) {
-//                   return Tab(icon: Icon(item.icon), text: item.label);
-//                 }).toList(),
-//               ),
-//       ),
-//       body: isDesktop
-//           ? Row(
-//               children: [
-//                 MouseRegion(
-//                   onEnter: (_) {
-//                     setState(() => isPointerInsideNavRegion = true);
-//                   },
-//                   onExit: (_) {
-//                     setState(() {
-//                       isPointerInsideNavRegion = false;
-//                       hoveredIndex = null;
-//                     });
-//                   },
-//                   child: Row(
-//                     mainAxisSize: MainAxisSize.min,
-//                     children: [
-//                       _buildNavRail(),
-//                       _buildVerticalDivider(theme),
-//                       _buildExpandableDrawer(theme),
-//                     ],
-//                   ),
-//                 ),
-//                 Expanded(
-//                   child: TabBarView(
-//                     controller: _tabController,
-//                     children: const [
-//                       InfoScreen(),
-//                       PasswordsScreen(),
-//                       SettingsScreen(),
-//                     ],
-//                   ),
-//                 ),
-//               ],
-//             )
-//           : TabBarView(
-//               controller: _tabController,
-//               children: const [
-//                 InfoScreen(),
-//                 PasswordsScreen(),
-//                 SettingsScreen(),
-//               ],
-//             ),
-//     );
-//   }
-
-//   Widget _buildNavRail() {
-//     final selectedIndex = _tabController.index;
-
-//     return NavigationRail(
-//       selectedIndex: selectedIndex,
-//       onDestinationSelected: (index) {
-//         setState(() {
-//           hoveredIndex = null;
-//           _tabController.animateTo(index);
-//         });
-//       },
-//       destinations: navItems.asMap().entries.map((entry) {
-//         final i = entry.key;
-//         final item = entry.value;
-//         return NavigationRailDestination(
-//           icon: MouseRegion(
-//             onEnter: (_) => setState(() => hoveredIndex = i),
-//             onExit: (_) {},
-//             child: Icon(item.icon),
-//           ),
-//           label: Text(item.label),
-//         );
-//       }).toList(),
-//     );
-//   }
-
-//   Widget _buildVerticalDivider(ThemeData theme) {
-//     final selectedIndex = _tabController.index;
-//     final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
-//     return VerticalDivider(
-//       width: showDrawer ? 1 : 0,
-//       thickness: 1,
-//       color: theme.dividerColor,
-//     );
-//   }
-
-//   Widget _buildExpandableDrawer(ThemeData theme) {
-//     final selectedIndex = _tabController.index;
-//     final showDrawer = hoveredIndex != null && hoveredIndex != selectedIndex && isPointerInsideNavRegion;
-
-//     return AnimatedContainer(
-//       duration: const Duration(milliseconds: 400),
-//       curve: Curves.easeInOut,
-//       width: showDrawer ? 250 : 0,
-//       color: theme.colorScheme.surface,
-//       child: showDrawer ? _buildDrawerContent(hoveredIndex!, theme) : const SizedBox.shrink(),
-//     );
-//   }
-
-//   Widget _buildDrawerContent(int index, ThemeData theme) {
-//     switch (index) {
-//       case 1:
-//         return _buildPasswordsDrawerContent(theme);
-//       case 2:
-//         return _buildSettingsDrawerContent(theme);
-//       default:
-//         return const SizedBox.shrink();
-//     }
-//   }
-
-//   Widget _buildPasswordsDrawerContent(ThemeData theme) {
-//     final dummyEntries = List.generate(
-//       10,
-//       (i) => PasswordEntry(
-//         id: i.toString(),
-//         service: 'Service $i',
-//         serviceType: 'Type $i',
-//         username: 'User $i',
-//         creationDate: '2023-12-${i + 1}',
-//       ),
-//     );
-
-//     return PasswordListView(
-//       passwordEntries: dummyEntries,
-//       onEntryTap: (entry) {
-//         debugPrint('Tapped on: ${entry.service}');
-//       },
-//     );
-//   }
-
-//   Widget _buildSettingsDrawerContent(ThemeData theme) {
-//     return SingleChildScrollView(
-//       child: Column(
-//         children: [
-//           ListTile(
-//             title: const Text('Toggle Dark Mode'),
-//             trailing: Switch(
-//               value: false,
-//               onChanged: (val) {},
-//             ),
-//           ),
-//           ListTile(
-//             title: const Text('Idle Timeout'),
-//             subtitle: const Text('5 minutes'),
-//             onTap: () {},
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class _NavItem {
-//   final String label;
-//   final IconData icon;
-//   const _NavItem({required this.label, required this.icon});
-// }

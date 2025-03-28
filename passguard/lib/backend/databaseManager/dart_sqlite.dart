@@ -5,8 +5,8 @@ import 'package:sqlite3/sqlite3.dart';
 /// A consolidated class that wraps [sqlite3] for easy database operations,
 /// including table creation, inserts, upserts, batch operations, etc.
 class DartSqlite {
-  final String dbFile;        // Path to the DB file; use ':memory:' for in-memory
-  Database? _db;              // The underlying sqlite3 Database
+  final String dbFile; // Path to the DB file; use ':memory:' for in-memory
+  Database? _db; // The underlying sqlite3 Database
   bool _isOpen = false;
 
   DartSqlite({
@@ -42,7 +42,7 @@ class DartSqlite {
   // ---------------------------------------------------------------------------
   //   CREATE TABLE
   // ---------------------------------------------------------------------------
-  
+
   /// Creates a table if it doesn't exist, with the given schema.
   /// Example:
   /// ```
@@ -151,7 +151,10 @@ class DartSqlite {
 
     final setClause = values.keys.map((col) => '$col = ?').join(', ');
     final sql = 'UPDATE $table SET $setClause WHERE $whereClause';
-    final params = [...values.values, ...whereArgs];
+    final params = [
+      ...values.values,
+      ...whereArgs
+    ];
 
     final stmt = _db!.prepare(sql);
     try {
@@ -171,7 +174,7 @@ class DartSqlite {
   void upsert(String table, Map<String, dynamic> values, List<String> conflictColumns) {
     _checkOpen();
     if (values.isEmpty) return;
-
+    print("DartSqlite: upsert executed");
     final columns = values.keys.toList();
     final placeholders = List.filled(columns.length, '?').join(', ');
     final conflictClause = conflictColumns.join(', ');
@@ -180,9 +183,7 @@ class DartSqlite {
     final updateCols = columns.where((c) => !conflictColumns.contains(c)).toList();
     final updateAssignments = updateCols.map((c) => '$c=excluded.$c').join(', ');
 
-    final doUpdateOrNothing = updateAssignments.isNotEmpty
-        ? 'DO UPDATE SET $updateAssignments'
-        : 'DO NOTHING';
+    final doUpdateOrNothing = updateAssignments.isNotEmpty ? 'DO UPDATE SET $updateAssignments' : 'DO NOTHING';
 
     final sql = '''
       INSERT INTO $table (${columns.join(', ')})
@@ -190,7 +191,7 @@ class DartSqlite {
       ON CONFLICT($conflictClause)
       $doUpdateOrNothing
     ''';
-
+    print("DartSqlite: sql generated: $sql");
     final stmt = _db!.prepare(sql);
     try {
       stmt.execute(values.values.toList());
@@ -259,7 +260,7 @@ class DartSqlite {
     }
     return rows;
   }
-  
+
   Database get database {
     if (_db == null) {
       throw Exception("Database has not been initialized");

@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
-import 'package:passguard/backend/devsec/encrypto.dart';
-import 'package:passguard/backend/devsec/key_generator.dart';
-import 'package:passguard/backend/databaseManager/dart_sqlite.dart';
+import 'package:Encryptilock/backend/devsec/encrypto.dart';
+import 'package:Encryptilock/backend/devsec/key_generator.dart';
+import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
 
 class EncryptedDatabaseManager {
   final String dbPath; // Path to the encrypted DB on disk
@@ -97,4 +97,5 @@ class EncryptedDatabaseManager {
 
   /// Getter to access the current salt used in the encryption key.
   String get currentSalt => _currentSalt;
+  Encrypto get encrypto => _encrypto;
 }
