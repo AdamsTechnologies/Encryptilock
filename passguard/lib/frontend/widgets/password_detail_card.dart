@@ -111,21 +111,70 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
 
   void _openUrl(BuildContext context, String url) async {
     if (url.isEmpty) return;
-    final uri = Uri.tryParse(url);
+
+    // Normalize the URL
+    String normalizedUrl = _normalizeUrl(url);
+
+    // Try parsing the normalized URL
+    final uri = Uri.tryParse(normalizedUrl);
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invalid URL: $url')),
       );
       return;
     }
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open URL: $url')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open URL: $url')),
+        SnackBar(content: Text('Error opening URL: ${e.toString()}')),
       );
     }
   }
+
+  // Helper function to normalize URLs
+  String _normalizeUrl(String url) {
+    // Trim whitespace
+    url = url.trim();
+
+    // If no scheme is present, add https://
+    if (!url.contains('://')) {
+      // Check if it starts with www.
+      if (url.startsWith('www.')) {
+        url = 'https://$url';
+      }
+      // If it doesn't start with www., add https://
+      else {
+        url = 'https://$url';
+      }
+    }
+
+    return url;
+  }
+  // void _openUrl(BuildContext context, String url) async {
+  //   if (url.isEmpty) return;
+  //   final uri = Uri.tryParse(url);
+  //   if (uri == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Invalid URL: $url')),
+  //     );
+  //     return;
+  //   }
+  //   if (await canLaunchUrl(uri)) {
+  //     await launchUrl(uri);
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Could not open URL: $url')),
+  //     );
+  //   }
+  // }
 
   /// Handles the delete action. If "Do Not Ask Before Deleting" is true,
   /// it deletes immediately. Otherwise, shows a small confirmation prompt.
