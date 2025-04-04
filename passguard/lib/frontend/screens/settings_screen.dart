@@ -154,26 +154,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
 
             // Rewritten to use DropdownMenu (M3) instead of DropdownButtonFormField
-            DropdownMenu<String>(
-              width: double.infinity,
-              initialSelection: currentThemeName,
-              label: const Text('Select Theme'),
-              // "Entries" is how we define each menu item in the new widget
-              dropdownMenuEntries: ThemeConfig.themes.map((themeName) {
-                return DropdownMenuEntry(
-                  value: themeName,
-                  label: themeName,
-                );
-              }).toList(),
-              onSelected: (selectedName) {
-                if (selectedName != null) {
-                  final newTheme = ThemeConfig.getTheme(selectedName);
-                  themeProvider.setTheme(newTheme);
-                  settingsProvider.updateTheme(selectedName);
-                  context.read<SnackBarProvider>().showMessage('Theme updated to $selectedName');
-                }
-              },
-            ),
+            Container(
+              width: double.infinity, // Takes full width of parent
+              child: DropdownButtonFormField<String>(
+                value: currentThemeName,
+                decoration: InputDecoration(
+                  labelText: 'Select Theme',
+                  // This ensures the dropdown matches parent width
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                // This is critical - it controls the dropdown items width
+                isExpanded: true,
+                // This controls the alignment of the dropdown list
+                alignment: AlignmentDirectional.centerStart,
+                // Optional: customize the button
+                icon: Icon(Icons.arrow_drop_down),
+                // Optional: customize dropdown
+                dropdownColor: Theme.of(context).colorScheme.surface,
+                // Map your theme items
+                items: ThemeConfig.themes.map((themeName) {
+                  return DropdownMenuItem<String>(
+                    value: themeName,
+                    child: Text(themeName),
+                  );
+                }).toList(),
+                onChanged: (selectedName) {
+                  if (selectedName != null) {
+                    final newTheme = ThemeConfig.getTheme(selectedName);
+                    themeProvider.setTheme(newTheme);
+                    settingsProvider.updateTheme(selectedName);
+                    context.read<SnackBarProvider>().showMessage('Theme updated to $selectedName');
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
