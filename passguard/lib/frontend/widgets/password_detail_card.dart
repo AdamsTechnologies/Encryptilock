@@ -158,23 +158,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
 
     return url;
   }
-  // void _openUrl(BuildContext context, String url) async {
-  //   if (url.isEmpty) return;
-  //   final uri = Uri.tryParse(url);
-  //   if (uri == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Invalid URL: $url')),
-  //     );
-  //     return;
-  //   }
-  //   if (await canLaunchUrl(uri)) {
-  //     await launchUrl(uri);
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Could not open URL: $url')),
-  //     );
-  //   }
-  // }
 
   /// Handles the delete action. If "Do Not Ask Before Deleting" is true,
   /// it deletes immediately. Otherwise, shows a small confirmation prompt.
@@ -220,22 +203,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // return Consumer<PasswordProvider>(
-    //   builder: (ctx, passwordProv, _) {
-    //     final selected = passwordProv.selectedPassword;
-
-    //     // If no password is selected, show a simple placeholder
-    //     if (selected == null) {
-    //       return Center(
-    //         child: Padding(
-    //           padding: const EdgeInsets.all(16.0),
-    //           child: Text(
-    //             "No password selected",
-    //             style: theme.textTheme.bodyMedium,
-    //           ),
-    //         ),
-    //       );
-    //     }
     return Consumer3<PasswordProvider, SettingsProvider, SnackBarProvider>(
       builder: (ctx, passwordProv, settingsProv, snackbarProv, _) {
         final selected = passwordProv.selectedPassword;

@@ -442,7 +442,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                         ),
                       ),
                       // Add extra spacing between Delete and the other buttons
-                      const SizedBox(width: 32.0),
+                      SizedBox(width: MediaQuery.of(context).size.width < 800 ? 8.0 : 32.0),
                     ],
 
                     // Cancel Button
