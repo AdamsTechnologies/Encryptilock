@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:Encryptilock/frontend/widgets/bottom_action_bar.dart';
 import 'package:Encryptilock/frontend/providers/password_provider.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
 import 'package:Encryptilock/frontend/providers/settings_provider.dart';
@@ -463,41 +464,50 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 20.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isEditMode) ...[
-                      ElevatedButton.icon(
-                        onPressed: _deletePassword,
-                        icon: const Icon(Icons.delete, color: Colors.white),
-                        label: const Text('Delete', style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                        ),
-                      ),
-                      SizedBox(width: MediaQuery.of(context).size.width < 800 ? 8.0 : 32.0),
-                    ],
-                    ElevatedButton(
-                      onPressed: () {
-                        widget.onCancel?.call();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                      ),
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: 4.0),
-                    ElevatedButton(
-                      onPressed: _savePassword,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                      ),
-                      child: Text(isEditMode ? 'Update' : 'Save'),
-                    ),
-                  ],
+                BottomActionBar(
+                  isEditMode: isEditMode,
+                  showDeleteButton: isEditMode,
+                  onCancel: widget.onCancel ?? () {},
+                  onDelete: _deletePassword,
+                  onSave: _savePassword,
+                  style: BottomActionBarStyle.iconOnly, // Or iconWithText
                 ),
+                const SizedBox(height: 8.0),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.end,
+                //   children: [
+                //     if (isEditMode) ...[
+                //       ElevatedButton.icon(
+                //         onPressed: _deletePassword,
+                //         icon: const Icon(Icons.delete, color: Colors.white),
+                //         label: const Text('Delete', style: TextStyle(color: Colors.white)),
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: Colors.red,
+                //           foregroundColor: Colors.white,
+                //           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                //         ),
+                //       ),
+                //       SizedBox(width: MediaQuery.of(context).size.width < 800 ? 8.0 : 32.0),
+                //     ],
+                //     ElevatedButton(
+                //       onPressed: () {
+                //         widget.onCancel?.call();
+                //       },
+                //       style: ElevatedButton.styleFrom(
+                //         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                //       ),
+                //       child: const Text('Cancel'),
+                //     ),
+                //     const SizedBox(width: 4.0),
+                //     ElevatedButton(
+                //       onPressed: _savePassword,
+                //       style: ElevatedButton.styleFrom(
+                //         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                //       ),
+                //       child: Text(isEditMode ? 'Update' : 'Save'),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           )),

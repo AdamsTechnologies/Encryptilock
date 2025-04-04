@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:Encryptilock/frontend/widgets/bottom_action_bar.dart';
 import 'package:Encryptilock/frontend/providers/password_provider.dart';
 import 'package:Encryptilock/frontend/providers/settings_provider.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
@@ -379,31 +380,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                         maxLines: 1, // Prevents wrapping to a new line
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min, // Ensures buttons only take the space they need
-                      children: [
-                        if (settingsProv.showDeleteButtonMainView)
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: theme.colorScheme.error,
-                            tooltip: 'Delete',
-                            onPressed: () {
-                              _onDeletePassword(context, passwordId);
-                            },
-                          ),
-                        const SizedBox(width: 32.0),
-                        IconButton(
-                          icon: Icon(Icons.edit, color: theme.colorScheme.primary),
-                          tooltip: 'Edit',
-                          onPressed: widget.onEdit,
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.close, color: theme.colorScheme.error),
-                          tooltip: 'Close',
-                          onPressed: widget.onClose,
-                        ),
-                      ],
-                    ),
                   ],
                 ),
 
@@ -450,6 +426,14 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                       ),
                     ),
                   ],
+                ),
+                BottomActionBar(
+                  isEditMode: false,
+                  showDeleteButton: settingsProv.showDeleteButtonMainView,
+                  onCancel: widget.onClose,
+                  onEdit: widget.onEdit,
+                  onDelete: settingsProv.showDeleteButtonMainView ? () => _onDeletePassword(context, passwordId) : null,
+                  style: BottomActionBarStyle.iconOnly,
                 ),
               ],
             ),

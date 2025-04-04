@@ -105,7 +105,7 @@ class PasswordsScreen extends StatelessWidget {
         }
         return PasswordCreationEditPage(
           existingRecord: selected,
-          onCancel: () => passwordProv.setMode('detail'),
+          onCancel: () => passwordProv.setMode('list'),
           onSaveComplete: (updatedId) {
             passwordProv.selectPasswordId(updatedId);
             passwordProv.setMode('detail'); // Remain in detail view after editing
