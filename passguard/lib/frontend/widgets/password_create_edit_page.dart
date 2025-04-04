@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +41,9 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final Set<String> _clearedFields = {};
+  final Map<String, String> _originalValues = {};
+  Timer? _hidePasswordTimer;
+  bool _passwordVisible = false;
   bool _isActive = true;
   bool _obscurePassword = true; // Controls password visibility
   bool _isDecrypting = false; // Tracks if decryption is in progress
@@ -69,6 +74,10 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
 
   @override
   void dispose() {
+    _hidePasswordTimer?.cancel();
+    _decryptedPassword = null;
+    _passwordController.clear();
+
     _serviceNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
@@ -77,21 +86,34 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
     _noteController.dispose();
     super.dispose();
   }
+  // @override
+  // void dispose() {
+  //   _serviceNameController.dispose();
+  //   _usernameController.dispose();
+  //   _passwordController.dispose();
+  //   _serviceTypeController.dispose();
+  //   _urlController.dispose();
+  //   _noteController.dispose();
+  //   super.dispose();
+  // }
 
   /// Decrypts the existing password in edit mode and prepares it for secure display.
+  ///
   Future<void> _decryptExistingPassword() async {
     final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
     final encryptedPassword = widget.existingRecord?['password'] ?? '';
 
     setState(() => _isDecrypting = true);
-
+    _showSnackBar('temporarily decrypting password'); // TODO remove if needed
     try {
-      final decryptedPassword = await passwordProvider.decryptPassword(encryptedPassword);
-      if (decryptedPassword.isNotEmpty) {
+      final decrypted = await passwordProvider.decryptPassword(encryptedPassword);
+      if (decrypted.isNotEmpty) {
         setState(() {
-          _decryptedPassword = decryptedPassword;
-          _passwordController.text = decryptedPassword; // Keep decrypted password
-          _passwordChanged = false; // Password not changed yet
+          _decryptedPassword = decrypted;
+          _passwordChanged = false;
+          if (!_passwordVisible) {
+            _passwordController.text = '••••••••••';
+          }
         });
       } else {
         _showSnackBar('Failed to decrypt the password.');
@@ -102,6 +124,29 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       setState(() => _isDecrypting = false);
     }
   }
+  // Future<void> _decryptExistingPassword() async {
+  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+  //   final encryptedPassword = widget.existingRecord?['password'] ?? '';
+
+  //   setState(() => _isDecrypting = true);
+
+  //   try {
+  //     final decryptedPassword = await passwordProvider.decryptPassword(encryptedPassword);
+  //     if (decryptedPassword.isNotEmpty) {
+  //       setState(() {
+  //         _decryptedPassword = decryptedPassword;
+  //         _passwordController.text = decryptedPassword; // Keep decrypted password
+  //         _passwordChanged = false; // Password not changed yet
+  //       });
+  //     } else {
+  //       _showSnackBar('Failed to decrypt the password.');
+  //     }
+  //   } catch (e) {
+  //     _showSnackBar('Error decrypting password: $e');
+  //   } finally {
+  //     setState(() => _isDecrypting = false);
+  //   }
+  // }
 
   /// If "Auto-Generate & Fill" is OFF, open the password dialog.
   /// Otherwise, generate a password directly using defaults or user-defined settings.
@@ -153,10 +198,41 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
 
   /// Toggles the visibility of the password field.
   void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
+    if (_passwordVisible) {
+      // Hide and clear
+      setState(() {
+        _obscurePassword = true;
+        _passwordVisible = false;
+        _passwordController.text = '••••••••••';
+      });
+      _hidePasswordTimer?.cancel();
+    } else {
+      // Show decrypted for 10 seconds
+      if (_decryptedPassword != null) {
+        setState(() {
+          _obscurePassword = false;
+          _passwordVisible = true;
+          _passwordController.text = _decryptedPassword!;
+        });
+
+        _hidePasswordTimer?.cancel();
+        _hidePasswordTimer = Timer(const Duration(seconds: 10), () {
+          setState(() {
+            _obscurePassword = true;
+            _passwordVisible = false;
+            _passwordController.text = '••••••••••';
+          });
+        });
+      } else {
+        _showSnackBar('Password not yet decrypted.');
+      }
+    }
   }
+  // void _togglePasswordVisibility() {
+  //   setState(() {
+  //     _obscurePassword = !_obscurePassword;
+  //   });
+  // }
 
   /// Displays a SnackBar with the provided message.
   void _showSnackBar(String message) {
@@ -168,23 +244,31 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+    final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
+
     String passwordToSave;
     bool passwordChanged = _passwordChanged;
 
+    final maskedValue = '••••••••••';
+    final controllerText = _passwordController.text.trim();
+
+    // If the field still contains the masked value, we treat it as "not changed"
+    final isMasked = controllerText == maskedValue;
+
     if (isEditMode) {
-      if (passwordChanged) {
+      if (passwordChanged && _decryptedPassword != null) {
         passwordToSave = _decryptedPassword!;
-      } else if (_decryptedPassword != _passwordController.text) {
-        // If user manually typed a new password, mark as changed
+      } else if (!isMasked && _decryptedPassword != controllerText) {
+        // User typed something new manually
         passwordChanged = true;
-        passwordToSave = _passwordController.text;
+        passwordToSave = controllerText;
       } else {
-        // No changes => keep the existing encrypted password
+        // No change, use existing encrypted password
         passwordToSave = widget.existingRecord!['password'];
       }
     } else {
       // In creation mode
-      passwordToSave = _passwordController.text;
+      passwordToSave = controllerText;
     }
 
     // Build the data map
@@ -199,9 +283,9 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       'isactive': _isActive ? 1 : 0, // isactive stored as int
     };
 
-    final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
     try {
       String newOrUpdatedId;
+
       if (isEditMode) {
         snackbarProvider.showMessage("Updating password");
         data['id'] = widget.existingRecord!['id'];
@@ -216,17 +300,12 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
           data,
           passwordChanged: true, // Always encrypt on creation
         );
-        // The new ID is presumably in passwordProvider.passwords.last
         newOrUpdatedId = passwordProvider.passwords.last['id'] as String;
       }
 
-      // Call the onSaveComplete callback if provided
       widget.onSaveComplete?.call(newOrUpdatedId);
-
-      // Select the updated password to refresh detail cards if you use them
       passwordProvider.selectPasswordId(newOrUpdatedId);
 
-      // Clear the decrypted password from memory
       setState(() {
         _decryptedPassword = null;
         _passwordChanged = false;
@@ -236,6 +315,78 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       snackbarProvider.showMessage("Error saving password: $e");
     }
   }
+  // Future<void> _savePassword() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+  //   String passwordToSave;
+  //   bool passwordChanged = _passwordChanged;
+
+  //   if (isEditMode) {
+  //     if (passwordChanged) {
+  //       passwordToSave = _decryptedPassword!;
+  //     } else if (_decryptedPassword != _passwordController.text) {
+  //       // If user manually typed a new password, mark as changed
+  //       passwordChanged = true;
+  //       passwordToSave = _passwordController.text;
+  //     } else {
+  //       // No changes => keep the existing encrypted password
+  //       passwordToSave = widget.existingRecord!['password'];
+  //     }
+  //   } else {
+  //     // In creation mode
+  //     passwordToSave = _passwordController.text;
+  //   }
+
+  //   // Build the data map
+  //   final data = {
+  //     'id': widget.existingRecord?['id'],
+  //     'service': _serviceNameController.text,
+  //     'username': _usernameController.text,
+  //     'password': passwordToSave,
+  //     'servicetype': _serviceTypeController.text,
+  //     'url': _urlController.text,
+  //     'notes': _noteController.text,
+  //     'isactive': _isActive ? 1 : 0, // isactive stored as int
+  //   };
+
+  //   final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
+  //   try {
+  //     String newOrUpdatedId;
+  //     if (isEditMode) {
+  //       snackbarProvider.showMessage("Updating password");
+  //       data['id'] = widget.existingRecord!['id'];
+  //       await passwordProvider.addOrUpdatePassword(
+  //         data,
+  //         passwordChanged: passwordChanged,
+  //       );
+  //       newOrUpdatedId = data['id'] as String;
+  //     } else {
+  //       snackbarProvider.showMessage("Creating password");
+  //       await passwordProvider.addOrUpdatePassword(
+  //         data,
+  //         passwordChanged: true, // Always encrypt on creation
+  //       );
+  //       // The new ID is presumably in passwordProvider.passwords.last
+  //       newOrUpdatedId = passwordProvider.passwords.last['id'] as String;
+  //     }
+
+  //     // Call the onSaveComplete callback if provided
+  //     widget.onSaveComplete?.call(newOrUpdatedId);
+
+  //     // Select the updated password to refresh detail cards if you use them
+  //     passwordProvider.selectPasswordId(newOrUpdatedId);
+
+  //     // Clear the decrypted password from memory
+  //     setState(() {
+  //       _decryptedPassword = null;
+  //       _passwordChanged = false;
+  //       _passwordController.clear();
+  //     });
+  //   } catch (e) {
+  //     snackbarProvider.showMessage("Error saving password: $e");
+  //   }
+  // }
 
   /// Handles the delete action. If "Do Not Ask Before Deleting" (skipDeleteConfirmation) is on,
   /// it deletes immediately; otherwise shows the old confirmation dialog.
@@ -320,37 +471,53 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                 const SizedBox(height: 20.0),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(1.0),
-                  child: TextFormField(
-                    controller: _serviceNameController,
-                    onTap: () {
-                      if (isEditMode && !_clearedFields.contains('serviceName')) {
-                        _serviceNameController.clear();
-                        _clearedFields.add('serviceName');
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && isEditMode && _clearedFields.contains('serviceName') && _serviceNameController.text.trim().isEmpty) {
+                        _serviceNameController.text = _originalValues['serviceName'] ?? '';
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Service Name',
-                      border: OutlineInputBorder(),
+                    child: TextFormField(
+                      controller: _serviceNameController,
+                      onTap: () {
+                        if (isEditMode && !_clearedFields.contains('serviceName')) {
+                          _originalValues['serviceName'] = _serviceNameController.text;
+                          _serviceNameController.clear();
+                          _clearedFields.add('serviceName');
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Service Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
                   ),
                 ),
                 const SizedBox(height: 12.0),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(2.0),
-                  child: TextFormField(
-                    controller: _usernameController,
-                    onTap: () {
-                      if (isEditMode && !_clearedFields.contains('username')) {
-                        _usernameController.clear();
-                        _clearedFields.add('username');
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && isEditMode && _clearedFields.contains('username') && _usernameController.text.trim().isEmpty) {
+                        _usernameController.text = _originalValues['username'] ?? '';
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
+                    child: TextFormField(
+                      controller: _usernameController,
+                      onTap: () {
+                        if (isEditMode && !_clearedFields.contains('username')) {
+                          _originalValues['username'] = _usernameController.text;
+                          _usernameController.clear();
+                          _clearedFields.add('username');
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
                   ),
                 ),
                 const SizedBox(height: 12.0),
@@ -360,7 +527,9 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                         child: Row(
                           children: [
                             CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                             const SizedBox(width: 16.0),
                             const Text('Decrypting password...'),
@@ -369,91 +538,123 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                       )
                     : FocusTraversalOrder(
                         order: const NumericFocusOrder(3.0),
-                        child: TextFormField(
-                          controller: _passwordController,
-                          onTap: () {
-                            if (isEditMode && !_clearedFields.contains('password')) {
-                              _passwordController.clear();
-                              _clearedFields.add('password');
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (!hasFocus && isEditMode && _clearedFields.contains('password') && _passwordController.text.trim().isEmpty) {
+                              _passwordController.text = _originalValues['password'] ?? '';
                             }
                           },
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            border: const OutlineInputBorder(),
-                            suffixIcon: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                    color: theme.colorScheme.primary,
+                          child: TextFormField(
+                            controller: _passwordController,
+                            onTap: () {
+                              if (isEditMode && !_clearedFields.contains('password')) {
+                                _originalValues['password'] = _passwordController.text;
+                                _passwordController.clear();
+                                _clearedFields.add('password');
+                              }
+                            },
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    onPressed: _togglePasswordVisibility,
                                   ),
-                                  onPressed: _togglePasswordVisibility,
-                                ),
-                                IconButton(
-                                  tooltip: 'Generate Password',
-                                  icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-                                  onPressed: _generatePassword,
-                                ),
-                              ],
+                                  IconButton(
+                                    tooltip: 'Generate Password',
+                                    icon: Icon(Icons.vpn_key, color: Theme.of(context).colorScheme.primary),
+                                    onPressed: _generatePassword,
+                                  ),
+                                ],
+                              ),
                             ),
+                            validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
                           ),
-                          validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
                         ),
                       ),
                 const SizedBox(height: 12.0),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(4.0),
-                  child: TextFormField(
-                    controller: _serviceTypeController,
-                    onTap: () {
-                      if (isEditMode && !_clearedFields.contains('serviceType')) {
-                        _serviceTypeController.clear();
-                        _clearedFields.add('serviceType');
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && isEditMode && _clearedFields.contains('serviceType') && _serviceTypeController.text.trim().isEmpty) {
+                        _serviceTypeController.text = _originalValues['serviceType'] ?? '';
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Service Type',
-                      border: OutlineInputBorder(),
+                    child: TextFormField(
+                      controller: _serviceTypeController,
+                      onTap: () {
+                        if (isEditMode && !_clearedFields.contains('serviceType')) {
+                          _originalValues['serviceType'] = _serviceTypeController.text;
+                          _serviceTypeController.clear();
+                          _clearedFields.add('serviceType');
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Service Type',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 12.0),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(5.0),
-                  child: TextFormField(
-                    controller: _urlController,
-                    onTap: () {
-                      if (isEditMode && !_clearedFields.contains('url')) {
-                        _urlController.clear();
-                        _clearedFields.add('url');
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && isEditMode && _clearedFields.contains('url') && _urlController.text.trim().isEmpty) {
+                        _urlController.text = _originalValues['url'] ?? '';
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'URL',
-                      border: OutlineInputBorder(),
+                    child: TextFormField(
+                      controller: _urlController,
+                      onTap: () {
+                        if (isEditMode && !_clearedFields.contains('url')) {
+                          _originalValues['url'] = _urlController.text;
+                          _urlController.clear();
+                          _clearedFields.add('url');
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'URL',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.url,
                     ),
-                    keyboardType: TextInputType.url,
                   ),
                 ),
                 const SizedBox(height: 12.0),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(6.0),
-                  child: TextFormField(
-                    controller: _noteController,
-                    onTap: () {
-                      if (isEditMode && !_clearedFields.contains('note')) {
-                        _noteController.clear();
-                        _clearedFields.add('note');
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && isEditMode && _clearedFields.contains('note') && _noteController.text.trim().isEmpty) {
+                        _noteController.text = _originalValues['note'] ?? '';
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Note',
-                      border: OutlineInputBorder(),
+                    child: TextFormField(
+                      controller: _noteController,
+                      onTap: () {
+                        if (isEditMode && !_clearedFields.contains('note')) {
+                          _originalValues['note'] = _noteController.text;
+                          _noteController.clear();
+                          _clearedFields.add('note');
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Note',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
                     ),
-                    maxLines: 3,
                   ),
                 ),
                 const SizedBox(height: 12.0),
@@ -467,47 +668,17 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                 BottomActionBar(
                   isEditMode: isEditMode,
                   showDeleteButton: isEditMode,
-                  onCancel: widget.onCancel ?? () {},
+                  onCancel: () {
+                    _hidePasswordTimer?.cancel();
+                    _passwordController.clear();
+                    _decryptedPassword = null;
+                    widget.onCancel?.call();
+                  },
                   onDelete: _deletePassword,
                   onSave: _savePassword,
                   style: BottomActionBarStyle.iconOnly, // Or iconWithText
                 ),
                 const SizedBox(height: 8.0),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.end,
-                //   children: [
-                //     if (isEditMode) ...[
-                //       ElevatedButton.icon(
-                //         onPressed: _deletePassword,
-                //         icon: const Icon(Icons.delete, color: Colors.white),
-                //         label: const Text('Delete', style: TextStyle(color: Colors.white)),
-                //         style: ElevatedButton.styleFrom(
-                //           backgroundColor: Colors.red,
-                //           foregroundColor: Colors.white,
-                //           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                //         ),
-                //       ),
-                //       SizedBox(width: MediaQuery.of(context).size.width < 800 ? 8.0 : 32.0),
-                //     ],
-                //     ElevatedButton(
-                //       onPressed: () {
-                //         widget.onCancel?.call();
-                //       },
-                //       style: ElevatedButton.styleFrom(
-                //         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                //       ),
-                //       child: const Text('Cancel'),
-                //     ),
-                //     const SizedBox(width: 4.0),
-                //     ElevatedButton(
-                //       onPressed: _savePassword,
-                //       style: ElevatedButton.styleFrom(
-                //         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-                //       ),
-                //       child: Text(isEditMode ? 'Update' : 'Save'),
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           )),
