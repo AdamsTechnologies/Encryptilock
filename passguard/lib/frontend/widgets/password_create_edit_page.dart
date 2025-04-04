@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:Encryptilock/frontend/providers/password_provider.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
@@ -36,7 +37,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
   final TextEditingController _serviceTypeController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
-
+  final Set<String> _clearedFields = {};
   bool _isActive = true;
   bool _obscurePassword = true; // Controls password visibility
   bool _isDecrypting = false; // Tracks if decryption is in progress
@@ -306,9 +307,9 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
+              child: FocusTraversalGroup(
             child: Column(
               children: [
-                // Header
                 Text(
                   isEditMode ? 'Edit Password' : 'Create Password',
                   style: theme.textTheme.titleLarge?.copyWith(
@@ -316,30 +317,42 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-
-                // Service Name
-                TextFormField(
-                  controller: _serviceNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Service Name',
-                    border: OutlineInputBorder(),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(1.0),
+                  child: TextFormField(
+                    controller: _serviceNameController,
+                    onTap: () {
+                      if (isEditMode && !_clearedFields.contains('serviceName')) {
+                        _serviceNameController.clear();
+                        _clearedFields.add('serviceName');
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Service Name',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
                   ),
-                  validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
                 ),
                 const SizedBox(height: 12.0),
-
-                // Username
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(2.0),
+                  child: TextFormField(
+                    controller: _usernameController,
+                    onTap: () {
+                      if (isEditMode && !_clearedFields.contains('username')) {
+                        _usernameController.clear();
+                        _clearedFields.add('username');
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
                   ),
-                  validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
                 ),
                 const SizedBox(height: 12.0),
-
-                // Password (with decryption/generation)
                 _isDecrypting
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -353,70 +366,96 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                           ],
                         ),
                       )
-                    : TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Show/Hide Password Icon
-                              IconButton(
-                                tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                  color: theme.colorScheme.primary,
+                    : FocusTraversalOrder(
+                        order: const NumericFocusOrder(3.0),
+                        child: TextFormField(
+                          controller: _passwordController,
+                          onTap: () {
+                            if (isEditMode && !_clearedFields.contains('password')) {
+                              _passwordController.clear();
+                              _clearedFields.add('password');
+                            }
+                          },
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            border: const OutlineInputBorder(),
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  onPressed: _togglePasswordVisibility,
                                 ),
-                                onPressed: _togglePasswordVisibility,
-                              ),
-                              // Generate Password Icon
-                              IconButton(
-                                tooltip: 'Generate Password',
-                                icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-                                onPressed: _generatePassword,
-                              ),
-                            ],
+                                IconButton(
+                                  tooltip: 'Generate Password',
+                                  icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
+                                  onPressed: _generatePassword,
+                                ),
+                              ],
+                            ),
                           ),
+                          validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
                         ),
-                        validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
                       ),
                 const SizedBox(height: 12.0),
-
-                // Service Type
-                TextFormField(
-                  controller: _serviceTypeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Service Type',
-                    border: OutlineInputBorder(),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(4.0),
+                  child: TextFormField(
+                    controller: _serviceTypeController,
+                    onTap: () {
+                      if (isEditMode && !_clearedFields.contains('serviceType')) {
+                        _serviceTypeController.clear();
+                        _clearedFields.add('serviceType');
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Service Type',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12.0),
-
-                // URL
-                TextFormField(
-                  controller: _urlController,
-                  decoration: const InputDecoration(
-                    labelText: 'URL',
-                    border: OutlineInputBorder(),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(5.0),
+                  child: TextFormField(
+                    controller: _urlController,
+                    onTap: () {
+                      if (isEditMode && !_clearedFields.contains('url')) {
+                        _urlController.clear();
+                        _clearedFields.add('url');
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'URL',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.url,
                   ),
-                  keyboardType: TextInputType.url,
                 ),
                 const SizedBox(height: 12.0),
-
-                // Note
-                TextFormField(
-                  controller: _noteController,
-                  decoration: const InputDecoration(
-                    labelText: 'Note',
-                    border: OutlineInputBorder(),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(6.0),
+                  child: TextFormField(
+                    controller: _noteController,
+                    onTap: () {
+                      if (isEditMode && !_clearedFields.contains('note')) {
+                        _noteController.clear();
+                        _clearedFields.add('note');
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Note',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
                   ),
-                  maxLines: 3,
                 ),
                 const SizedBox(height: 12.0),
-
-                // Active Switch
                 SwitchListTile(
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
@@ -424,12 +463,9 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 20.0),
-
-                // Action Buttons Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Delete Button (only in edit mode)
                     if (isEditMode) ...[
                       ElevatedButton.icon(
                         onPressed: _deletePassword,
@@ -441,11 +477,8 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                         ),
                       ),
-                      // Add extra spacing between Delete and the other buttons
                       SizedBox(width: MediaQuery.of(context).size.width < 800 ? 8.0 : 32.0),
                     ],
-
-                    // Cancel Button
                     ElevatedButton(
                       onPressed: () {
                         widget.onCancel?.call();
@@ -456,8 +489,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                       child: const Text('Cancel'),
                     ),
                     const SizedBox(width: 4.0),
-
-                    // Save/Update Button
                     ElevatedButton(
                       onPressed: _savePassword,
                       style: ElevatedButton.styleFrom(
@@ -469,7 +500,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                 ),
               ],
             ),
-          ),
+          )),
         ),
       ),
     );
