@@ -47,7 +47,7 @@ class AuthProvider extends ChangeNotifier {
 
       // Initialize EncryptedDatabaseManager with the retrieved salt
       _encryptedDbManager = EncryptedDatabaseManager(
-        dbPath: 'datastore.db', // Update with actual path
+        dbPath: 's2.db',
         password: password,
         providedSalt: storedSalt,
       );

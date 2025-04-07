@@ -20,7 +20,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize SQLite and settings manager
-  final settingsDb = DartSqlite(dbFile: 'configsettings.db');
+  final settingsDb = DartSqlite(dbFile: 's1.db');
   settingsDb.open();
   final configManager = ConfigSettingsController(settingsDb);
 
