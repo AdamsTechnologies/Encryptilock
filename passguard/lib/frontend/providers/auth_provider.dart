@@ -39,7 +39,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       // Retrieve stored username and salt from config
       final storedUsername = await configManager.getSetting('session_marker');
-      final storedSalt = await configManager.getSetting('session_ref');
+      final storedSalt = await configManager.getSetting('session_ref', plaintextValue: true);
       // Validate username
       if (storedUsername != null && storedUsername != username) {
         throw IncorrectUsernameException('Username does not match stored username.');
@@ -55,13 +55,14 @@ class AuthProvider extends ChangeNotifier {
       _inMemoryDb = await _encryptedDbManager!.open();
       _username = username;
 
+      // Set XOR key for configManager after storing salt
+      configManager.setXorKey(_encryptedDbManager!.currentSalt);
+
       final newSalt = _encryptedDbManager!.currentSalt;
       if (storedSalt == null) {
         // Store the raw salt first (no XOR obfuscation)
-        await configManager.setSetting('session_ref', newSalt);
+        await configManager.setSetting('session_ref', newSalt, plaintextValue: true);
       }
-      // Set XOR key for configManager after storing salt
-      configManager.setXorKey(newSalt);
 
       // Update stored username if not already set
       if (storedUsername == null) {
