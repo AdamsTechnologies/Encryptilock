@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-
 import 'package:Encryptilock/frontend/providers/auth_provider.dart';
 import 'package:Encryptilock/backend/devsec/deterministic_hash.dart';
 
@@ -20,13 +19,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isRegisterMode = false;
   bool _isLoading = false;
+  bool _checkedFirstTime = false;
   String? _errorMessage;
   String? _passwordError;
 
-  void _submitForm(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFirstTime();
+  }
+
+  Future<void> _checkIfFirstTime() async {
+    final configManager = context.read<AuthProvider>().configManager;
+    final marker = await configManager.getSetting('session_marker');
+    if (marker == null) {
+      setState(() {
+        _isRegisterMode = true;
+      });
     }
+    setState(() {
+      _checkedFirstTime = true;
+    });
+  }
+
+  void _submitForm(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
 
     if (_isRegisterMode && _passwordController.text != _confirmPasswordController.text) {
       setState(() {
@@ -64,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final snackBarProvider = context.watch<SnackBarProvider>();
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
@@ -72,20 +88,15 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
-                constraints: isDesktop ? BoxConstraints(maxWidth: 400) : null,
+                constraints: isDesktop ? const BoxConstraints(maxWidth: 400) : null,
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Image.asset(
-                      //   'assets/icon/encryptilockIcon.png',
-                      //   width: 100, // Adjust width/height to your liking
-                      //   height: 100,
-                      // ),
                       Text(
                         _isRegisterMode ? 'Register' : 'Login',
                         style: theme.textTheme.headlineMedium?.copyWith(
@@ -93,10 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 24.0),
+                      const SizedBox(height: 24.0),
                       TextFormField(
                         controller: _usernameController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Username',
                           border: OutlineInputBorder(),
                         ),
@@ -107,10 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Password',
                           border: OutlineInputBorder(),
                         ),
@@ -125,16 +136,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       if (_isRegisterMode) ...[
-                        SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
                         TextFormField(
                           controller: _confirmPasswordController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Confirm Password',
                             border: OutlineInputBorder(),
                           ),
                           obscureText: true,
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submitForm(context),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please confirm your password';
@@ -151,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                       ],
-                      SizedBox(height: 24.0),
+                      const SizedBox(height: 24.0),
                       if (_errorMessage != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
@@ -165,33 +174,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: _isLoading ? null : () => _submitForm(context),
                         child: _isLoading
                             ? CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  theme.colorScheme.onPrimary,
-                                ),
+                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
                               )
                             : Text(_isRegisterMode ? 'Register' : 'Login'),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _isRegisterMode = !_isRegisterMode;
-                            _passwordError = null;
-                            _confirmPasswordController.clear();
-                          });
-                        },
-                        child: Text(
-                          _isRegisterMode ? 'Already have an account? Login' : "Don't have an account? Register",
+                      if (!_isRegisterMode && _checkedFirstTime)
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isRegisterMode = true;
+                              _passwordError = null;
+                              _confirmPasswordController.clear();
+                            });
+                          },
+                          child: const Text("Don't have an account? Register"),
                         ),
-                      ),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-
-          // --- PermanentSnackBar goes on top ---
-          PermanentSnackBar(),
+          const PermanentSnackBar(),
         ],
       ),
     );

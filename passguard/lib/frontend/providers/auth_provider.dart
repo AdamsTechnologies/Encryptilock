@@ -54,13 +54,15 @@ class AuthProvider extends ChangeNotifier {
       // Open the encrypted database
       _inMemoryDb = await _encryptedDbManager!.open();
       _username = username;
-      // Set XOR key for configManager immediately after decryption
-      configManager.setXorKey(_encryptedDbManager!.currentSalt);
+
       final newSalt = _encryptedDbManager!.currentSalt;
-      if (storedSalt != newSalt) {
-        // this should only ever occur on new registrations - any other occurance will brick everything.
+      if (storedSalt == null) {
+        // Store the raw salt first (no XOR obfuscation)
         await configManager.setSetting('session_ref', newSalt);
       }
+      // Set XOR key for configManager after storing salt
+      configManager.setXorKey(newSalt);
+
       // Update stored username if not already set
       if (storedUsername == null) {
         await configManager.setSetting('session_marker', username);

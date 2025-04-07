@@ -8,7 +8,7 @@ class SnackBarProvider with ChangeNotifier {
 
   String? get currentMessage => _currentMessage;
 
-  void showMessage(String message, {Duration duration = const Duration(seconds: 3)}) {
+  void showMessage(String message, {Duration duration = const Duration(seconds: 4)}) {
     _currentMessage = message;
     notifyListeners();
 
