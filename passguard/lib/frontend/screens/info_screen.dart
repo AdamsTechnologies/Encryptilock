@@ -194,7 +194,7 @@ class InfoScreen extends StatelessWidget {
         const Text('- Enable two-factor authentication.'),
         const SizedBox(height: 16),
         Text(
-          'Need support? Contact us at support@passguard9000.com',
+          'Need support? Contact us at support@encryptilock.com',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurface.withOpacity(0.7),
           ),
@@ -208,7 +208,7 @@ class InfoScreen extends StatelessWidget {
   // LAUNCH WEBSITE
   // ----------------------------------
   void _launchWebsite() async {
-    final url = Uri.https('www.passguard9000.com', '');
+    final url = Uri.https('www.encryptilock.com', '');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }

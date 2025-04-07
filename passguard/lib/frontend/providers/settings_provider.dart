@@ -7,18 +7,16 @@ class SettingsProvider extends ChangeNotifier {
   String _theme = 'light';
   int _idleTimeout = 5; // Default 5 minutes
 
-  String _landingPage = 'dashboard';
   int _minLength = 8;
   int _maxLength = 32;
   String _excludeChars = '';
   bool _autoFill = false;
   bool _showDeleteButton = false;
   bool _skipDeleteConfirmation = false;
-
-  // NEW SETTINGS
   bool _showDeleteButtonMainView = false;
   bool _definePasswordGeneratorParams = false;
   bool _autoGenerateAndFill = false;
+  bool _showHiddenPasswords = true;
 
   SettingsProvider(this.configManager);
 
@@ -27,18 +25,16 @@ class SettingsProvider extends ChangeNotifier {
   // --------------------------
   String get settingsTheme => _theme;
   int get idleTimeout => _idleTimeout;
-  String get landingPage => _landingPage;
   int get minLength => _minLength;
   int get maxLength => _maxLength;
   String get excludeChars => _excludeChars;
   bool get autoFill => _autoFill;
   bool get showDeleteButton => _showDeleteButton;
   bool get skipDeleteConfirmation => _skipDeleteConfirmation;
-
-  // NEW GETTERS
   bool get showDeleteButtonMainView => _showDeleteButtonMainView;
   bool get definePasswordGeneratorParams => _definePasswordGeneratorParams;
   bool get autoGenerateAndFill => _autoGenerateAndFill;
+  bool get showHiddenPasswords => _showHiddenPasswords;
 
   // --------------------------
   // LOAD SETTINGS
@@ -46,18 +42,17 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> loadSettings() async {
     _theme = await configManager.getSetting('theme') ?? 'light';
     _idleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
-    _landingPage = await configManager.getSetting('landing_page') ?? 'dashboard';
     _minLength = int.tryParse(await configManager.getSetting('min_length') ?? '8') ?? 8;
     _maxLength = int.tryParse(await configManager.getSetting('max_length') ?? '32') ?? 32;
     _excludeChars = await configManager.getSetting('exclude_chars') ?? '';
     _autoFill = (await configManager.getSetting('auto_fill') == 'true');
     _showDeleteButton = (await configManager.getSetting('show_delete_button') == 'true');
     _skipDeleteConfirmation = (await configManager.getSetting('skip_delete_confirmation') == 'true');
-
     // NEW SETTINGS
     _showDeleteButtonMainView = (await configManager.getSetting('show_delete_button_main_view') == 'true');
     _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true');
     _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');
+    _showHiddenPasswords = (await configManager.getSetting('show_hidden_passwords') == 'true');
 
     notifyListeners();
   }
@@ -74,12 +69,6 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> updateIdleTimeout(int minutes) async {
     _idleTimeout = minutes;
     await configManager.setSetting('idle_timeout', minutes.toString());
-    notifyListeners();
-  }
-
-  Future<void> updateLandingPage(String page) async {
-    _landingPage = page;
-    await configManager.setSetting('landing_page', page);
     notifyListeners();
   }
 
@@ -111,12 +100,15 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --------------------------
-  // NEW TOGGLE METHODS
-  // --------------------------
   Future<void> toggleDeleteButtonMainView(bool val) async {
     _showDeleteButtonMainView = val;
     await configManager.setSetting('show_delete_button_main_view', val.toString());
+    notifyListeners();
+  }
+
+  Future<void> toggleShowHiddenPasswords(bool val) async {
+    _showHiddenPasswords = val;
+    await configManager.setSetting('show_hidden_passwords', val.toString());
     notifyListeners();
   }
 

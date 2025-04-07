@@ -44,7 +44,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   static const double _drawerWidth = 250;
   static const Duration _closeDelay = Duration(milliseconds: 200);
 
-  bool get isDesktop => MediaQuery.of(context).size.width > 600;
+  bool get isDesktop => MediaQuery.of(context).size.width > 750;
 
   @override
   void initState() {
@@ -84,7 +84,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       appBar: isDesktop
           ? null
           : AppBar(
-              title: const Text('Encryptilock'),
+              // title: const Text('Encryptilock'),
               bottom: TabBar(
                 controller: _tabController,
                 tabs: const [

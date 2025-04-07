@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:Encryptilock/frontend/widgets/bottom_action_bar.dart';
 import 'package:Encryptilock/frontend/providers/password_provider.dart';
 import 'package:Encryptilock/frontend/providers/settings_provider.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
@@ -111,20 +112,52 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
 
   void _openUrl(BuildContext context, String url) async {
     if (url.isEmpty) return;
-    final uri = Uri.tryParse(url);
+
+    // Normalize the URL
+    String normalizedUrl = _normalizeUrl(url);
+
+    // Try parsing the normalized URL
+    final uri = Uri.tryParse(normalizedUrl);
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invalid URL: $url')),
       );
       return;
     }
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open URL: $url')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open URL: $url')),
+        SnackBar(content: Text('Error opening URL: ${e.toString()}')),
       );
     }
+  }
+
+  // Helper function to normalize URLs
+  String _normalizeUrl(String url) {
+    // Trim whitespace
+    url = url.trim();
+
+    // If no scheme is present, add https://
+    if (!url.contains('://')) {
+      // Check if it starts with www.
+      if (url.startsWith('www.')) {
+        url = 'https://$url';
+      }
+      // If it doesn't start with www., add https://
+      else {
+        url = 'https://$url';
+      }
+    }
+
+    return url;
   }
 
   /// Handles the delete action. If "Do Not Ask Before Deleting" is true,
@@ -171,22 +204,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // return Consumer<PasswordProvider>(
-    //   builder: (ctx, passwordProv, _) {
-    //     final selected = passwordProv.selectedPassword;
-
-    //     // If no password is selected, show a simple placeholder
-    //     if (selected == null) {
-    //       return Center(
-    //         child: Padding(
-    //           padding: const EdgeInsets.all(16.0),
-    //           child: Text(
-    //             "No password selected",
-    //             style: theme.textTheme.bodyMedium,
-    //           ),
-    //         ),
-    //       );
-    //     }
     return Consumer3<PasswordProvider, SettingsProvider, SnackBarProvider>(
       builder: (ctx, passwordProv, settingsProv, snackbarProv, _) {
         final selected = passwordProv.selectedPassword;
@@ -363,31 +380,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                         maxLines: 1, // Prevents wrapping to a new line
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min, // Ensures buttons only take the space they need
-                      children: [
-                        if (settingsProv.showDeleteButtonMainView)
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: theme.colorScheme.error,
-                            tooltip: 'Delete',
-                            onPressed: () {
-                              _onDeletePassword(context, passwordId);
-                            },
-                          ),
-                        const SizedBox(width: 32.0),
-                        IconButton(
-                          icon: Icon(Icons.edit, color: theme.colorScheme.primary),
-                          tooltip: 'Edit',
-                          onPressed: widget.onEdit,
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.close, color: theme.colorScheme.error),
-                          tooltip: 'Close',
-                          onPressed: widget.onClose,
-                        ),
-                      ],
-                    ),
                   ],
                 ),
 
@@ -434,6 +426,14 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                       ),
                     ),
                   ],
+                ),
+                BottomActionBar(
+                  isEditMode: false,
+                  showDeleteButton: settingsProv.showDeleteButtonMainView,
+                  onCancel: widget.onClose,
+                  onEdit: widget.onEdit,
+                  onDelete: settingsProv.showDeleteButtonMainView ? () => _onDeletePassword(context, passwordId) : null,
+                  style: BottomActionBarStyle.iconOnly,
                 ),
               ],
             ),
