@@ -48,7 +48,6 @@ class SettingsProvider extends ChangeNotifier {
     _autoFill = (await configManager.getSetting('auto_fill') == 'true');
     _showDeleteButton = (await configManager.getSetting('show_delete_button') == 'true');
     _skipDeleteConfirmation = (await configManager.getSetting('skip_delete_confirmation') == 'true');
-    // NEW SETTINGS
     _showDeleteButtonMainView = (await configManager.getSetting('show_delete_button_main_view') == 'true');
     _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true');
     _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');
