@@ -661,7 +661,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                 SwitchListTile(
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
-                  title: const Text('Active'),
+                  title: const Text('Show Record'),
                   contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 20.0),

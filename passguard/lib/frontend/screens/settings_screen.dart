@@ -90,45 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// ----------------------
-  /// GENERAL SETTINGS
-  /// ----------------------
-  Widget _buildGeneralSection(SettingsProvider settingsProvider, ThemeData theme) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('General', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 16),
-            // Landing Page Selection
-            DropdownButtonFormField<String>(
-              value: settingsProvider.landingPage,
-              items: const [
-                DropdownMenuItem(value: 'dashboard', child: Text('Dashboard')),
-                DropdownMenuItem(value: 'passwords', child: Text('Passwords')),
-                DropdownMenuItem(value: 'settings', child: Text('Settings')),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Default Landing Page',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                if (value != null) {
-                  settingsProvider.updateLandingPage(value);
-                  context.read<SnackBarProvider>().showMessage('Landing page updated to "$value"');
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// ----------------------
   /// APPEARANCE
   /// ----------------------
   Widget _buildAppearanceSection(
@@ -263,6 +224,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Password Settings', style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
+
+            SwitchListTile(
+              title: const Text('Show Hidden Passwords'),
+              // subtitle: const Text('can be use to hide deep secrets until toggled on'),
+              value: settingsProvider.showHiddenPasswords,
+              onChanged: settingsProvider.toggleShowHiddenPasswords,
+            ),
 
             SwitchListTile(
               title: const Text('Add Delete button to password main view'),

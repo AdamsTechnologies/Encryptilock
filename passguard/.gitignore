@@ -46,3 +46,5 @@ app.*.map.json
 
 configsettings.db
 datastore.db
+configsettingsR.db
+datastoreR.db
