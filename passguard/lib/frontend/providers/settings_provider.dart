@@ -36,6 +36,11 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoGenerateAndFill => _autoGenerateAndFill;
   bool get showHiddenPasswords => _showHiddenPasswords;
 
+  Future<void> shutdown() async {
+    await configManager.close();
+    notifyListeners();
+  }
+
   // --------------------------
   // LOAD SETTINGS
   // --------------------------

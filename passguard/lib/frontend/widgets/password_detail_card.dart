@@ -411,7 +411,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                   children: [
                     Flexible(
                       child: Text(
-                        'Service Type: $serviceType',
+                        'Category: $serviceType',
                         style: theme.textTheme.bodyMedium,
                         overflow: TextOverflow.ellipsis,
                       ),

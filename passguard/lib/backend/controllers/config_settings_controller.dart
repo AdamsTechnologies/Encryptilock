@@ -83,7 +83,16 @@ class ConfigSettingsController {
     ]);
   }
 
-  void close() async {
+  Future<void> close() async {
     db.close();
+  }
+
+  void factoryReset() {
+    print("Conducting a factory reset of settings table");
+    db.executeCommand('DROP TABLE IF EXISTS settings;');
+    db.createTableIfNotExists('settings', {
+      'key': 'TEXT PRIMARY KEY',
+      'value': 'TEXT',
+    });
   }
 }

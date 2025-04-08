@@ -30,6 +30,11 @@ class AuthProvider extends ChangeNotifier {
     _snackBarProvider = snackBarProvider;
   }
 
+  Future<void> shutdown() async {
+    await configManager.close();
+    notifyListeners();
+  }
+
   // Login method
   Future<void> login(String username, String password) async {
     _snackBarProvider.showMessage('decrypting database');

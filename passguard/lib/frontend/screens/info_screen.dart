@@ -190,7 +190,7 @@ class InfoScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         const Text('- Use unique passwords for each account.'),
-        const Text('- Never share your master password.'),
+        const Text('- Dont forget your master password.'),
         const Text('- Enable two-factor authentication.'),
         const SizedBox(height: 16),
         Text(
