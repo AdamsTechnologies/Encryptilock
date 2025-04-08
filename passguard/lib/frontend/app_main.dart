@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Encryptilock/backend/abstracts/abstract_objects.dart';
 import 'package:provider/provider.dart';
 
-// import 'package:Encryptilock/frontend/theme/theme_config.dart';
+// import 'package:encryptilock/frontend/theme/theme_config.dart';
+// import 'package:encryptilock/backend/abstracts/abstract_objects.dart';
+// import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
+// import 'package:encryptilock/frontend/widgets/info_drawer_content.dart';
+// import 'package:encryptilock/frontend/widgets/password_create_edit_page.dart';
 
-import 'package:Encryptilock/frontend/providers/auth_provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-import 'package:Encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/auth_provider.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
 
-import 'package:Encryptilock/frontend/screens/info_screen.dart';
-import 'package:Encryptilock/frontend/screens/passwords_screen.dart';
-import 'package:Encryptilock/frontend/screens/settings_screen.dart';
+import 'package:encryptilock/frontend/screens/info_screen.dart';
+import 'package:encryptilock/frontend/screens/passwords_screen.dart';
+import 'package:encryptilock/frontend/screens/settings_screen.dart';
 
-import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
-import 'package:Encryptilock/frontend/widgets/info_drawer_content.dart';
-import 'package:Encryptilock/frontend/widgets/password_list_view.dart';
-import 'package:Encryptilock/frontend/widgets/password_create_edit_page.dart';
+import 'package:encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:encryptilock/frontend/widgets/password_list_view.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -206,38 +206,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
     return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
   }
-  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-  //   return NavigationRailDestination(
-  //     icon: SizedBox(
-  //       width: _navRailWidth,
-  //       child: MouseRegion(
-  //         onEnter: (_) {
-  //           // Only hover Info(0) or Passwords(1).
-  //           // We don't do a drawer for Settings(2).
-  //           _closeTimer?.cancel();
-  //           setState(() => hoveredIndex = index);
-  //           // if (index == 1) {
-  //           //   // if (index == 0 || index == 1) {
-  //           //   _closeTimer?.cancel();
-  //           //   setState(() => hoveredIndex = index);
-  //           // }
-  //         },
-  //         onExit: (_) {
-  //           // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
-  //           // if (pinnedIndex == index) return; // Maybe necessary - test first.
-  //           _startCloseTimer();
-  //         },
-  //         child: Center(
-  //           child: Icon(
-  //             icon,
-  //             color: (pinnedIndex == index || hoveredIndex == index) ? Theme.of(context).colorScheme.primary : null,
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //     label: Text(label),
-  //   );
-  // }
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);

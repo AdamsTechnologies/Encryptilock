@@ -5,12 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:Encryptilock/frontend/widgets/bottom_action_bar.dart';
-import 'package:Encryptilock/frontend/providers/password_provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-import 'package:Encryptilock/frontend/providers/settings_provider.dart';
-import 'package:Encryptilock/frontend/widgets/password_generator_dialog.dart';
-import 'package:Encryptilock/backend/helpers/password_generator.dart'; // For PasswordFactory
+import 'package:encryptilock/frontend/widgets/bottom_action_bar.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
+import 'package:encryptilock/frontend/widgets/password_generator_dialog.dart';
+import 'package:encryptilock/backend/helpers/password_generator.dart'; // For PasswordFactory
 
 class PasswordCreationEditPage extends StatefulWidget {
   final Map<String, dynamic>? existingRecord; // Null for creation mode
@@ -86,16 +86,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
     _noteController.dispose();
     super.dispose();
   }
-  // @override
-  // void dispose() {
-  //   _serviceNameController.dispose();
-  //   _usernameController.dispose();
-  //   _passwordController.dispose();
-  //   _serviceTypeController.dispose();
-  //   _urlController.dispose();
-  //   _noteController.dispose();
-  //   super.dispose();
-  // }
 
   /// Decrypts the existing password in edit mode and prepares it for secure display.
   ///
@@ -104,7 +94,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
     final encryptedPassword = widget.existingRecord?['password'] ?? '';
 
     setState(() => _isDecrypting = true);
-    _showSnackBar('temporarily decrypting password'); // TODO remove if needed
     try {
       final decrypted = await passwordProvider.decryptPassword(encryptedPassword);
       if (decrypted.isNotEmpty) {
@@ -124,29 +113,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       setState(() => _isDecrypting = false);
     }
   }
-  // Future<void> _decryptExistingPassword() async {
-  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-  //   final encryptedPassword = widget.existingRecord?['password'] ?? '';
-
-  //   setState(() => _isDecrypting = true);
-
-  //   try {
-  //     final decryptedPassword = await passwordProvider.decryptPassword(encryptedPassword);
-  //     if (decryptedPassword.isNotEmpty) {
-  //       setState(() {
-  //         _decryptedPassword = decryptedPassword;
-  //         _passwordController.text = decryptedPassword; // Keep decrypted password
-  //         _passwordChanged = false; // Password not changed yet
-  //       });
-  //     } else {
-  //       _showSnackBar('Failed to decrypt the password.');
-  //     }
-  //   } catch (e) {
-  //     _showSnackBar('Error decrypting password: $e');
-  //   } finally {
-  //     setState(() => _isDecrypting = false);
-  //   }
-  // }
 
   /// If "Auto-Generate & Fill" is OFF, open the password dialog.
   /// Otherwise, generate a password directly using defaults or user-defined settings.
@@ -228,11 +194,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       }
     }
   }
-  // void _togglePasswordVisibility() {
-  //   setState(() {
-  //     _obscurePassword = !_obscurePassword;
-  //   });
-  // }
 
   /// Displays a SnackBar with the provided message.
   void _showSnackBar(String message) {
@@ -315,78 +276,6 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
       snackbarProvider.showMessage("Error saving password: $e");
     }
   }
-  // Future<void> _savePassword() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-  //   String passwordToSave;
-  //   bool passwordChanged = _passwordChanged;
-
-  //   if (isEditMode) {
-  //     if (passwordChanged) {
-  //       passwordToSave = _decryptedPassword!;
-  //     } else if (_decryptedPassword != _passwordController.text) {
-  //       // If user manually typed a new password, mark as changed
-  //       passwordChanged = true;
-  //       passwordToSave = _passwordController.text;
-  //     } else {
-  //       // No changes => keep the existing encrypted password
-  //       passwordToSave = widget.existingRecord!['password'];
-  //     }
-  //   } else {
-  //     // In creation mode
-  //     passwordToSave = _passwordController.text;
-  //   }
-
-  //   // Build the data map
-  //   final data = {
-  //     'id': widget.existingRecord?['id'],
-  //     'service': _serviceNameController.text,
-  //     'username': _usernameController.text,
-  //     'password': passwordToSave,
-  //     'servicetype': _serviceTypeController.text,
-  //     'url': _urlController.text,
-  //     'notes': _noteController.text,
-  //     'isactive': _isActive ? 1 : 0, // isactive stored as int
-  //   };
-
-  //   final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
-  //   try {
-  //     String newOrUpdatedId;
-  //     if (isEditMode) {
-  //       snackbarProvider.showMessage("Updating password");
-  //       data['id'] = widget.existingRecord!['id'];
-  //       await passwordProvider.addOrUpdatePassword(
-  //         data,
-  //         passwordChanged: passwordChanged,
-  //       );
-  //       newOrUpdatedId = data['id'] as String;
-  //     } else {
-  //       snackbarProvider.showMessage("Creating password");
-  //       await passwordProvider.addOrUpdatePassword(
-  //         data,
-  //         passwordChanged: true, // Always encrypt on creation
-  //       );
-  //       // The new ID is presumably in passwordProvider.passwords.last
-  //       newOrUpdatedId = passwordProvider.passwords.last['id'] as String;
-  //     }
-
-  //     // Call the onSaveComplete callback if provided
-  //     widget.onSaveComplete?.call(newOrUpdatedId);
-
-  //     // Select the updated password to refresh detail cards if you use them
-  //     passwordProvider.selectPasswordId(newOrUpdatedId);
-
-  //     // Clear the decrypted password from memory
-  //     setState(() {
-  //       _decryptedPassword = null;
-  //       _passwordChanged = false;
-  //       _passwordController.clear();
-  //     });
-  //   } catch (e) {
-  //     snackbarProvider.showMessage("Error saving password: $e");
-  //   }
-  // }
 
   /// Handles the delete action. If "Do Not Ask Before Deleting" (skipDeleteConfirmation) is on,
   /// it deletes immediately; otherwise shows the old confirmation dialog.
@@ -487,7 +376,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                         }
                       },
                       decoration: const InputDecoration(
-                        labelText: 'Service Name',
+                        labelText: 'Title',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
@@ -599,7 +488,7 @@ class _PasswordCreationEditPageState extends State<PasswordCreationEditPage> {
                         }
                       },
                       decoration: const InputDecoration(
-                        labelText: 'Service Type',
+                        labelText: 'Category',
                         border: OutlineInputBorder(),
                       ),
                     ),

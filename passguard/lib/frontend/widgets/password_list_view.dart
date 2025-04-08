@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Encryptilock/frontend/providers/settings_provider.dart';
-import 'package:Encryptilock/frontend/providers/password_provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 
 class PasswordListView extends StatefulWidget {
   final void Function(int)? onItemSelected; // 0 for selection, 1 for create

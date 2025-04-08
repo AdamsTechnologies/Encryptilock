@@ -12,6 +12,7 @@ import 'package:Encryptilock/frontend/providers/settings_provider.dart';
 import 'package:Encryptilock/frontend/providers/theme_provider.dart';
 import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
 import 'package:Encryptilock/frontend/providers/password_provider.dart';
+import 'package:Encryptilock/backend/helpers/path_utils.dart';
 
 import 'package:Encryptilock/frontend/screens/login_screen.dart';
 import 'package:Encryptilock/frontend/theme/theme_config.dart';
@@ -20,9 +21,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize SQLite and settings manager
-  final settingsDb = DartSqlite(dbFile: 's1.db');
+  final settingsDbPath = await getLocalPath('s1.db');
+  final settingsDb = DartSqlite(dbFile: settingsDbPath);
   settingsDb.open();
-  final configManager = ConfigSettingsController(settingsDb);
+  // final configManager = ConfigSettingsController(settingsDb);
+  final configManager = await ConfigSettingsController.init(settingsDb);
 
   runApp(
     MultiProvider(

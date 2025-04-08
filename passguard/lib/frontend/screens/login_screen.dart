@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-import 'package:Encryptilock/frontend/providers/auth_provider.dart';
-import 'package:Encryptilock/backend/devsec/deterministic_hash.dart';
+import 'package:encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/frontend/providers/auth_provider.dart';
+import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
+import 'package:encryptilock/frontend/widgets/reset_app_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isRegisterMode = false;
   bool _isLoading = false;
-  bool _checkedFirstTime = false;
   String? _errorMessage;
   String? _passwordError;
 
@@ -31,14 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _checkIfFirstTime() async {
     final configManager = context.read<AuthProvider>().configManager;
-    final marker = await configManager.getSetting('session_marker');
-    if (marker == null) {
-      setState(() {
-        _isRegisterMode = true;
-      });
-    }
+    final marker = await configManager.getHashedSetting('session_marker');
+
     setState(() {
-      _checkedFirstTime = true;
+      _isRegisterMode = marker == null;
     });
   }
 
@@ -61,8 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await authProvider.login(
-        hashObject(_usernameController.text),
-        hashObject(_passwordController.text),
+        ObfuscationUtil.hashObject(_usernameController.text),
+        ObfuscationUtil.hashObject(_passwordController.text),
       );
     } catch (error) {
       if (!mounted) return;
@@ -178,17 +174,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(_isRegisterMode ? 'Register' : 'Login'),
                       ),
-                      if (!_isRegisterMode && _checkedFirstTime)
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isRegisterMode = true;
-                              _passwordError = null;
-                              _confirmPasswordController.clear();
-                            });
-                          },
-                          child: const Text("Don't have an account? Register"),
+                      TextButton(
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (_) => ResetAppDialog(configManager: context.read<AuthProvider>().configManager),
                         ),
+                        child: Text("Having trouble logging in?"),
+                      )
                     ],
                   ),
                 ),

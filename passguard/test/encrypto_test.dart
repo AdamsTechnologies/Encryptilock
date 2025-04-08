@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:Encryptilock/backend/devsec/encrypto.dart';
+import 'package:encryptilock/backend/devsec/encrypto.dart';
 
 void main() {
   group('Encrypto Tests', () {

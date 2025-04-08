@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Encryptilock/backend/devsec/encrypto.dart';
-import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
-import 'package:Encryptilock/backend/databaseManager/encrypted_database_manager.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-import 'package:Encryptilock/backend/helpers/custom_exceptions.dart';
+import 'package:encryptilock/backend/devsec/encrypto.dart';
+import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
+import 'package:encryptilock/backend/databaseManager/encrypted_database_manager.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/backend/helpers/custom_exceptions.dart';
+import 'package:encryptilock/backend/helpers/path_utils.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
@@ -38,16 +39,18 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       // Retrieve stored username and salt from config
-      final storedUsername = await configManager.getSetting('session_marker');
-      final storedSalt = await configManager.getSetting('session_ref', plaintextValue: true);
+      final storedUsername = await configManager.getHashedSetting('session_marker');
+      final storedSalt = await configManager.getHashedSetting('session_ref');
+
       // Validate username
       if (storedUsername != null && storedUsername != username) {
         throw IncorrectUsernameException('Username does not match stored username.');
       }
 
       // Initialize EncryptedDatabaseManager with the retrieved salt
+      final dbPath = await getLocalPath('s2.db');
       _encryptedDbManager = EncryptedDatabaseManager(
-        dbPath: 's2.db',
+        dbPath: dbPath,
         password: password,
         providedSalt: storedSalt,
       );
@@ -55,18 +58,20 @@ class AuthProvider extends ChangeNotifier {
       _inMemoryDb = await _encryptedDbManager!.open();
       _username = username;
 
-      // Set XOR key for configManager after storing salt
-      configManager.setXorKey(_encryptedDbManager!.currentSalt);
+      // Set XOR key if its null
+      if (configManager.xorKey == null) {
+        configManager.setXorKey(_encryptedDbManager!.currentSalt);
+      }
 
       final newSalt = _encryptedDbManager!.currentSalt;
       if (storedSalt == null) {
         // Store the raw salt first (no XOR obfuscation)
-        await configManager.setSetting('session_ref', newSalt, plaintextValue: true);
+        await configManager.setHashedSetting('session_ref', newSalt);
       }
 
       // Update stored username if not already set
       if (storedUsername == null) {
-        await configManager.setSetting('session_marker', username);
+        await configManager.setHashedSetting('session_marker', username);
       }
 
       _isLoggedIn = true;
