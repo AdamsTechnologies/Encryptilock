@@ -18,6 +18,8 @@ import 'package:encryptilock/frontend/screens/settings_screen.dart';
 
 import 'package:encryptilock/frontend/widgets/permanent_snackbar.dart';
 import 'package:encryptilock/frontend/widgets/password_list_view.dart';
+import 'package:encryptilock/frontend/widgets/document_list_view.dart';
+import 'package:encryptilock/frontend/providers/document_provider.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -61,21 +63,31 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   }
 
   int? get displayedDrawerIndex {
-    if (pinnedIndex == 1) {
-      return 1;
+    // if (pinnedIndex == 1) {
+    //   return 1;
+    // }
+    if (pinnedIndex == 0 || pinnedIndex == 1) {
+      return pinnedIndex;
     }
     return hoveredIndex;
   }
 
   bool get shouldShowDrawer {
     final di = displayedDrawerIndex;
-    // return di == 0 || di == 1;
-    return di == 1;
+    return di == 0 || di == 1;
+    // return di == 1;
   }
 
   /// Do we shift the main content?
   /// Only if the pinned tab is #1 (Passwords) is currently displayed.
-  bool get shouldShiftContent => pinnedIndex == 1;
+  // bool get shouldShiftContent => pinnedIndex == 1;
+  bool get shouldShiftContent {
+    if (pinnedIndex == 0 || pinnedIndex == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +118,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  Padding(padding: EdgeInsets.only(), child: const InfoScreen()),
+                  Padding(padding: EdgeInsets.only(left: pinnedIndex == 0 ? _drawerWidth : 0), child: const InfoScreen()),
                   Padding(padding: EdgeInsets.only(left: _drawerWidth), child: const PasswordsScreen()), // left: shouldShiftContent ? _drawerWidth : 0
                   Padding(padding: EdgeInsets.only(), child: const SettingsScreen()),
                 ],
@@ -151,12 +163,23 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           if (index == 3) {
             _appLogout(context);
           } else {
+            final prevIndex = _tabController.index;
             _tabController.animateTo(index);
-            if (index == 1) {
-              pinnedIndex = 1;
+            if (index == 0 && prevIndex != 0) {
+              final docsProvider = Provider.of<DocProvider>(context, listen: false);
+              docsProvider.clearSelection();
+            }
+
+            if (index == 0 || index == 1) {
+              pinnedIndex = index;
             } else {
               pinnedIndex = null;
             }
+            // if (index == 1) {
+            //   pinnedIndex = 1;
+            // } else {
+            //   pinnedIndex = null;
+            // }
             hoveredIndex = null;
           }
         });
@@ -268,15 +291,34 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   /// We only build drawer content for Info(0) and Passwords(1).
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
-      // case 0:
-      //   // Info drawer content
-      //   return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
+      case 0:
+        // Info drawer content => Docs
+        return _buildDocsDrawerContent(theme);
       case 1:
-        // Password drawer content
+        // Passwords
         return _buildPasswordsDrawerContent(theme);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  // Widget _buildDocsDrawerContent(ThemeData theme) {
+  //   return DocListView(
+  //     onItemSelected: (int docIndex) {
+  //       pinnedIndex = 0;
+  //       _tabController.index = 0;
+  //       // Optionally do something else
+  //     },
+  //   );
+  // }
+
+  Widget _buildDocsDrawerContent(ThemeData theme) {
+    return DocListView(
+      onItemSelected: (int docIndex) {
+        pinnedIndex = 0;
+        _tabController.index = 0;
+      },
+    );
   }
 
   Widget _buildPasswordsDrawerContent(ThemeData theme) {

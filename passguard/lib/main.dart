@@ -16,15 +16,14 @@ import 'package:encryptilock/backend/helpers/path_utils.dart';
 
 import 'package:encryptilock/frontend/screens/login_screen.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
+import 'package:encryptilock/frontend/providers/document_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SQLite and settings manager
   final settingsDbPath = await getLocalPath('s1.db');
   final settingsDb = DartSqlite(dbFile: settingsDbPath);
   settingsDb.open();
-  // final configManager = ConfigSettingsController(settingsDb);
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   runApp(
@@ -63,11 +62,64 @@ void main() async {
             return passwordProvider;
           },
         ),
+        // HERE: Provide DocProvider so InfoScreen + DocListView can use it
+        ChangeNotifierProvider(create: (_) => DocProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   // Initialize SQLite and settings manager
+//   final settingsDbPath = await getLocalPath('s1.db');
+//   final settingsDb = DartSqlite(dbFile: settingsDbPath);
+//   settingsDb.open();
+//   // final configManager = ConfigSettingsController(settingsDb);
+//   final configManager = await ConfigSettingsController.init(settingsDb);
+
+//   runApp(
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (_) => SnackBarProvider()),
+//         ChangeNotifierProxyProvider<SnackBarProvider, AuthProvider>(
+//           create: (_) => AuthProvider(configManager: configManager),
+//           update: (_, snackBarProvider, authProvider) => authProvider!..updateSnackBarProvider(snackBarProvider),
+//         ),
+//         ChangeNotifierProvider(create: (_) => SettingsProvider(configManager)..loadSettings()),
+//         ChangeNotifierProxyProvider<SettingsProvider, ThemeProvider>(
+//           create: (context) {
+//             final settings = Provider.of<SettingsProvider>(context, listen: false);
+//             final themeData = ThemeConfig.getTheme(settings.settingsTheme);
+//             return ThemeProvider(themeData);
+//           },
+//           update: (context, settings, themeProvider) {
+//             themeProvider?.setTheme(ThemeConfig.getTheme(settings.settingsTheme));
+//             return themeProvider!;
+//           },
+//         ),
+//         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider, IdleTimeoutService>(
+//           create: (_) => IdleTimeoutService(),
+//           update: (_, auth, settings, idleService) {
+//             idleService ??= IdleTimeoutService();
+//             idleService.configure(authProvider: auth, settingsProvider: settings);
+//             return idleService;
+//           },
+//         ),
+//         ChangeNotifierProxyProvider<AuthProvider, PasswordProvider>(
+//           create: (_) => PasswordProvider(),
+//           update: (_, auth, passwordProvider) {
+//             passwordProvider ??= PasswordProvider();
+//             passwordProvider.updateAuthProvider(auth);
+//             return passwordProvider;
+//           },
+//         ),
+//       ],
+//       child: const MyApp(),
+//     ),
+//   );
+// }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
