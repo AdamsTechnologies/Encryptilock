@@ -36,9 +36,73 @@ class ThemeConfig {
       // ---------------------------------------------------------
       //                   LIGHT THEMES
       // ---------------------------------------------------------
-      // case 'Light':
-      //   return ThemeData.light(useMaterial3: true);
-
+      case 'Light':
+        return ThemeData.light(useMaterial3: true).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF007AFF), // macOS controlAccentColor (blue)
+            secondary: Color(0xFFE5E5EA), // separatorColor / secondaryGroupBG
+            tertiary: Color(0xFF8E8E93), // secondaryLabelColor
+            surface: Color(0xFFFFFFFF), // controlBackgroundColor
+            background: Color(0xFFF2F2F7), // systemBackground
+            onPrimary: Colors.white,
+            onSecondary: Color(0xFF1C1C1E), // labelColor
+            onSurface: Color(0xFF1C1C1E), // textColor
+          ),
+          scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+          shadowColor: Colors.transparent,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFFF2F2F7),
+            elevation: 0,
+            foregroundColor: Color(0xFF1C1C1E),
+          ),
+          cardTheme: CardTheme(
+            color: const Color(0xFFFFFFFF),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              side: const BorderSide(color: Color(0xFFE5E5EA)), // separatorColor
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            fillColor: Colors.white,
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              borderSide: const BorderSide(color: Color(0xFFC7C7CC)), // placeholder bg
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFC7C7CC)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF007AFF), width: 2), // accent blue
+            ),
+            labelStyle: const TextStyle(color: Color(0xFF8E8E93)), // secondaryLabelColor
+            hintStyle: const TextStyle(color: Color(0xFF8E8E93)),
+          ),
+          iconTheme: const IconThemeData(color: Color(0xFF007AFF)), // linkColor / accent
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(color: Color(0xFF1C1C1E)), // labelColor
+            bodyMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            titleLarge: TextStyle(color: Color(0xFF1C1C1E)),
+            titleMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            titleSmall: TextStyle(color: Color(0xFF1C1C1E)),
+            labelLarge: TextStyle(color: Color(0xFF007AFF)), // accent/interactive
+            labelMedium: TextStyle(color: Color(0xFF007AFF)),
+            labelSmall: TextStyle(color: Color(0xFF007AFF)),
+            headlineLarge: TextStyle(color: Color(0xFF1C1C1E)),
+            headlineMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            headlineSmall: TextStyle(color: Color(0xFF1C1C1E)),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF007AFF), // controlAccentColor
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(adjustedRadius),
+              ),
+            ),
+          ),
+        );
       case 'Bubblegum':
         return ThemeData.light(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.light(
@@ -588,63 +652,75 @@ class ThemeConfig {
         // return ThemeData.dark(useMaterial3: true);
         return ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF0067C0), // Same as light theme for consistency
-            secondary: Color.fromARGB(255, 39, 111, 145), // Steely blue
-            tertiary: Color(0xFFB0BEC5), // Soft contrast gray
+            primary: Color(0xFF0A84FF), // macOS dark mode accent
+            secondary: Color(0xFF3A3A3C), // secondarySurface / separator
+            tertiary: Color(0xFF8E8E93), // secondaryLabelColor
             error: Color.fromARGB(255, 247, 7, 7),
-            surface: Color(0xFF1E1E1E),
+            surface: Color(0xFF2C2C2E), // card background
+            background: Color(0xFF1C1C1E), // system background
             onPrimary: Colors.white,
             onSecondary: Colors.white,
-            onSurface: Color(0xFFF5F5F5),
+            onSurface: Color(0xFFF5F5F7), // labelColor / content
           ),
-          scaffoldBackgroundColor: const Color(0xFF121212),
-          shadowColor: const Color(0x660067C0),
+          scaffoldBackgroundColor: const Color(0xFF1C1C1E),
+          shadowColor: Colors.transparent,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF1C1C1E),
+            elevation: 0,
+            foregroundColor: Color(0xFFF5F5F7),
+          ),
           cardTheme: CardTheme(
-            color: const Color(0xFF1C1C1C),
-            elevation: 6,
+            color: const Color(0xFF2C2C2E),
+            elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(adjustedRadius),
-              side: const BorderSide(color: Color(0xFF37474F)),
+              side: const BorderSide(color: Color(0xFF3A3A3C)), // separator
             ),
           ),
-          navigationRailTheme: NavigationRailThemeData(
-            selectedIconTheme: const IconThemeData(color: Colors.white),
-            unselectedIconTheme: const IconThemeData(color: Color(0xFFB0BEC5)),
-            backgroundColor: const Color(0xFF121212),
-            indicatorColor: const Color.fromARGB(255, 4, 38, 68), // Rich highlight, not washed out
+          inputDecorationTheme: InputDecorationTheme(
+            fillColor: const Color(0xFF2C2C2E),
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              borderSide: const BorderSide(color: Color(0xFF3A3A3C)), // separator
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF3A3A3C)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF0A84FF), width: 2), // accent
+            ),
+            labelStyle: const TextStyle(color: Color(0xFF8E8E93)), // secondaryLabel
+            hintStyle: const TextStyle(color: Color(0xFF8E8E93)),
+          ),
+          iconTheme: const IconThemeData(color: Color(0xFF0A84FF)), // accent/link
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(color: Color(0xFFF5F5F7)),
+            bodyMedium: TextStyle(color: Color(0xFFE5E5EA)),
+            titleLarge: TextStyle(color: Color(0xFFF5F5F7)),
+            titleMedium: TextStyle(color: Color(0xFFF5F5F7)),
+            titleSmall: TextStyle(color: Color(0xFFF5F5F7)),
+            labelLarge: TextStyle(color: Color(0xFF0A84FF)),
+            labelMedium: TextStyle(color: Color(0xFF0A84FF)),
+            labelSmall: TextStyle(color: Color(0xFF0A84FF)),
+            headlineLarge: TextStyle(color: Color(0xFFF5F5F7)),
+            headlineMedium: TextStyle(color: Color(0xFFF5F5F7)),
+            headlineSmall: TextStyle(color: Color(0xFFF5F5F7)),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0067C0), // for Save
+              backgroundColor: const Color(0xFF0A84FF), // accent
               foregroundColor: Colors.white,
-              iconColor: Colors.white, // Flutter 3.22+
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(adjustedRadius),
               ),
             ),
           ),
-          inputDecorationTheme: InputDecorationTheme(
-            fillColor: const Color(0xFF1C1C1C),
-            filled: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(adjustedRadius),
-              borderSide: const BorderSide(color: Color(0xFF0067C0)),
-            ),
-            enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF0067C0)),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF64B5F6), width: 2),
-            ),
-            labelStyle: const TextStyle(color: Color(0xFFF5F5F5)),
-            hintStyle: const TextStyle(color: Color(0xFFB0BEC5)),
-          ),
-          iconTheme: const IconThemeData(color: Color(0xFF0067C0)),
-          textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: Color(0xFFF5F5F5)),
-            bodyMedium: TextStyle(color: Color(0xFFE0E0E0)),
-            titleLarge: TextStyle(color: Color(0xFFF5F5F5)),
-            labelLarge: TextStyle(color: Color(0xFF0067C0)),
+          navigationRailTheme: NavigationRailThemeData(
+            selectedIconTheme: const IconThemeData(color: Colors.white),
+            unselectedIconTheme: const IconThemeData(color: Color(0xFF8E8E93)),
+            backgroundColor: const Color(0xFF1C1C1E),
+            indicatorColor: const Color.fromARGB(255, 37, 44, 49),
           ),
         );
       case 'Lock':
@@ -1192,31 +1268,28 @@ class ThemeConfig {
       default:
         return ThemeData.light(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.light(
-            primary: Color(0xFF0067C0), // Windows 11 blue
-            secondary: Color(0xFFB0BEC5), // soft blue-gray for subtle accents
-            tertiary: Color(0xFF546E7A), // darker steel
-            surface: Color(0xFFFFFFFF), // bright card surface
+            primary: Color(0xFF007AFF), // macOS controlAccentColor (blue)
+            secondary: Color(0xFFE5E5EA), // separatorColor / secondaryGroupBG
+            tertiary: Color(0xFF8E8E93), // secondaryLabelColor
+            surface: Color(0xFFFFFFFF), // controlBackgroundColor
+            background: Color(0xFFF2F2F7), // systemBackground
             onPrimary: Colors.white,
-            onSecondary: Colors.black,
-            onSurface: Color(0xFF000000),
+            onSecondary: Color(0xFF1C1C1E), // labelColor
+            onSurface: Color(0xFF1C1C1E), // textColor
           ),
-          scaffoldBackgroundColor: const Color(0xFFF8F8F8), // very light neutral
-          shadowColor: const Color(0x220067C0), // subtle blue cast
+          scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+          shadowColor: Colors.transparent,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFFF2F2F7),
+            elevation: 0,
+            foregroundColor: Color(0xFF1C1C1E),
+          ),
           cardTheme: CardTheme(
-            color: Colors.white,
-            elevation: 4,
+            color: const Color(0xFFFFFFFF),
+            elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(adjustedRadius),
-              side: const BorderSide(color: Color(0xFFE0E0E0)),
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0067C0),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(adjustedRadius),
-              ),
+              side: const BorderSide(color: Color(0xFFE5E5EA)), // separatorColor
             ),
           ),
           inputDecorationTheme: InputDecorationTheme(
@@ -1224,30 +1297,39 @@ class ThemeConfig {
             filled: true,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(adjustedRadius),
-              borderSide: const BorderSide(color: Color(0xFFB0BEC5)),
+              borderSide: const BorderSide(color: Color(0xFFC7C7CC)), // placeholder bg
             ),
             enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFB0BEC5)),
+              borderSide: BorderSide(color: Color(0xFFC7C7CC)),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF0067C0), width: 2),
+              borderSide: BorderSide(color: Color(0xFF007AFF), width: 2), // accent blue
             ),
-            labelStyle: const TextStyle(color: Color(0xFF000000)),
-            hintStyle: const TextStyle(color: Color(0xFF546E7A)),
+            labelStyle: const TextStyle(color: Color(0xFF8E8E93)), // secondaryLabelColor
+            hintStyle: const TextStyle(color: Color(0xFF8E8E93)),
           ),
-          iconTheme: const IconThemeData(color: Color(0xFF0067C0)),
+          iconTheme: const IconThemeData(color: Color(0xFF007AFF)), // linkColor / accent
           textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: Color(0xFF1A1A1A)),
-            bodyMedium: TextStyle(color: Color(0xFF1A1A1A)),
-            titleLarge: TextStyle(color: Color(0xFF1A1A1A)),
-            titleMedium: TextStyle(color: Color(0xFF1A1A1A)),
-            titleSmall: TextStyle(color: Color(0xFF1A1A1A)),
-            labelLarge: TextStyle(color: Color(0xFF0067C0)), // blue accent
-            labelMedium: TextStyle(color: Color(0xFF0067C0)),
-            labelSmall: TextStyle(color: Color(0xFF0067C0)),
-            headlineLarge: TextStyle(color: Color(0xFF1A1A1A)),
-            headlineMedium: TextStyle(color: Color(0xFF1A1A1A)),
-            headlineSmall: TextStyle(color: Color(0xFF1A1A1A)),
+            bodyLarge: TextStyle(color: Color(0xFF1C1C1E)), // labelColor
+            bodyMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            titleLarge: TextStyle(color: Color(0xFF1C1C1E)),
+            titleMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            titleSmall: TextStyle(color: Color(0xFF1C1C1E)),
+            labelLarge: TextStyle(color: Color(0xFF007AFF)), // accent/interactive
+            labelMedium: TextStyle(color: Color(0xFF007AFF)),
+            labelSmall: TextStyle(color: Color(0xFF007AFF)),
+            headlineLarge: TextStyle(color: Color(0xFF1C1C1E)),
+            headlineMedium: TextStyle(color: Color(0xFF1C1C1E)),
+            headlineSmall: TextStyle(color: Color(0xFF1C1C1E)),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF007AFF), // controlAccentColor
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(adjustedRadius),
+              ),
+            ),
           ),
         );
     }
