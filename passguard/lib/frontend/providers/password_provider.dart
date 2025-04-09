@@ -37,12 +37,10 @@ class PasswordProvider extends ChangeNotifier {
   void updateAuthProvider(AuthProvider newAuth) {
     // final hadAuth = _authProvider;
     _authProvider = newAuth;
-    print("PasswordProvider: _authProvider!.isLoggedIn=${_authProvider!.isLoggedIn}. _authProvider!.isLoading=${_authProvider!.isLoading}");
+
     if (_authProvider!.isLoggedIn && !_authProvider!.isLoading) {
-      print("PasswordProvider: User logged in. Initializing controller.");
       _initializeController();
     } else if (!_authProvider!.isLoggedIn) {
-      print("PasswordProvider: User logged out. Clearing data.");
       _passwordController = null;
       _passwords.clear();
       _selectedPasswordId = null;
@@ -55,14 +53,13 @@ class PasswordProvider extends ChangeNotifier {
   Future<void> _initializeController() async {
     if (_authProvider == null) {
       _errorMessage = 'No AuthProvider available.';
-      print("PasswordProvider: No AuthProvider available.");
+
       notifyListeners();
       return;
     }
 
     if (_authProvider!.isLoggedIn && _authProvider!.inMemoryDb != null) {
       try {
-        print("PasswordProvider: Initializing PasswordController.");
         _passwordController = PasswordController(
           dbController: _authProvider!.inMemoryDb!,
           encrypto: _authProvider!.encrypto!,
@@ -80,16 +77,16 @@ class PasswordProvider extends ChangeNotifier {
           },
         );
         await _passwordController!.init();
-        print("PasswordProvider: PasswordController initialized. Fetching passwords.");
+
         await fetchPasswords(); // Load initial data
       } catch (e) {
         _errorMessage = 'Error initializing PasswordProvider: $e';
-        print("PasswordProvider: Error initializing controller: $e");
+
         notifyListeners();
       }
     } else {
       _errorMessage = 'No database connection available.';
-      print("PasswordProvider: No database connection available.");
+
       notifyListeners();
     }
   }
@@ -99,14 +96,13 @@ class PasswordProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      print("PasswordProvider: Fetching all password records.");
       _passwords = await _passwordController!.getAllRecords(); // decryptFields: ['password']
-      print("PasswordProvider: Fetched ${_passwords.length} passwords.");
+
       _errorMessage = null;
       notifyListeners(); // Notify listeners after fetching
     } catch (e) {
       _errorMessage = 'Error fetching passwords: $e';
-      print("PasswordProvider: Error fetching passwords: $e");
+
       notifyListeners(); // Notify listeners about the error
     } finally {
       _setLoading(false);
@@ -119,10 +115,8 @@ class PasswordProvider extends ChangeNotifier {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
-    print("addOrUpdatePassword executed.");
+
     try {
-      print("addOrUpdatePassword recordId: ${data['id']}");
-      print("PasswordProvider Upsert data: $data");
       String upsertedId = await _passwordController!.upsertRecord(
         id: data['id'],
         username: data['username'],
@@ -135,7 +129,7 @@ class PasswordProvider extends ChangeNotifier {
         createdt: data['createdt'],
         passwordChanged: passwordChanged, // Pass the flag here
       );
-      print("addOrUpdatePassword upserted recordId: $upsertedId");
+
       await fetchPasswords();
 
       if (_mode == 'create' || _mode == 'edit') {
@@ -143,7 +137,7 @@ class PasswordProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Error saving password: $e';
-      print("PasswordProvider: Error saving password: $e");
+
       notifyListeners();
     } finally {
       _setLoading(false);
@@ -163,7 +157,7 @@ class PasswordProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Error deleting password: $e';
-      print("PasswordProvider: Error deleting password: $e");
+
       notifyListeners();
     } finally {
       _setLoading(false);
@@ -172,10 +166,8 @@ class PasswordProvider extends ChangeNotifier {
 
   /// Decrypts the given encrypted password.
   Future<String> decryptPassword(String encryptedPassword) async {
-    print("PProvider-decryptPassword: decrypting!");
-    print("PProvider-decryptPassword: encryptedPassword=$encryptedPassword");
     String decryptedPassword = await _passwordController!.encrypto.decrypto(encryptedPassword);
-    print("PProvider-decryptPassword: decryptedPassword! $decryptedPassword");
+
     return decryptedPassword;
   }
 
@@ -204,7 +196,7 @@ class PasswordProvider extends ChangeNotifier {
   bool _validateDbConnection() {
     if (_authProvider == null || !_authProvider!.isLoggedIn || _authProvider!.inMemoryDb == null) {
       _errorMessage = 'No active database connection.';
-      print("PasswordProvider: _validateDbConnection failed.");
+
       notifyListeners();
       return false;
     }

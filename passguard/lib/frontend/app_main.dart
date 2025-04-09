@@ -78,7 +78,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                 controller: _tabController,
                 onTap: (index) {
                   // if (index == 0) {
-                  //   print('TabBar context widget tree: ${context.widget.runtimeType}');
                   //   final docsProvider = Provider.of<DocProvider>(context, listen: false);
                   //   docsProvider.clearSelection();
                   // }

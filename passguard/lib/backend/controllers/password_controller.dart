@@ -137,7 +137,6 @@ class PasswordController {
       pass = password;
     }
 
-    print("upsertRecord encryptedPass: $pass");
     // Create the row data
     final row = <String, dynamic>{
       // TODO align schemas..
@@ -152,7 +151,7 @@ class PasswordController {
       'createdt': createdt ?? now,
       'updatedt': now,
     };
-    print("PasswordController upsertRecord: $row");
+
     dbController.upsert(
       tableName,
       row,
@@ -183,7 +182,6 @@ class PasswordController {
 
   /// Removes a record by [id].
   Future<void> removeRecord(String id) async {
-    print("deleting record, id: $id");
     dbController.delete(tableName, "id = ?", [
       id
     ]);
@@ -208,7 +206,6 @@ class PasswordController {
   /// Alternatively, TODO you can store a real UUID from a library,
   /// or rely on your DB to auto-generate.
   String _generateUniqueId() {
-    print("generating a new UUID");
     final random = Random.secure();
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     return base64Url.encode(bytes).replaceAll('=', '');

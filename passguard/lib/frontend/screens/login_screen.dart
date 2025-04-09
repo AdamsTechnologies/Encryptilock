@@ -37,7 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkIfFirstTime() async {
     final configManager = context.read<AuthProvider>().configManager;
     final marker = await configManager.getHashedSetting('session_marker');
-    print("marker: $marker");
     final remember = await configManager.getHashedSetting('remember_user');
     setState(() {
       _marker = marker;
@@ -70,9 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final configManager = authProvider.configManager;
 
     try {
-      print("marker: $_marker");
       final usernameHash = (_rememberMe && _marker != null) ? _marker! : ObfuscationUtil.hashObject(_usernameController.text);
-      print("usernameHash: $usernameHash");
       final passwordHash = ObfuscationUtil.hashObject(_passwordController.text);
       await authProvider.login(usernameHash, passwordHash);
 
