@@ -101,7 +101,6 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       if (_encryptedDbManager != null && _inMemoryDb != null) {
-        print("AuthProvider closing up the database and logging out.");
         await _encryptedDbManager!.close(_inMemoryDb);
       }
     } catch (error) {

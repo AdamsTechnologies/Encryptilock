@@ -35,10 +35,7 @@ class AppResetService {
     required BuildContext context,
     required ConfigSettingsController configManager,
   }) async {
-    // 2) Swap to a minimal "ResettingApp" so old Providers unmount
     runApp(const ResettingApp());
-
-    // 3) Give Flutter a moment to fully dispose old tree + release locks
     await Future.delayed(const Duration(milliseconds: 300));
 
     configManager.factoryReset();
@@ -54,14 +51,11 @@ class AppResetService {
       debugPrint('Vault file deletion error: $e');
     }
 
-    // 5) Instead of deleting config DB (s1.db), just open + "factory reset" it
-
     final configPath = await getLocalPath('s1.db');
     final newConn = DartSqlite(dbFile: configPath);
     newConn.open();
     final newConfigManager = await ConfigSettingsController.init(newConn);
 
-    // We can just reuse the manager we just wiped if you prefer.
     runApp(
       MultiProvider(
         providers: [

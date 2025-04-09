@@ -180,7 +180,7 @@ class DartSqlite {
   void upsert(String table, Map<String, dynamic> values, List<String> conflictColumns) {
     _checkOpen();
     if (values.isEmpty) return;
-    print("DartSqlite: upsert executed");
+
     final columns = values.keys.toList();
     final placeholders = List.filled(columns.length, '?').join(', ');
     final conflictClause = conflictColumns.join(', ');
@@ -197,7 +197,7 @@ class DartSqlite {
       ON CONFLICT($conflictClause)
       $doUpdateOrNothing
     ''';
-    print("DartSqlite: sql generated: $sql");
+
     final stmt = _db!.prepare(sql);
     try {
       stmt.execute(values.values.toList());

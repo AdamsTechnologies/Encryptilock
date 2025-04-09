@@ -4,7 +4,7 @@ import 'package:encryptilock/backend/controllers/config_settings_controller.dart
 class SettingsProvider extends ChangeNotifier {
   final ConfigSettingsController configManager;
 
-  String _theme = 'light';
+  String _theme = 'Paper';
   int _idleTimeout = 5; // Default 5 minutes
 
   int _minLength = 8;
