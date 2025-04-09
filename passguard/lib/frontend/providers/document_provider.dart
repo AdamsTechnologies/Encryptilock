@@ -52,7 +52,7 @@ Encryptilock protects your data using industry-standard cryptography, all handle
 - Sensitive fields are encrypted individually before being saved.
 - The entire vault is encrypted as well.
 
-> 🛡️ AES-256 would take billions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.
+🛡️ *AES-256 would take billions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
 
 ### Local-Only Model
 
@@ -94,7 +94,7 @@ Each entry includes the following fields:
 
 Only **Title**, **Username**, and **Password** are required. Use remaining fields as needed.
 
-> 💡 Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.
+💡 *Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.*
 
 ---
 
@@ -140,7 +140,7 @@ These files are located in your system's app data directory:
 ```
 {{DB_PATH}}
 ```
-> 💡 You can copy these files to an external drive, encrypted archive, or any secure offline location.
+💡 *You can copy these files to an external drive, encrypted archive, or any secure offline location.*
 
 ---
 
@@ -174,9 +174,9 @@ This will:
 - Permanently delete your password vault (`s2.db`) and all configuration settings (`s1.db`)
 - Return the app to its first-launch state
 
-After resetting, you’ll be prompted to create a new account as if launching the app for the first time.
+After resetting, you'll be prompted to create a new account as if launching the app for the first time.
 
-> ⚠️ This action is irreversible. Ensure you've backed up any important data beforehand.
+⚠️ *This action is irreversible. Ensure you've backed up any important data beforehand.*
 
 ---
 
@@ -195,7 +195,7 @@ After resetting, you’ll be prompted to create a new account as if launching th
       title: "Config Settings",
       content: """# ⚙️ Settings & Customization
 
-The Settings tab allows you to personalize Encryptilock’s behavior and appearance to your preferences.
+The Settings tab allows you to personalize Encryptilock's behavior and appearance to your preferences.
 
 ---
 
@@ -212,7 +212,7 @@ The Settings tab allows you to personalize Encryptilock’s behavior and appeara
 - After the specified period with no interaction, the app auto-locks and returns to the login screen.
 - Helps protect your data during periods of inactivity.
 
-> ⚠️ Tip: Lock your device manually when stepping away. Encryptilock adds an extra layer by auto-locking if you forget.
+⚠️ *Tip: Lock your device manually when stepping away. Encryptilock adds an extra layer by auto-locking if you forget.*
 
 ---
 
@@ -238,7 +238,7 @@ These options allow you to fine-tune how password entries are handled and genera
   - **Auto-Generate & Fill** - When enabled, tapping the key icon will instantly create and fill a password based on your saved preferences.  
     When disabled, the password generator dialog will open instead.
 
-> ⚠️ Tip: Exclude only necessary characters to maintain strong entropy in generated passwords.
+ ⚠️ *Tip: Exclude only necessary characters to maintain strong entropy in generated passwords.*
 
 All changes are saved automatically to your encrypted configuration database.
 

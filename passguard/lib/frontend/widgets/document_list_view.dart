@@ -23,7 +23,19 @@ class _DocListViewState extends State<DocListView> {
     final allDocs = docProv.docs;
 
     // Filter by search
-    final filteredDocs = searchQuery.isNotEmpty ? allDocs.where((d) => d.title.toLowerCase().contains(searchQuery.toLowerCase())).toList() : allDocs;
+    final filteredDocs = searchQuery.isNotEmpty
+        ? allDocs.where((doc) {
+            final query = searchQuery.toLowerCase();
+            final title = doc.title.toLowerCase();
+            final content = doc.content.toLowerCase();
+
+            // Extract tags from content
+            final tagMatch = RegExp(r'<!--\s*tags:\s*(.*?)\s*-->').firstMatch(content);
+            final tags = tagMatch != null ? tagMatch.group(1)!.toLowerCase() : '';
+
+            return title.contains(query) || tags.contains(query);
+          }).toList()
+        : allDocs;
 
     return Column(
       children: [
