@@ -1,5 +1,6 @@
 import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
 import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
+import 'package:flutter/material.dart';
 
 class ConfigSettingsController {
   final DartSqlite db;
@@ -88,7 +89,6 @@ class ConfigSettingsController {
   }
 
   void factoryReset() {
-    print("Conducting a factory reset of settings table");
     db.executeCommand('DROP TABLE IF EXISTS settings;');
     db.createTableIfNotExists('settings', {
       'key': 'TEXT PRIMARY KEY',
@@ -96,3 +96,31 @@ class ConfigSettingsController {
     });
   }
 }
+// TODO info screen corrupted on first load.
+// ════════════════════════════════════════════════════════════════════════════════════════════════════
+
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this MainApp Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// flutter: PasswordProvider: _authProvider!.isLoggedIn=true. _authProvider!.isLoading=false
+// flutter: PasswordProvider: User logged in. Initializing controller.
+// flutter: PasswordProvider: Initializing PasswordController.
+// flutter: PasswordProvider: PasswordController initialized. Fetching passwords.
+// flutter: PasswordProvider: Fetching all password records.
+// flutter: PasswordProvider: Fetched 0 passwords.
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+
+
+
+// // BUG Create password, view password not toggling when typed. "Password not yet decrypted" error.

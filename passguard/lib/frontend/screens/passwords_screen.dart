@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:encryptilock/frontend/providers/password_provider.dart';
 
 import 'package:encryptilock/frontend/widgets/password_detail_card.dart';
-import 'package:encryptilock/frontend/widgets/password_create_edit_page.dart';
+// import 'package:encryptilock/frontend/widgets/password_create_edit_page.dart';
+import 'package:encryptilock/frontend/widgets/password_create_page.dart';
+import 'package:encryptilock/frontend/widgets/password_edit_page.dart';
 import 'package:encryptilock/frontend/widgets/password_list_view.dart';
 
 class PasswordsScreen extends StatelessWidget {
@@ -37,8 +39,7 @@ class PasswordsScreen extends StatelessWidget {
   Widget _buildDetailAreaDesktop(PasswordProvider passwordProv) {
     switch (passwordProv.mode) {
       case 'create':
-        return PasswordCreationEditPage(
-          existingRecord: null,
+        return PasswordCreatePage(
           onCancel: () => passwordProv.setMode('list'),
           onSaveComplete: (newId) {
             passwordProv.selectPasswordId(newId);
@@ -49,7 +50,7 @@ class PasswordsScreen extends StatelessWidget {
         if (selected == null) {
           return const Center(child: Text('No password selected.'));
         }
-        return PasswordCreationEditPage(
+        return PasswordEditPage(
           existingRecord: selected,
           onCancel: () => passwordProv.setMode('list'), //passwordProv.setMode('detail'), TODO feel this out, might want to return to detail mode maybe not.
           onSaveComplete: (updatedId) {
@@ -90,8 +91,7 @@ class PasswordsScreen extends StatelessWidget {
           },
         );
       case 'create':
-        return PasswordCreationEditPage(
-          existingRecord: null,
+        return PasswordCreatePage(
           onCancel: () => passwordProv.setMode('list'),
           onSaveComplete: (newId) {
             passwordProv.selectPasswordId(newId);
@@ -103,7 +103,7 @@ class PasswordsScreen extends StatelessWidget {
         if (selected == null) {
           return const Center(child: Text('No password selected.'));
         }
-        return PasswordCreationEditPage(
+        return PasswordEditPage(
           existingRecord: selected,
           onCancel: () => passwordProv.setMode('list'),
           onSaveComplete: (updatedId) {

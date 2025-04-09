@@ -91,7 +91,7 @@ Each entry includes the following fields:
   (If it doesn't start with `http://` or `https://`, it defaults to `https://`)
 - **Notes** - Optional free-form text
 
-Only **Title**, **Username**, and **Password** are required. Use remaining fields as needed.
+Only **Title**  and **Password** are required. Use remaining fields as needed.
 
 💡 *Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.*
 

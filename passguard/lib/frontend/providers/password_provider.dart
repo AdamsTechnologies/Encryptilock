@@ -179,6 +179,12 @@ class PasswordProvider extends ChangeNotifier {
     return decryptedPassword;
   }
 
+  void resetToCreateMode() {
+    _selectedPasswordId = null;
+    _mode = 'create';
+    notifyListeners();
+  }
+
   /// Selects a password by ID and updates the mode accordingly.
   void selectPasswordId(String? id) {
     _selectedPasswordId = id;

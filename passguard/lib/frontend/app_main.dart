@@ -263,7 +263,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
             pinnedIndex = 1;
             _tabController.index = 1;
             if (itemSelect == 1) {
-              Provider.of<PasswordProvider>(context, listen: false).setMode('create');
+              Provider.of<PasswordProvider>(context, listen: false).resetToCreateMode();
             }
           },
         );
