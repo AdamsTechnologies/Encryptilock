@@ -116,7 +116,7 @@ Only **Title**, **Username**, and **Password** are required. Use remaining field
 
 ---
 
-<!-- tags: passwords, create entry, edit, delete, url, hidden passwords, notes, view password -->
+<!-- tags: passwords, create entry, title, username, category, URL, note, show Record, edit, delete, url, hidden passwords, notes, view password -->
 """,
     ),
     DocItem(
@@ -243,7 +243,7 @@ All changes are saved automatically to your encrypted configuration database.
 
 ---
 
-<!-- tags: settings, generator, show hidden, delete button, auto generate, config -->""",
+<!-- tags: settings, appearance, theme, timeout, timer, add delete, do not ask, ask delete, parameters, min length, max length, exclude characters, generator, show hidden, delete button, auto generate, config -->""",
     ),
   ];
 
