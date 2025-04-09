@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 import 'package:encryptilock/frontend/widgets/document_list_view.dart';
 
@@ -19,8 +18,7 @@ class InfoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final docProv = context.watch<DocProvider>();
     final isDesktop = MediaQuery.of(context).size.width > 750;
-    final shouldOffset = isDrawerPinned && isDesktop;
-
+    final leftOffset = isDesktop ? drawerWidth : 0.0;
     // ───── MOBILE: Always show list if nothing selected ─────
     if (!isDesktop && !docProv.hasSelection) {
       return const DocListView();
@@ -30,7 +28,7 @@ class InfoScreen extends StatelessWidget {
     if (isDesktop && !docProv.hasSelection) {
       return Center(
         child: Padding(
-          padding: EdgeInsets.only(left: shouldOffset ? drawerWidth : 0),
+          padding: EdgeInsets.only(left: leftOffset),
           child: Text(
             'No document selected.',
             style: Theme.of(context).textTheme.bodyLarge,
@@ -43,7 +41,7 @@ class InfoScreen extends StatelessWidget {
     final docItem = docProv.selectedDoc;
 
     return Padding(
-      padding: EdgeInsets.only(left: shouldOffset ? drawerWidth : 0),
+      padding: EdgeInsets.only(left: leftOffset),
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Stack(
