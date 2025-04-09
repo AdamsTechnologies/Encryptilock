@@ -17,7 +17,7 @@ Encryptilock is a privacy-first password manager designed for local, offline use
 
 ---
 
-### 🔍 Main Navigation
+### Main Navigation
 
 - **Info Tab (🛈)**  
   Access help documentation, app version info, and a direct link to the Encryptilock website.

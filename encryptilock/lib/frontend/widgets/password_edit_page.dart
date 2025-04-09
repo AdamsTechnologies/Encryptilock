@@ -235,7 +235,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                   const SizedBox(height: 20),
                   _buildSmartField('Title', _serviceController, 'service'),
                   _buildSmartField('Username', _usernameController, 'username', required: false),
-                  _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(),
+                  _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
                   _buildSmartField('Category', _serviceTypeController, 'serviceType', required: false),
                   _buildSmartField('URL', _urlController, 'url', required: false),
                   _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3),
@@ -296,7 +296,8 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildPasswordField(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: FocusTraversalOrder(
@@ -345,13 +346,11 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    ),
+                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, color: theme.colorScheme.primary),
                     onPressed: _togglePasswordVisibility,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.vpn_key),
+                    icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
                     onPressed: _generatePassword,
                   ),
                 ],

@@ -8,7 +8,7 @@ class ThemeConfig {
     // ---- LIGHT THEMES ----
     'Light', // default - required
     'Bubblegum', // perfect.
-    'Botanical Breeze', //  looks good, but a just a bit too green - maybe add green with white
+    'Botanical Breeze', //  looks good, but a just a bit too green - maybe add green with white or more distinctly different greens? a dark green to accentuate it?
     'Glacial Blue', // perfect.
     'Crimson Snow', // perfect.
     'Deep Blue', // perfect.
@@ -36,8 +36,8 @@ class ThemeConfig {
       // ---------------------------------------------------------
       //                   LIGHT THEMES
       // ---------------------------------------------------------
-      case 'Light':
-        return ThemeData.light(useMaterial3: true);
+      // case 'Light':
+      //   return ThemeData.light(useMaterial3: true);
 
       case 'Bubblegum':
         return ThemeData.light(useMaterial3: true).copyWith(
@@ -585,7 +585,68 @@ class ThemeConfig {
       //                   DARK THEMES
       // ---------------------------------------------------------
       case 'Dark':
-        return ThemeData.dark(useMaterial3: true);
+        // return ThemeData.dark(useMaterial3: true);
+        return ThemeData.dark(useMaterial3: true).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF0067C0), // Same as light theme for consistency
+            secondary: Color.fromARGB(255, 39, 111, 145), // Steely blue
+            tertiary: Color(0xFFB0BEC5), // Soft contrast gray
+            error: Color.fromARGB(255, 247, 7, 7),
+            surface: Color(0xFF1E1E1E),
+            onPrimary: Colors.white,
+            onSecondary: Colors.white,
+            onSurface: Color(0xFFF5F5F5),
+          ),
+          scaffoldBackgroundColor: const Color(0xFF121212),
+          shadowColor: const Color(0x660067C0),
+          cardTheme: CardTheme(
+            color: const Color(0xFF1C1C1C),
+            elevation: 6,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              side: const BorderSide(color: Color(0xFF37474F)),
+            ),
+          ),
+          navigationRailTheme: NavigationRailThemeData(
+            selectedIconTheme: const IconThemeData(color: Colors.white),
+            unselectedIconTheme: const IconThemeData(color: Color(0xFFB0BEC5)),
+            backgroundColor: const Color(0xFF121212),
+            indicatorColor: const Color.fromARGB(255, 4, 38, 68), // Rich highlight, not washed out
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0067C0), // for Save
+              foregroundColor: Colors.white,
+              iconColor: Colors.white, // Flutter 3.22+
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(adjustedRadius),
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            fillColor: const Color(0xFF1C1C1C),
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              borderSide: const BorderSide(color: Color(0xFF0067C0)),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF0067C0)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF64B5F6), width: 2),
+            ),
+            labelStyle: const TextStyle(color: Color(0xFFF5F5F5)),
+            hintStyle: const TextStyle(color: Color(0xFFB0BEC5)),
+          ),
+          iconTheme: const IconThemeData(color: Color(0xFF0067C0)),
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(color: Color(0xFFF5F5F5)),
+            bodyMedium: TextStyle(color: Color(0xFFE0E0E0)),
+            titleLarge: TextStyle(color: Color(0xFFF5F5F5)),
+            labelLarge: TextStyle(color: Color(0xFF0067C0)),
+          ),
+        );
       case 'Lock':
         return ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.dark(
@@ -1129,7 +1190,66 @@ class ThemeConfig {
         );
       // Fallback
       default:
-        return ThemeData.light(useMaterial3: true);
+        return ThemeData.light(useMaterial3: true).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF0067C0), // Windows 11 blue
+            secondary: Color(0xFFB0BEC5), // soft blue-gray for subtle accents
+            tertiary: Color(0xFF546E7A), // darker steel
+            surface: Color(0xFFFFFFFF), // bright card surface
+            onPrimary: Colors.white,
+            onSecondary: Colors.black,
+            onSurface: Color(0xFF000000),
+          ),
+          scaffoldBackgroundColor: const Color(0xFFF8F8F8), // very light neutral
+          shadowColor: const Color(0x220067C0), // subtle blue cast
+          cardTheme: CardTheme(
+            color: Colors.white,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              side: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0067C0),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(adjustedRadius),
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            fillColor: Colors.white,
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(adjustedRadius),
+              borderSide: const BorderSide(color: Color(0xFFB0BEC5)),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFB0BEC5)),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF0067C0), width: 2),
+            ),
+            labelStyle: const TextStyle(color: Color(0xFF000000)),
+            hintStyle: const TextStyle(color: Color(0xFF546E7A)),
+          ),
+          iconTheme: const IconThemeData(color: Color(0xFF0067C0)),
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(color: Color(0xFF1A1A1A)),
+            bodyMedium: TextStyle(color: Color(0xFF1A1A1A)),
+            titleLarge: TextStyle(color: Color(0xFF1A1A1A)),
+            titleMedium: TextStyle(color: Color(0xFF1A1A1A)),
+            titleSmall: TextStyle(color: Color(0xFF1A1A1A)),
+            labelLarge: TextStyle(color: Color(0xFF0067C0)), // blue accent
+            labelMedium: TextStyle(color: Color(0xFF0067C0)),
+            labelSmall: TextStyle(color: Color(0xFF0067C0)),
+            headlineLarge: TextStyle(color: Color(0xFF1A1A1A)),
+            headlineMedium: TextStyle(color: Color(0xFF1A1A1A)),
+            headlineSmall: TextStyle(color: Color(0xFF1A1A1A)),
+          ),
+        );
     }
   }
 }
