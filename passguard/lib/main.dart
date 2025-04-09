@@ -62,13 +62,53 @@ void main() async {
             return passwordProvider;
           },
         ),
-        // HERE: Provide DocProvider so InfoScreen + DocListView can use it
         ChangeNotifierProvider(create: (_) => DocProvider()),
+        // ChangeNotifierProxyProvider<AuthProvider, DocProvider>(
+        //   create: (_) => DocProvider(),
+        //   update: (_, auth, docProvider) {
+        //     docProvider ??= DocProvider();
+        //     return docProvider;
+        //   },
+        // ),
       ],
       child: const MyApp(),
     ),
   );
 }
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
+      return MaterialApp(
+        title: 'Encryptilock',
+        theme: themeProvider.theme,
+        home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
+      );
+    });
+  }
+}
+
+class IdleWrapper extends StatelessWidget {
+  final Widget child;
+  const IdleWrapper({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final idleService = Provider.of<IdleTimeoutService>(context, listen: false);
+
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => idleService.resetTimer(),
+      onPointerMove: (_) => idleService.resetTimer(),
+      child: child,
+    );
+  }
+}
+
+
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
 
@@ -120,35 +160,3 @@ void main() async {
 //     ),
 //   );
 // }
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
-      return MaterialApp(
-        title: 'Encryptilock',
-        theme: themeProvider.theme,
-        home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
-      );
-    });
-  }
-}
-
-class IdleWrapper extends StatelessWidget {
-  final Widget child;
-  const IdleWrapper({Key? key, required this.child}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final idleService = Provider.of<IdleTimeoutService>(context, listen: false);
-
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => idleService.resetTimer(),
-      onPointerMove: (_) => idleService.resetTimer(),
-      child: child,
-    );
-  }
-}

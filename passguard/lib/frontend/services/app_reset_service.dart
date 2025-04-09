@@ -9,6 +9,7 @@ import 'package:encryptilock/frontend/providers/settings_provider.dart';
 import 'package:encryptilock/frontend/providers/theme_provider.dart';
 import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/document_provider.dart';
 import 'package:encryptilock/frontend/services/idle_timeout_service.dart';
 import 'package:encryptilock/backend/helpers/path_utils.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
@@ -97,6 +98,7 @@ class AppResetService {
               return passwordProvider;
             },
           ),
+          ChangeNotifierProvider(create: (_) => DocProvider()),
         ],
         child: const MyApp(),
       ),

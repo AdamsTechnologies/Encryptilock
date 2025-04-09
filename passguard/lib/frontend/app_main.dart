@@ -62,6 +62,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       appBar: isDesktop
           ? null
@@ -76,10 +77,11 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               bottom: TabBar(
                 controller: _tabController,
                 onTap: (index) {
-                  if (index == 0) {
-                    final docsProvider = Provider.of<DocProvider>(context, listen: false);
-                    docsProvider.clearSelection();
-                  }
+                  // if (index == 0) {
+                  //   print('TabBar context widget tree: ${context.widget.runtimeType}');
+                  //   final docsProvider = Provider.of<DocProvider>(context, listen: false);
+                  //   docsProvider.clearSelection();
+                  // }
                 },
                 tabs: const [
                   Tab(icon: Icon(Icons.home), text: 'Home'),
@@ -99,6 +101,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               bottom: 0,
               child: TabBarView(
                 controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(), // ← disables swipe/scroll nav
                 children: [
                   const HomeScreen(),
                   Padding(
@@ -124,6 +127,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           ] else ...[
             TabBarView(
               controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(), // Optional: only if you want to disable swipe on mobile too
               children: const [
                 HomeScreen(),
                 PasswordsScreen(),
@@ -259,7 +263,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     switch (index) {
       case 1:
         return PasswordListView(
-          onItemSelected: (itemSelect) {
+          onItemSelected: (int itemSelect) {
             pinnedIndex = 1;
             _tabController.index = 1;
             if (itemSelect == 1) {
@@ -269,7 +273,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         );
       case 3:
         return DocListView(
-          onItemSelected: (int docIndex) {
+          onItemSelected: (int itemSelect) {
             pinnedIndex = 3;
             _tabController.index = 3;
           },

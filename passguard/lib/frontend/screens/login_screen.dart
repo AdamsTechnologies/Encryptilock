@@ -23,6 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   String? _passwordError;
   bool _showWelcome = false;
+  String? _marker;
+  bool _rememberMe = false;
+  bool _usernameFieldMasked = false;
+  bool _passwordVisible = false;
 
   @override
   void initState() {
@@ -33,10 +37,17 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkIfFirstTime() async {
     final configManager = context.read<AuthProvider>().configManager;
     final marker = await configManager.getHashedSetting('session_marker');
-
+    print("marker: $marker");
+    final remember = await configManager.getHashedSetting('remember_user');
     setState(() {
+      _marker = marker;
       _isRegisterMode = marker == null;
       _showWelcome = marker == null;
+      if (remember != null && remember.toLowerCase() == 'true') {
+        _rememberMe = true;
+        _usernameFieldMasked = true;
+        _usernameController.text = '••••••••••';
+      }
     });
   }
 
@@ -56,12 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final authProvider = context.read<AuthProvider>();
+    final configManager = authProvider.configManager;
 
     try {
-      await authProvider.login(
-        ObfuscationUtil.hashObject(_usernameController.text),
-        ObfuscationUtil.hashObject(_passwordController.text),
-      );
+      print("marker: $_marker");
+      final usernameHash = (_rememberMe && _marker != null) ? _marker! : ObfuscationUtil.hashObject(_usernameController.text);
+      print("usernameHash: $usernameHash");
+      final passwordHash = ObfuscationUtil.hashObject(_passwordController.text);
+      await authProvider.login(usernameHash, passwordHash);
+
+      // Save "remember me" setting AFTER login
+      await configManager.setHashedSetting('remember_user', _rememberMe.toString());
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -259,8 +275,9 @@ class _LoginScreenState extends State<LoginScreen> {
               labelText: 'Username',
               border: OutlineInputBorder(),
             ),
+            enabled: !_usernameFieldMasked,
             validator: (value) {
-              if (value == null || value.trim().isEmpty) {
+              if (!_usernameFieldMasked && (value == null || value.trim().isEmpty)) {
                 return 'Please enter your username';
               }
               return null;
@@ -269,11 +286,20 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 16.0),
           TextFormField(
             controller: _passwordController,
-            decoration: const InputDecoration(
+            obscureText: !_passwordVisible,
+            decoration: InputDecoration(
               labelText: 'Password',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: () {
+                  setState(() => _passwordVisible = !_passwordVisible);
+                },
+              ),
             ),
-            obscureText: true,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _submitForm(context),
             validator: (value) {
@@ -287,11 +313,20 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16.0),
             TextFormField(
               controller: _confirmPasswordController,
-              decoration: const InputDecoration(
+              obscureText: !_passwordVisible,
+              decoration: InputDecoration(
                 labelText: 'Confirm Password',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: () {
+                    setState(() => _passwordVisible = !_passwordVisible);
+                  },
+                ),
               ),
-              obscureText: true,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submitForm(context),
               validator: (value) {
@@ -310,6 +345,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
           ],
+          CheckboxListTile(
+            title: const Text('Remember Me'),
+            contentPadding: EdgeInsets.zero,
+            value: _rememberMe,
+            onChanged: (val) async {
+              final config = context.read<AuthProvider>().configManager;
+              setState(() {
+                _rememberMe = val ?? false;
+              });
+              if (!(val ?? false)) {
+                // If user unchecks, clear saved state
+                await config.setHashedSetting('remember_user', 'false');
+                setState(() {
+                  _usernameController.text = '';
+                  _usernameFieldMasked = false;
+                });
+              }
+            },
+          ),
           const SizedBox(height: 24.0),
           if (_errorMessage != null)
             Padding(
@@ -347,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "Reminder: There's no password recovery.\nBe sure to remember your login — if lost, you'll need to reset the app to start over.",
+                      "There's no password recovery, only factor reset. Be sure to remember your credentials.",
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface),
                     ),
                   ),
