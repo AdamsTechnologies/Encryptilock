@@ -1,9 +1,9 @@
-import 'package:Encryptilock/backend/helpers/password_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'package:Encryptilock/frontend/providers/settings_provider.dart';
+import 'package:encryptilock/backend/helpers/password_generator.dart';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
 
 class ComplexPasswordGeneratorDialog extends StatefulWidget {
   final void Function(String password)? onPasswordGenerated;

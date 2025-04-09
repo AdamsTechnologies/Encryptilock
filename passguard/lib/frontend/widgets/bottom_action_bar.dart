@@ -98,7 +98,7 @@ class BottomActionBar extends StatelessWidget {
                 ),
               buildButton(
                 icon: Icons.cancel,
-                color: Colors.grey,
+                color: secondary,
                 onPressed: onCancel,
                 label: 'Cancel',
               ),

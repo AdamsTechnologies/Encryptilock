@@ -26,11 +26,17 @@ class DartSqlite {
 
   /// Closes the connection if open.
   void close() {
-    if (!_isOpen) return;
-    _db?.dispose();
+    if (!_isOpen || _db == null) return;
+    _db!.dispose(); // dispose is correct for sqlite3.dart
     _db = null;
     _isOpen = false;
   }
+  // void close() {
+  //   if (!_isOpen) return;
+  //   _db?.dispose();
+  //   _db = null;
+  //   _isOpen = false;
+  // }
 
   /// Ensures the DB is open before any operation.
   void _checkOpen() {

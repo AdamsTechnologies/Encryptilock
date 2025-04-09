@@ -1,15 +1,24 @@
-import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
-import 'package:Encryptilock/backend/devsec/obfuscation_util.dart';
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
+import 'package:flutter/material.dart';
 
 class ConfigSettingsController {
   final DartSqlite db;
   String? _xorKey;
+  String? get xorKey => _xorKey;
 
-  ConfigSettingsController(this.db) {
+  ConfigSettingsController._(this.db);
+
+  static Future<ConfigSettingsController> init(DartSqlite db) async {
     db.createTableIfNotExists('settings', {
       'key': 'TEXT PRIMARY KEY',
       'value': 'TEXT',
     });
+
+    final controller = ConfigSettingsController._(db);
+    final salt = await controller.getHashedSetting('session_ref');
+    if (salt != null) controller.setXorKey(salt);
+    return controller;
   }
 
   void setXorKey(String key) {
@@ -49,61 +58,69 @@ class ConfigSettingsController {
       'key'
     ]);
   }
+
+  Future<String?> getHashedSetting(String key) async {
+    final hashedKey = ObfuscationUtil.hashObject(key);
+    final result = db.query('SELECT value FROM settings WHERE key = ?', [
+      hashedKey
+    ]);
+    if (result.isEmpty) return null;
+
+    try {
+      return ObfuscationUtil.decodeBase64(result.first['value'] as String);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> setHashedSetting(String key, String value) async {
+    final hashedKey = ObfuscationUtil.hashObject(key);
+    final encodedValue = ObfuscationUtil.encodeBase64(value);
+    db.upsert('settings', {
+      'key': hashedKey,
+      'value': encodedValue,
+    }, [
+      'key'
+    ]);
+  }
+
+  Future<void> close() async {
+    db.close();
+  }
+
+  void factoryReset() {
+    db.executeCommand('DROP TABLE IF EXISTS settings;');
+    db.createTableIfNotExists('settings', {
+      'key': 'TEXT PRIMARY KEY',
+      'value': 'TEXT',
+    });
+  }
 }
+// TODO info screen corrupted on first load.
+// ════════════════════════════════════════════════════════════════════════════════════════════════════
 
-// import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart';
-// import 'package:Encryptilock/backend/devsec/obfuscation_util.dart';
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this MainApp Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this DocListView Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
+// flutter: PasswordProvider: _authProvider!.isLoggedIn=true. _authProvider!.isLoading=false
+// flutter: PasswordProvider: User logged in. Initializing controller.
+// flutter: PasswordProvider: Initializing PasswordController.
+// flutter: PasswordProvider: PasswordController initialized. Fetching passwords.
+// flutter: PasswordProvider: Fetching all password records.
+// flutter: PasswordProvider: Fetched 0 passwords.
+// Another exception was thrown: Error: Could not find the correct Provider<DocProvider> above this InfoScreen Widget
 
-// class ConfigSettingsController {
-//   final DartSqlite db;
-//   String? _xorKey;
 
-//   ConfigSettingsController(this.db) {
-//     db.createTableIfNotExists('settings', {
-//       'key': 'TEXT PRIMARY KEY',
-//       'value': 'TEXT',
-//     });
-//   }
 
-//   /// Call this after login with the user's derived salt or chosen XOR key
-//   void setXorKey(String key) {
-//     _xorKey = key;
-//   }
-
-//   /// Internally obfuscates the key if XOR is set
-//   String _obfuscateKey(String key) {
-//     return _xorKey != null ? ObfuscationUtil.xorCipher(key, _xorKey!) : key;
-//   }
-
-//   /// Fetches a setting by key. XOR-decodes value, and uses obfuscated key
-//   Future<String?> getSetting(String key) async {
-//     final obfuscatedKey = _obfuscateKey(key);
-//     final result = db.query('SELECT value FROM settings WHERE key = ?', [
-//       obfuscatedKey
-//     ]);
-
-//     if (result.isEmpty) return null;
-
-//     final encoded = result.first['value'] as String;
-//     if (_xorKey == null) return encoded;
-
-//     try {
-//       return ObfuscationUtil.xorDecipher(encoded, _xorKey!);
-//     } catch (_) {
-//       return encoded;
-//     }
-//   }
-
-//   /// Saves or updates a setting. XOR-encodes both key and value
-//   Future<void> setSetting(String key, String value) async {
-//     final obfuscatedKey = _obfuscateKey(key);
-//     final encodedValue = _xorKey != null ? ObfuscationUtil.xorCipher(value, _xorKey!) : value;
-
-//     db.upsert('settings', {
-//       'key': obfuscatedKey,
-//       'value': encodedValue,
-//     }, [
-//       'key'
-//     ]);
-//   }
-// }
+// // BUG Create password, view password not toggling when typed. "Password not yet decrypted" error.

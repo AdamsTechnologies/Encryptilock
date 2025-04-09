@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'auth_provider.dart'; // For database connection state
-import 'package:Encryptilock/backend/controllers/password_controller.dart';
+import 'package:encryptilock/backend/controllers/password_controller.dart';
 
 class PasswordProvider extends ChangeNotifier {
   AuthProvider? _authProvider;
@@ -177,6 +177,12 @@ class PasswordProvider extends ChangeNotifier {
     String decryptedPassword = await _passwordController!.encrypto.decrypto(encryptedPassword);
     print("PProvider-decryptPassword: decryptedPassword! $decryptedPassword");
     return decryptedPassword;
+  }
+
+  void resetToCreateMode() {
+    _selectedPasswordId = null;
+    _mode = 'create';
+    notifyListeners();
   }
 
   /// Selects a password by ID and updates the mode accordingly.

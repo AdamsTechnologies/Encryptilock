@@ -1,23 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Encryptilock/backend/abstracts/abstract_objects.dart';
 import 'package:provider/provider.dart';
 
-// import 'package:Encryptilock/frontend/theme/theme_config.dart';
+import 'package:encryptilock/frontend/providers/auth_provider.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/document_provider.dart';
 
-import 'package:Encryptilock/frontend/providers/auth_provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
-import 'package:Encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/screens/home_screen.dart';
+import 'package:encryptilock/frontend/screens/info_screen.dart';
+import 'package:encryptilock/frontend/screens/passwords_screen.dart';
+import 'package:encryptilock/frontend/screens/settings_screen.dart';
 
-import 'package:Encryptilock/frontend/screens/info_screen.dart';
-import 'package:Encryptilock/frontend/screens/passwords_screen.dart';
-import 'package:Encryptilock/frontend/screens/settings_screen.dart';
-
-import 'package:Encryptilock/frontend/widgets/permanent_snackbar.dart';
-import 'package:Encryptilock/frontend/widgets/info_drawer_content.dart';
-import 'package:Encryptilock/frontend/widgets/password_list_view.dart';
-import 'package:Encryptilock/frontend/widgets/password_create_edit_page.dart';
+import 'package:encryptilock/frontend/widgets/permanent_snackbar.dart';
+import 'package:encryptilock/frontend/widgets/password_list_view.dart';
+import 'package:encryptilock/frontend/widgets/document_list_view.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({Key? key}) : super(key: key);
@@ -29,14 +26,8 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  /// Pinned index -> which tab is "locked" open.
-  /// We'll only ever pin tab #1 (Passwords).
   int? pinnedIndex;
-
-  /// Hovered index -> which tab is hovered, if any.
-  /// We'll use 0 or 1 for Info or Passwords. We'll ignore 2 (Settings).
   int? hoveredIndex;
-
   bool isDrawerHovered = false;
   Timer? _closeTimer;
 
@@ -49,8 +40,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // 4 tabs -> Info(0), Passwords(1), Settings(2), Logout(3)
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // Now 4 tabs: Home, Passwords, Settings, Info
   }
 
   @override
@@ -61,42 +51,48 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   }
 
   int? get displayedDrawerIndex {
-    if (pinnedIndex == 1) {
-      return 1;
-    }
-    return hoveredIndex;
+    if (pinnedIndex == 1 || pinnedIndex == 3) return pinnedIndex;
+    if (hoveredIndex == 1 || hoveredIndex == 3) return hoveredIndex;
+    return null;
   }
 
-  bool get shouldShowDrawer {
-    final di = displayedDrawerIndex;
-    // return di == 0 || di == 1;
-    return di == 1;
-  }
-
-  /// Do we shift the main content?
-  /// Only if the pinned tab is #1 (Passwords) is currently displayed.
-  bool get shouldShiftContent => pinnedIndex == 1;
+  bool get shouldShowDrawer => displayedDrawerIndex != null;
+  bool get shouldShiftContent => pinnedIndex == 1 || pinnedIndex == 3;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       appBar: isDesktop
           ? null
           : AppBar(
-              // title: const Text('Encryptilock'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.power_settings_new),
+                  tooltip: 'Logout',
+                  onPressed: () => _appLogout(context),
+                ),
+              ],
               bottom: TabBar(
                 controller: _tabController,
+                onTap: (index) {
+                  // if (index == 0) {
+                  //   print('TabBar context widget tree: ${context.widget.runtimeType}');
+                  //   final docsProvider = Provider.of<DocProvider>(context, listen: false);
+                  //   docsProvider.clearSelection();
+                  // }
+                },
                 tabs: const [
-                  Tab(icon: Icon(Icons.info), text: 'Info'),
+                  Tab(icon: Icon(Icons.home), text: 'Home'),
                   Tab(icon: Icon(Icons.lock), text: 'Passwords'),
                   Tab(icon: Icon(Icons.settings), text: 'Settings'),
+                  Tab(icon: Icon(Icons.info_outline), text: 'Info'),
                 ],
               ),
             ),
       body: Stack(
         children: [
-          // --- Desktop layout ---
           if (isDesktop) ...[
             Positioned(
               left: _navRailWidth,
@@ -105,19 +101,23 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               bottom: 0,
               child: TabBarView(
                 controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(), // ← disables swipe/scroll nav
                 children: [
-                  Padding(padding: EdgeInsets.only(), child: const InfoScreen()),
-                  Padding(padding: EdgeInsets.only(left: _drawerWidth), child: const PasswordsScreen()), // left: shouldShiftContent ? _drawerWidth : 0
-                  Padding(padding: EdgeInsets.only(), child: const SettingsScreen()),
+                  const HomeScreen(),
+                  Padding(
+                    padding: const EdgeInsets.only(left: _drawerWidth),
+                    child: const PasswordsScreen(),
+                  ),
+                  const SettingsScreen(),
+                  InfoScreen(
+                    isDrawerPinned: pinnedIndex == 3,
+                    drawerWidth: _drawerWidth,
+                  ),
                 ],
               ),
             ),
-            PermanentSnackBar(
-              // height: 30.0,
-              backgroundColor: theme.colorScheme.surface,
-            ),
+            PermanentSnackBar(backgroundColor: theme.colorScheme.surface),
             _buildExpandableDrawer(),
-            // The nav rail pinned at left
             Positioned(
               left: 0,
               top: 0,
@@ -125,13 +125,14 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               child: _buildNavigationRail(),
             ),
           ] else ...[
-            // --- Mobile layout ---
             TabBarView(
               controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(), // Optional: only if you want to disable swipe on mobile too
               children: const [
-                InfoScreen(),
+                HomeScreen(),
                 PasswordsScreen(),
                 SettingsScreen(),
+                InfoScreen(isDrawerPinned: false, drawerWidth: _drawerWidth),
               ],
             ),
             PermanentSnackBar(),
@@ -148,24 +149,27 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       selectedIndex: _tabController.index,
       onDestinationSelected: (index) {
         setState(() {
-          if (index == 3) {
+          if (index == 4) {
             _appLogout(context);
           } else {
+            final prevIndex = _tabController.index;
             _tabController.animateTo(index);
-            if (index == 1) {
-              pinnedIndex = 1;
-            } else {
-              pinnedIndex = null;
+
+            if (index == 3 && prevIndex != 3) {
+              Provider.of<DocProvider>(context, listen: false).clearSelection();
             }
+
+            pinnedIndex = (index == 1 || index == 3) ? index : null;
             hoveredIndex = null;
           }
         });
       },
       destinations: [
-        _buildRailDestination(Icons.info, 'Info', 0),
+        _buildRailDestination(Icons.home, 'Home', 0),
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
-        _buildRailDestination(Icons.power_settings_new, "Logout", 3),
+        _buildRailDestination(Icons.info_outline, 'Info', 3),
+        _buildRailDestination(Icons.power_settings_new, 'Logout', 4),
       ],
       indicatorShape: const BeveledRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(4), bottom: Radius.circular(4)),
@@ -179,18 +183,12 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         width: _navRailWidth,
         child: MouseRegion(
           onEnter: (_) {
-            // Let all icons highlight on hover
             _closeTimer?.cancel();
             setState(() => hoveredIndex = index);
           },
-          onExit: (_) {
-            _startCloseTimer();
-          },
+          onExit: (_) => _startCloseTimer(),
           child: Center(
-            child: Icon(
-              icon,
-              color: _iconColorFor(index), // see helper below
-            ),
+            child: Icon(icon, color: _iconColorFor(index)),
           ),
         ),
       ),
@@ -198,46 +196,12 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     );
   }
 
-  /// Helper to decide an icon’s color:
   Color? _iconColorFor(int index) {
     final isSelected = (_tabController.index == index);
     final isPinned = (pinnedIndex == index);
     final isHovered = (hoveredIndex == index);
-
     return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
   }
-  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-  //   return NavigationRailDestination(
-  //     icon: SizedBox(
-  //       width: _navRailWidth,
-  //       child: MouseRegion(
-  //         onEnter: (_) {
-  //           // Only hover Info(0) or Passwords(1).
-  //           // We don't do a drawer for Settings(2).
-  //           _closeTimer?.cancel();
-  //           setState(() => hoveredIndex = index);
-  //           // if (index == 1) {
-  //           //   // if (index == 0 || index == 1) {
-  //           //   _closeTimer?.cancel();
-  //           //   setState(() => hoveredIndex = index);
-  //           // }
-  //         },
-  //         onExit: (_) {
-  //           // Start close timer. If user doesn't enter the drawer, we'll revert hoveredIndex.
-  //           // if (pinnedIndex == index) return; // Maybe necessary - test first.
-  //           _startCloseTimer();
-  //         },
-  //         child: Center(
-  //           child: Icon(
-  //             icon,
-  //             color: (pinnedIndex == index || hoveredIndex == index) ? Theme.of(context).colorScheme.primary : null,
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //     label: Text(label),
-  //   );
-  // }
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -250,9 +214,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     _closeTimer = Timer(_closeDelay, () {
       if (!mounted) return;
       if (!isDrawerHovered) {
-        setState(() {
-          hoveredIndex = null;
-        });
+        setState(() => hoveredIndex = null);
       }
     });
   }
@@ -278,8 +240,9 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         child: Material(
           elevation: 4,
           color: theme.colorScheme.surface,
-          child: shouldShowDrawer && displayedDrawerIndex != null
-              ? Container(
+          child: displayedDrawerIndex == null
+              ? const SizedBox.shrink()
+              : Container(
                   padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
                   foregroundDecoration: BoxDecoration(
                     border: Border(
@@ -290,39 +253,33 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   child: _buildDrawerContent(displayedDrawerIndex!, theme),
-                )
-              : const SizedBox.shrink(),
+                ),
         ),
       ),
     );
   }
 
-  /// We only build drawer content for Info(0) and Passwords(1).
   Widget _buildDrawerContent(int index, ThemeData theme) {
     switch (index) {
-      // case 0:
-      //   // Info drawer content
-      //   return const InfoDrawerContent(websiteUrl: 'www.passguard9000.com');
       case 1:
-        // Password drawer content
-        return _buildPasswordsDrawerContent(theme);
+        return PasswordListView(
+          onItemSelected: (int itemSelect) {
+            pinnedIndex = 1;
+            _tabController.index = 1;
+            if (itemSelect == 1) {
+              Provider.of<PasswordProvider>(context, listen: false).resetToCreateMode();
+            }
+          },
+        );
+      case 3:
+        return DocListView(
+          onItemSelected: (int itemSelect) {
+            pinnedIndex = 3;
+            _tabController.index = 3;
+          },
+        );
       default:
         return const SizedBox.shrink();
     }
-  }
-
-  Widget _buildPasswordsDrawerContent(ThemeData theme) {
-    return PasswordListView(
-      onItemSelected: (int itemSelect) {
-        // itemSelect of 0 == a password list item was selected, just open the passwordScreen.
-        // itemSelect of 1 == the Create new password button was selected.
-        pinnedIndex = 1;
-        _tabController.index = 1;
-        if (itemSelect == 1) {
-          final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-          passwordProvider.setMode('create');
-        }
-      },
-    );
   }
 }

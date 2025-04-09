@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 
 class PermanentSnackBar extends StatelessWidget {
   final double height;
@@ -43,6 +43,7 @@ class PermanentSnackBar extends StatelessWidget {
                     style: textStyle ??
                         theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
                         ),
                   ),
               ],

@@ -7,26 +7,26 @@ class ThemeConfig {
   static final List<String> themes = [
     // ---- LIGHT THEMES ----
     'Light', // default - required
-    'Bubblegum',
-    'Botanical Breeze',
-    'Glacial Blue',
-    'Crimson Snow',
-    'Deep Blue',
-    'Sunlit Meadow',
-    'Café Cream',
-    'Citrus Circuit',
-    'Paper',
+    'Bubblegum', // perfect.
+    'Botanical Breeze', //  looks good, but a just a bit too green - maybe add green with white
+    'Glacial Blue', // perfect.
+    'Crimson Snow', // perfect.
+    'Deep Blue', // perfect.
+    'Sunlit Meadow', // good.
+    'Café Cream', // perfect.
+    'Citrus Circuit', // perfect.
+    'Paper', // perfect.
     // ---- DARK THEMES ----
-    'Dark',
-    'Lock',
-    'Dark Bubblegum',
-    'Crimson Night',
-    'Depths',
-    'Solar Eclipse',
-    'Neon Nightscape',
-    'Cyberpunk Noir',
-    'Midnight Mint',
-    'Starforged Alloy',
+    'Dark', //
+    'Lock', // perfect.
+    'Dark Bubblegum', //
+    'Crimson Night', //
+    'Depths', //
+    'Solar Eclipse', //
+    'Neon Nightscape', //
+    'Cyberpunk Noir', //
+    'Midnight Mint', //
+    'Starforged Alloy', //
   ];
 
   static ThemeData getTheme(String themeName, {double? borderRadius}) {
@@ -713,7 +713,7 @@ class ThemeConfig {
         return ThemeData.dark(useMaterial3: true).copyWith(
           colorScheme: const ColorScheme.dark(
             primary: Color(0xFFFF00D5), // Hot pink
-            secondary: Color(0xFFF11E76), // Electric orchid
+            secondary: Color.fromARGB(255, 70, 1, 30), // Electric orchid
             tertiary: Color(0xFFDA70D6), // Soft neon lavender
             surface: Color(0xFF1B0014), // Glossy berry-black
             onPrimary: Colors.black,

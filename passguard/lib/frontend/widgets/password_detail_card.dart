@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:Encryptilock/frontend/widgets/bottom_action_bar.dart';
-import 'package:Encryptilock/frontend/providers/password_provider.dart';
-import 'package:Encryptilock/frontend/providers/settings_provider.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart';
+import 'package:encryptilock/frontend/widgets/bottom_action_bar.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 
 /// A card displaying the *currently selected* password from PasswordProvider.
 /// If a new password is selected while this is open, the fields update and
@@ -411,7 +411,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                   children: [
                     Flexible(
                       child: Text(
-                        'Service Type: $serviceType',
+                        'Category: $serviceType',
                         style: theme.textTheme.bodyMedium,
                         overflow: TextOverflow.ellipsis,
                       ),

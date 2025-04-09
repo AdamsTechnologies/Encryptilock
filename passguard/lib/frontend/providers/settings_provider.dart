@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Encryptilock/backend/controllers/config_settings_controller.dart';
+import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
 
 class SettingsProvider extends ChangeNotifier {
   final ConfigSettingsController configManager;
@@ -36,6 +36,11 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoGenerateAndFill => _autoGenerateAndFill;
   bool get showHiddenPasswords => _showHiddenPasswords;
 
+  Future<void> shutdown() async {
+    await configManager.close();
+    notifyListeners();
+  }
+
   // --------------------------
   // LOAD SETTINGS
   // --------------------------
@@ -48,7 +53,6 @@ class SettingsProvider extends ChangeNotifier {
     _autoFill = (await configManager.getSetting('auto_fill') == 'true');
     _showDeleteButton = (await configManager.getSetting('show_delete_button') == 'true');
     _skipDeleteConfirmation = (await configManager.getSetting('skip_delete_confirmation') == 'true');
-    // NEW SETTINGS
     _showDeleteButtonMainView = (await configManager.getSetting('show_delete_button_main_view') == 'true');
     _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true');
     _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');

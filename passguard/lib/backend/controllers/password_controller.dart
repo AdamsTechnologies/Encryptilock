@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:Encryptilock/backend/devsec/encrypto.dart'; // Or your actual EncryptionInterface
-import 'package:Encryptilock/backend/databaseManager/dart_sqlite.dart'; // Your existing SQLiteController
+import 'package:encryptilock/backend/devsec/encrypto.dart'; // Or your actual EncryptionInterface
+import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart'; // Your existing SQLiteController
 
 /// A simple controller for storing and retrieving password records.
 /// Depends on:
 ///  - `SQLiteController` for DB operations
 ///  - `EncryptionInterface` (e.g., `Encrypto`) for encryption.
 class PasswordController {
-  //TODO Add note field!!
   /// The underlying SQLite controller that handles queries, upserts, etc.
   final DartSqlite dbController;
 

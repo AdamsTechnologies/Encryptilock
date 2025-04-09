@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Encryptilock/frontend/providers/theme_provider.dart';
-import 'package:Encryptilock/frontend/providers/settings_provider.dart';
-import 'package:Encryptilock/frontend/theme/theme_config.dart';
-import 'package:Encryptilock/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
+import 'package:encryptilock/frontend/providers/theme_provider.dart';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
+import 'package:encryptilock/frontend/theme/theme_config.dart';
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -145,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final newTheme = ThemeConfig.getTheme(selectedName);
                     themeProvider.setTheme(newTheme);
                     settingsProvider.updateTheme(selectedName);
-                    context.read<SnackBarProvider>().showMessage('Theme updated to $selectedName');
+                    context.read<SnackBarProvider>().showMessage('Theme updated to: $selectedName');
                   }
                 },
               ),
@@ -197,7 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: () {
                 final minutes = _temporaryIdleTimeout?.toInt() ?? 5;
                 settingsProvider.updateIdleTimeout(minutes);
-                context.read<SnackBarProvider>().showMessage('Idle timeout updated to $minutes minutes');
+                context.read<SnackBarProvider>().showMessage('Idle timeout updated to: $minutes minutes');
               },
               child: const Text('Save Timeout'),
             ),
