@@ -83,11 +83,41 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                   // }
                 },
                 tabs: const [
-                  Tab(icon: Icon(Icons.home), text: 'Home'),
-                  Tab(icon: Icon(Icons.lock), text: 'Passwords'),
-                  Tab(icon: Icon(Icons.settings), text: 'Settings'),
-                  Tab(icon: Icon(Icons.info_outline), text: 'Info'),
+                  Tab(
+                    icon: Tooltip(
+                      message: 'Go to Home',
+                      child: Icon(Icons.home),
+                    ),
+                    text: 'Home',
+                  ),
+                  Tab(
+                    icon: Tooltip(
+                      message: 'Manage Passwords',
+                      child: Icon(Icons.lock),
+                    ),
+                    text: 'Passwords',
+                  ),
+                  Tab(
+                    icon: Tooltip(
+                      message: 'App Settings',
+                      child: Icon(Icons.settings),
+                    ),
+                    text: 'Settings',
+                  ),
+                  Tab(
+                    icon: Tooltip(
+                      message: 'Info & Help',
+                      child: Icon(Icons.info_outline),
+                    ),
+                    text: 'Info',
+                  ),
                 ],
+                // tabs: const [
+                //   Tab(icon: Icon(Icons.home), text: 'Home'),
+                //   Tab(icon: Icon(Icons.lock), text: 'Passwords'),
+                //   Tab(icon: Icon(Icons.settings), text: 'Settings'),
+                //   Tab(icon: Icon(Icons.info_outline), text: 'Info'),
+                // ],
               ),
             ),
       body: Stack(
@@ -187,13 +217,34 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           },
           onExit: (_) => _startCloseTimer(),
           child: Center(
-            child: Icon(icon, color: _iconColorFor(index)),
+            child: Tooltip(
+              message: label,
+              child: Icon(icon, color: _iconColorFor(index)),
+            ),
           ),
         ),
       ),
       label: Text(label),
     );
   }
+  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+  //   return NavigationRailDestination(
+  //     icon: SizedBox(
+  //       width: _navRailWidth,
+  //       child: MouseRegion(
+  //         onEnter: (_) {
+  //           _closeTimer?.cancel();
+  //           setState(() => hoveredIndex = index);
+  //         },
+  //         onExit: (_) => _startCloseTimer(),
+  //         child: Center(
+  //           child: Icon(icon, color: _iconColorFor(index)),
+  //         ),
+  //       ),
+  //     ),
+  //     label: Text(label),
+  //   );
+  // }
 
   Color? _iconColorFor(int index) {
     final isSelected = (_tabController.index == index);
