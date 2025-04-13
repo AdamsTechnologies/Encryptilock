@@ -197,7 +197,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         _buildRailDestination(Icons.home, 'Home', 0),
         _buildRailDestination(Icons.lock, 'Passwords', 1),
         _buildRailDestination(Icons.settings, 'Settings', 2),
-        _buildRailDestination(Icons.info_outline, 'Info', 3),
+        _buildRailDestination(Icons.info_outline, 'User Manual', 3),
         _buildRailDestination(Icons.power_settings_new, 'Logout', 4),
       ],
       indicatorShape: const BeveledRectangleBorder(
@@ -208,17 +208,17 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
     return NavigationRailDestination(
-      icon: SizedBox(
-        width: _navRailWidth,
-        child: MouseRegion(
-          onEnter: (_) {
-            _closeTimer?.cancel();
-            setState(() => hoveredIndex = index);
-          },
-          onExit: (_) => _startCloseTimer(),
-          child: Center(
-            child: Tooltip(
-              message: label,
+      icon: Tooltip(
+        message: label,
+        child: SizedBox(
+          width: _navRailWidth,
+          child: MouseRegion(
+            onEnter: (_) {
+              _closeTimer?.cancel();
+              setState(() => hoveredIndex = index);
+            },
+            onExit: (_) => _startCloseTimer(),
+            child: Center(
               child: Icon(icon, color: _iconColorFor(index)),
             ),
           ),
@@ -227,6 +227,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       label: Text(label),
     );
   }
+  // VERSION WITHOUT TOOLTIP
   // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
   //   return NavigationRailDestination(
   //     icon: SizedBox(

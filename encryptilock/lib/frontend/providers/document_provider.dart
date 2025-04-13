@@ -51,7 +51,7 @@ Encryptilock protects your data using industry-standard cryptography, all handle
 - Sensitive fields are encrypted individually before being saved.
 - The entire vault is encrypted as well.
 
-🛡️ *AES-256 would take billions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
+🛡️ *AES-256 would take millions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
 
 ### Local-Only Model
 
