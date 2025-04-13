@@ -388,17 +388,17 @@ class _LoginScreenState extends State<LoginScreen> {
               margin: const EdgeInsets.only(top: 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                color: theme.colorScheme.error.withOpacity(0.1), //theme.colorScheme.primaryContainer.withOpacity(0.1)
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lock_outline, color: theme.colorScheme.primary),
+                  Icon(Icons.warning, color: theme.colorScheme.error), //Icons.lock_outline, color: theme.colorScheme.primary
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "There's no password recovery, only factor reset. Be sure to remember your credentials.",
+                      "There's no password recovery, only factory reset. Be sure to remember your login credentials.",
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface),
                     ),
                   ),
@@ -420,3 +420,4 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 }
+// TODO consider messaging "Just remember one password for the rest of your life" -

@@ -137,38 +137,6 @@ class HomeScreen extends StatelessWidget {
       ],
     );
   }
-  // Widget _buildTipsAndWebsite(BuildContext context, {bool isCentered = false}) {
-  //   final theme = Theme.of(context);
-  //   final textAlign = isCentered ? TextAlign.center : TextAlign.left;
-  //   final crossAlign = isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
-
-  //   return Column(
-  //     crossAxisAlignment: crossAlign,
-  //     children: [
-  //       ElevatedButton.icon(
-  //         onPressed: _launchWebsite,
-  //         icon: const Icon(Icons.open_in_new),
-  //         label: const Text('Visit Encryptilock.com'),
-  //         style: ElevatedButton.styleFrom(
-  //           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-  //           textStyle: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-  //         ),
-  //       ),
-  //       const SizedBox(height: 24),
-  //       Text(
-  //         'Tips for Getting Started:',
-  //         style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-  //         textAlign: textAlign,
-  //       ),
-  //       const SizedBox(height: 8),
-  //       Text('Visit Encryptilock.com to find helpful information and updates.', style: theme.textTheme.bodyMedium, textAlign: textAlign),
-  //       Text('Don’t forget your master password — it cannot be recovered.', style: theme.textTheme.bodyMedium, textAlign: textAlign),
-  //       Text('Explore the Info tab for help and the user manual.', style: theme.textTheme.bodyMedium, textAlign: textAlign),
-  //       const SizedBox(height: 16),
-  //       _buildVersionInfo(context, isCentered),
-  //     ],
-  //   );
-  // }
 
   Widget _tipItem(String text, ThemeData theme, TextAlign align) {
     return Padding(
@@ -214,7 +182,6 @@ class HomeScreen extends StatelessWidget {
   Future<String> _getVersion() async {
     final info = await PackageInfo.fromPlatform();
     return info.version;
-    // return '1.0.0';
   }
 
   Widget _buildLogo(BuildContext context) {
@@ -229,7 +196,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _launchWebsite() async {
-    final url = Uri.https('www.encryptilock.com', '');
+    final url = Uri.http('localhost:4321'); // TODO!!! UNCOMMENT OUT LIVE SITE.
+    // final url = Uri.https('www.encryptilock.com', '');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }
