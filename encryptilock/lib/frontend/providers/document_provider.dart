@@ -42,7 +42,10 @@ Encryptilock is built for simplicity — all encryption and data management happ
       title: "How Encryption Works",
       content: """# 🔐 How Encryption Works
 
-Encryptilock protects your data using industry-standard cryptography, all handled entirely offline and on your device.
+Encryption is the process of converting readable information into a scrambled format that can only be deciphered with a specific key. It's how we keep your data private and protected — even if someone were to access your files, they wouldn't be able to read them.  
+
+
+Encryptilock uses the strongest encryption algorithms available to keep your information secure — all entirely offline and on your device.
 
 ### Encryption Basics
 
@@ -91,7 +94,7 @@ Each entry includes the following fields:
   (If it doesn't start with `http://` or `https://`, it defaults to `https://`)
 - **Notes** - Optional free-form text
 
-Only **Title**  and **Password** are required. Use remaining fields as needed.
+Only **Title** and **Password** are required. Use remaining fields as needed.
 
 💡 *Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.*
 
@@ -165,12 +168,12 @@ You can return Encryptilock to a fresh state by performing a factory reset from 
 
 To reset the app:
 
-- Open the login screen and tap the **Help** icon.
-- Select **Factory Reset** from the dialog options.
+- Open the login screen and tap the **'Having trouble logging in?'** button.
+- Type *DELETE* into the text box and select **'Delete and Restart'**.
 
 This will:
 
-- Permanently delete your password vault (`s2.db`) and all configuration settings (`s1.db`)
+- Permanently delete your password vault and all configuration settings
 - Return the app to its first-launch state
 
 After resetting, you'll be prompted to create a new account as if launching the app for the first time.
@@ -233,7 +236,7 @@ These options allow you to fine-tune how password entries are handled and genera
   Customize how new passwords are created:
   - **Min/Max Length** - Set bounds for password length.
   - **Exclude Characters** - Enter any characters you'd like to avoid in generated passwords.  
-    For example: `ABCab198!:;'”` ensures none of these appear in new passwords.
+    For example: `ABCab198!:;'”` ensures none of these characters appear in new passwords.
   - **Auto-Generate & Fill** - When enabled, tapping the key icon will instantly create and fill a password based on your saved preferences.  
     When disabled, the password generator dialog will open instead.
 
