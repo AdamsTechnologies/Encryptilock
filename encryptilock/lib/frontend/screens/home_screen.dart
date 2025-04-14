@@ -196,8 +196,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _launchWebsite() async {
-    final url = Uri.http('localhost:4321'); // TODO!!! UNCOMMENT OUT LIVE SITE.
-    // final url = Uri.https('www.encryptilock.com', '');
+    final url = Uri.https('www.encryptilock.com', '');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }
