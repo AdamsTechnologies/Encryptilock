@@ -315,7 +315,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

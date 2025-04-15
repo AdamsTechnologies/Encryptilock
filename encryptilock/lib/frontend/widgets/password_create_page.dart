@@ -145,7 +145,8 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 6,
-      margin: const EdgeInsets.all(16),
+      // margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

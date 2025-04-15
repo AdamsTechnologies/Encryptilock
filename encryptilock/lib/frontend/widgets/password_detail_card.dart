@@ -405,7 +405,8 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
             borderRadius: BorderRadius.circular(12.0),
           ),
           elevation: 6,
-          margin: const EdgeInsets.all(16.0),
+          // margin: const EdgeInsets.all(16.0),
+          margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -452,9 +453,9 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                     onSuffixTap: () => _openUrl(context, _decryptedUrl!),
                     suffixIconData: Icons.open_in_browser,
                     suffixTooltip: 'Open URL',
-                  )
-                else
-                  const SizedBox(height: 72),
+                  ),
+                // else
+                // const SizedBox(height: 72),
 
                 const SizedBox(height: 24.0),
 
