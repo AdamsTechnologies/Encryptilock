@@ -99,21 +99,6 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
       // context.read<SnackBarProvider>().showMessage('Failed to decrypt $fieldKey');
     }
   }
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _populateFields();
-  //   _decryptPassword();
-  // }
-
-  // void _populateFields() {
-  //   _serviceController.text = widget.existingRecord['service'] ?? '';
-  //   _usernameController.text = widget.existingRecord['username'] ?? '';
-  //   _serviceTypeController.text = widget.existingRecord['servicetype'] ?? '';
-  //   _urlController.text = widget.existingRecord['url'] ?? '';
-  //   _noteController.text = widget.existingRecord['notes'] ?? '';
-  //   _isActive = widget.existingRecord['isactive'] == 1;
-  // }
 
   Future<void> _decryptPassword() async {
     setState(() => _isDecrypting = true);
@@ -176,34 +161,6 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
       }
     }
   }
-  // void _togglePasswordVisibility() {
-  //   if (_passwordVisible) {
-  //     setState(() {
-  //       _obscurePassword = true;
-  //       _passwordVisible = false;
-  //       _passwordController.text = '••••••••••';
-  //     });
-  //     _hidePasswordTimer?.cancel();
-  //   } else {
-  //     if (_decryptedPassword != null) {
-  //       setState(() {
-  //         _obscurePassword = false;
-  //         _passwordVisible = true;
-  //         _passwordController.text = _decryptedPassword!;
-  //       });
-  //       _hidePasswordTimer?.cancel();
-  //       _hidePasswordTimer = Timer(const Duration(seconds: 10), () {
-  //         setState(() {
-  //           _obscurePassword = true;
-  //           _passwordVisible = false;
-  //           _passwordController.text = '••••••••••';
-  //         });
-  //       });
-  //     } else {
-  //       context.read<SnackBarProvider>().showMessage('Password not yet decrypted.');
-  //     }
-  //   }
-  // }
 
   void _generatePassword() async {
     final settings = context.read<SettingsProvider>();
@@ -308,53 +265,6 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
       snackbarProvider.showMessage("Error saving password: $e");
     }
   }
-
-  // Future<void> _save() async {
-  //   // if (!_formKey.currentState!.validate()) return;
-
-  //   final passwordProvider = context.read<PasswordProvider>();
-  //   final snackbarProvider = context.read<SnackBarProvider>();
-
-  //   final maskedValue = '••••••••••';
-  //   final controllerText = _passwordController.text.trim();
-  //   final isMasked = controllerText == maskedValue;
-
-  //   String passwordToSave;
-  //   bool passwordChanged = _passwordChanged;
-
-  //   if (passwordChanged && _decryptedPassword != null) {
-  //     passwordToSave = _decryptedPassword!;
-  //   } else if (!isMasked && _decryptedPassword != controllerText) {
-  //     // User typed something new manually
-  //     passwordChanged = true;
-  //     passwordToSave = controllerText;
-  //   } else {
-  //     // No change, use existing encrypted password
-  //     passwordToSave = widget.existingRecord['password'];
-  //   }
-
-  //   final updatedData = {
-  //     'id': widget.existingRecord['id'],
-  //     'service': _serviceController.text.trim(),
-  //     'username': _usernameController.text.trim(),
-  //     'password': passwordToSave.trim(),
-  //     'servicetype': _serviceTypeController.text.trim(),
-  //     'url': _urlController.text.trim(),
-  //     'notes': _noteController.text.trim(),
-  //     'isactive': _isActive ? 1 : 0,
-  //   };
-
-  //   try {
-  //     snackbarProvider.showMessage("Updating password");
-  //     await passwordProvider.addOrUpdatePassword(
-  //       updatedData,
-  //       passwordChanged: passwordChanged,
-  //     );
-  //     widget.onSaveComplete?.call(updatedData['id']);
-  //   } catch (e) {
-  //     snackbarProvider.showMessage("Error saving password: $e");
-  //   }
-  // }
 
   Future<void> _delete() async {
     final settings = context.read<SettingsProvider>();
@@ -503,39 +413,6 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
       ),
     );
   }
-  // Widget _buildSmartField(String label, TextEditingController controller, String key, {bool required = false, int maxLines = 1}) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(vertical: 6),
-  //     child: FocusTraversalOrder(
-  //       order: NumericFocusOrder(maxLines.toDouble()),
-  //       child: Focus(
-  //         onFocusChange: (hasFocus) {
-  //           if (!hasFocus && _clearedFields.contains(key) && controller.text.trim().isEmpty) {
-  //             controller.text = _originalValues[key] ?? '';
-  //           }
-  //         },
-  //         child: TextFormField(
-  //           controller: controller,
-  //           onTap: () {
-  //             if (!_clearedFields.contains(key)) {
-  //               _originalValues[key] = controller.text;
-  //               controller.clear();
-  //               _clearedFields.add(key);
-  //             }
-  //           },
-  //           maxLines: maxLines,
-  //           decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
-  //           validator: (value) {
-  //             if (required && (value == null || value.trim().isEmpty)) {
-  //               return '$label is required';
-  //             }
-  //             return null;
-  //           },
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildPasswordField(BuildContext context) {
     final theme = Theme.of(context);
