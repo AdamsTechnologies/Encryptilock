@@ -50,6 +50,7 @@ Encryptilock uses the strongest encryption algorithms available to keep your inf
 ### Encryption Basics
 
 - All records are encrypted using the **AES-256** cipher — one of the most secure encryption algorithms available today.
+- Fields are only decrypted when necessary, remaining encrypted while not being actively viewed or updated.
 - We use **Argon2id** to derive a secure encryption key.
 - Sensitive fields are encrypted individually before being saved.
 - The entire vault is encrypted as well.
@@ -166,10 +167,17 @@ You can return Encryptilock to a fresh state by performing a factory reset from 
 
 ### Factory Reset
 
-To reset the app:
+to reset the app:
+- Ensure 'Allow Factory Reset' was toggled on, (if not skip to 'Resetting Manually')
+- Open the login screen and tap the **'Having trouble logging in? Factory Reset'** button.
+- Type your case-sensitive username into the text box and select **'Delete and Restart'**.
+  - the Delete and Restart button will become enabled once you've typed your username.
 
-- Open the login screen and tap the **'Having trouble logging in?'** button.
-- Type *DELETE* into the text box and select **'Delete and Restart'**.
+**Resetting Manually**
+- if you can't remember your username, or you didn't Allow Factory Reset in the settings page
+  - see the document 'Manual Backup' to find the location of your databases. 
+    - manually delete these databases, and restart your app. This is the same actions the Factory Reset does for you.
+
 
 This will:
 
@@ -208,13 +216,19 @@ The Settings tab allows you to personalize Encryptilock's behavior and appearanc
 
 ---
 
-### Idle Timeout
+### Security
 
-- Set a custom inactivity timeout (in minutes).
-- After the specified period with no interaction, the app auto-locks and returns to the login screen.
-- Helps protect your data during periods of inactivity.
-
+**Idle Timeout**
+  - Set a custom inactivity timeout (in minutes).
+  - After the specified period with no interaction, the app auto-locks and returns to the login screen.
+  - Helps protect your data during periods of inactivity.
 ⚠️ *Tip: Lock your device manually when stepping away. Encryptilock adds an extra layer by auto-locking if you forget.*
+
+**Allow Factory Reset**
+  - adds a Factory reset button on the login page.
+  - Allows you to reset the app to original state, requires you to input your username to delete.
+  - If you ever forget your username - delete the databases to act as a factory reset. 
+    - see Manual Backup docs to find database locations, delete the databases. restart the app and it'll prompt you to register anew.
 
 ---
 
