@@ -31,27 +31,23 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
   Future<String?>? _decryptFuture; // Tracks the ongoing decryption
   Timer? _hideTimer; // Hides the password after 2.5s
   String? _lastSelectedId; // To detect if the user changed to a new record
+  String? _decryptedUsername;
+  String? _decryptedUrl;
+  late TextEditingController _usernameController;
+  late TextEditingController _urlController;
 
-  Future<void> _decryptPasswordToClipboard(BuildContext context, String encryptedPass) async {
-    final snackbarProv = Provider.of<SnackBarProvider>(context, listen: false);
-    try {
-      final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-      final decryptedPassword = await passwordProvider.decryptPassword(encryptedPass);
-
-      if (decryptedPassword.isNotEmpty) {
-        await Clipboard.setData(ClipboardData(text: decryptedPassword));
-        snackbarProv.showMessage('Password copied to clipboard');
-      } else {
-        snackbarProv.showMessage('Failed to copy to clipboard');
-      }
-    } catch (e) {
-      snackbarProv.showMessage('Failed to copy to clipboard');
-    }
+  @override
+  void initState() {
+    super.initState();
+    _usernameController = TextEditingController(text: '••••••••••');
+    _urlController = TextEditingController(text: '••••••••••');
   }
 
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _usernameController.dispose();
+    _urlController.dispose();
     super.dispose();
   }
 
@@ -62,15 +58,45 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
     super.didChangeDependencies();
 
     final passwordProv = Provider.of<PasswordProvider>(context);
-    final currentId = passwordProv.selectedPassword?['id'];
+    final selected = passwordProv.selectedPassword;
+    final currentId = selected?['id'];
 
-    // If the user has changed the selection
     if (currentId != _lastSelectedId) {
-      // Reset everything
+      // Reset old state
       _hideTimer?.cancel();
       _showPlaintext = false;
       _decryptFuture = null;
       _lastSelectedId = currentId;
+
+      // Reset decrypted values
+      _decryptedUsername = null;
+      _decryptedUrl = null;
+
+      if (selected != null) {
+        final encryptedUsername = selected['username'] ?? '';
+        final encryptedUrl = selected['url'] ?? '';
+
+        // Decrypt asynchronously
+        final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+        // Decrypt username
+        passwordProvider.decryptField('username', encryptedUsername).then((value) {
+          if (mounted) {
+            setState(() {
+              _decryptedUsername = value;
+              _usernameController.text = value;
+            });
+          }
+        });
+        // Decrypt URL
+        passwordProvider.decryptField('url', encryptedUrl).then((value) {
+          if (mounted) {
+            setState(() {
+              _decryptedUrl = value;
+              _urlController.text = value;
+            });
+          }
+        });
+      }
     }
   }
 
@@ -102,6 +128,23 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
         });
       }
     });
+  }
+
+  Future<void> _decryptPasswordToClipboard(BuildContext context, String encryptedPass) async {
+    final snackbarProv = Provider.of<SnackBarProvider>(context, listen: false);
+    try {
+      final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
+      final decryptedPassword = await passwordProvider.decryptPassword(encryptedPass);
+
+      if (decryptedPassword.isNotEmpty) {
+        await Clipboard.setData(ClipboardData(text: decryptedPassword));
+        snackbarProv.showMessage('Password copied to clipboard');
+      } else {
+        snackbarProv.showMessage('Failed to copy to clipboard');
+      }
+    } catch (e) {
+      snackbarProv.showMessage('Failed to copy to clipboard');
+    }
   }
 
   void _copyToClipboard(BuildContext context, String text, String label) {
@@ -222,12 +265,12 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
         }
         // Extract all fields
         final serviceName = selected['service'] ?? '';
-        final username = selected['username'] ?? '';
         final encryptedPass = selected['password'] ?? '';
-        final url = selected['url'] ?? '';
         final creationDate = selected['createdt'] ?? '';
         final serviceType = selected['servicetype'] ?? '';
         final passwordId = selected['id'];
+        // final username = selected['username'] ?? '';
+        // final url = selected['url'] ?? '';
 
         DateTime createDateParsed = DateTime.parse(creationDate);
         String formattedDate = '${createDateParsed.year}-${createDateParsed.month.toString().padLeft(2, '0')}-${createDateParsed.day.toString().padLeft(2, '0')}';
@@ -235,7 +278,8 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
         // Reusable read-only field for non-password data
         Widget _buildNormalField({
           required String label,
-          required String value,
+          TextEditingController? controller,
+          String? value, // no longer required
           bool copyable = false,
           VoidCallback? onSuffixTap,
           IconData? suffixIconData,
@@ -244,7 +288,8 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: TextFormField(
-              initialValue: value,
+              controller: controller,
+              initialValue: controller == null ? value ?? '' : null,
               readOnly: true,
               decoration: InputDecoration(
                 labelText: label,
@@ -255,13 +300,13 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                     if (copyable)
                       IconButton(
                         tooltip: 'Copy $label',
-                        icon: Icon(Icons.copy, color: theme.colorScheme.primary),
-                        onPressed: () => _copyToClipboard(context, value, label),
+                        icon: Icon(Icons.copy, color: Theme.of(context).colorScheme.primary),
+                        onPressed: () => _copyToClipboard(context, controller?.text ?? value ?? '', label),
                       ),
                     if (onSuffixTap != null && suffixIconData != null)
                       IconButton(
                         tooltip: suffixTooltip,
-                        icon: Icon(suffixIconData, color: theme.colorScheme.primary),
+                        icon: Icon(suffixIconData, color: Theme.of(context).colorScheme.primary),
                         onPressed: onSuffixTap,
                       ),
                   ],
@@ -388,8 +433,8 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                 // Username
                 _buildNormalField(
                   label: 'Username',
-                  value: username,
-                  copyable: true,
+                  controller: _usernameController,
+                  copyable: _decryptedUsername != null,
                 ),
 
                 // Password
@@ -398,8 +443,9 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                 // URL if present
                 _buildNormalField(
                   label: 'URL',
-                  value: url,
-                  onSuffixTap: () => _openUrl(context, url),
+                  controller: _urlController,
+                  copyable: _decryptedUrl != null,
+                  onSuffixTap: _decryptedUrl != null ? () => _openUrl(context, _decryptedUrl!) : null,
                   suffixIconData: Icons.open_in_browser,
                   suffixTooltip: 'Open URL',
                 ),

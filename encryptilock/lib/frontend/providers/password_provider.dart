@@ -75,6 +75,13 @@ class PasswordProvider extends ChangeNotifier {
             "createdt": "datetime",
             "updatedt": "datetime",
           },
+          encryptedFields: [
+            'password',
+            'username',
+            'url',
+            'notes',
+            'isactive',
+          ],
         );
         await _passwordController!.init();
 
@@ -96,7 +103,7 @@ class PasswordProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      _passwords = await _passwordController!.getAllRecords(); // decryptFields: ['password']
+      _passwords = await _passwordController!.getAllRecords();
 
       _errorMessage = null;
       notifyListeners(); // Notify listeners after fetching
@@ -111,13 +118,17 @@ class PasswordProvider extends ChangeNotifier {
 
   /// Adds or updates a password entry.
   /// [passwordChanged] indicates whether the password was modified.
-  Future<void> addOrUpdatePassword(Map<String, dynamic> data, {bool passwordChanged = false}) async {
+  Future<void> addOrUpdatePassword(
+    Map<String, dynamic> data, {
+    bool passwordChanged = false,
+    Map<String, bool>? changedFields,
+  }) async {
     if (!_validateDbConnection()) return;
 
     _setLoading(true);
 
     try {
-      String upsertedId = await _passwordController!.upsertRecord(
+      final upsertedId = await _passwordController!.upsertRecord(
         id: data['id'],
         username: data['username'],
         password: data['password'],
@@ -127,7 +138,8 @@ class PasswordProvider extends ChangeNotifier {
         notes: data['notes'],
         isactive: data['isactive'] ?? 1,
         createdt: data['createdt'],
-        passwordChanged: passwordChanged, // Pass the flag here
+        passwordChanged: passwordChanged,
+        changedFields: changedFields, // pass your map here
       );
 
       await fetchPasswords();
@@ -137,12 +149,43 @@ class PasswordProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Error saving password: $e';
-
       notifyListeners();
     } finally {
       _setLoading(false);
     }
   }
+  // Future<void> addOrUpdatePassword(Map<String, dynamic> data, {bool passwordChanged = false}) async {
+  //   if (!_validateDbConnection()) return;
+
+  //   _setLoading(true);
+
+  //   try {
+  //     String upsertedId = await _passwordController!.upsertRecord(
+  //       id: data['id'],
+  //       username: data['username'],
+  //       password: data['password'],
+  //       service: data['service'],
+  //       servicetype: data['servicetype'],
+  //       url: data['url'],
+  //       notes: data['notes'],
+  //       isactive: data['isactive'] ?? 1,
+  //       createdt: data['createdt'],
+  //       passwordChanged: passwordChanged, // Pass the flag here
+  //     );
+
+  //     await fetchPasswords();
+
+  //     if (_mode == 'create' || _mode == 'edit') {
+  //       selectPasswordId(upsertedId);
+  //     }
+  //   } catch (e) {
+  //     _errorMessage = 'Error saving password: $e';
+
+  //     notifyListeners();
+  //   } finally {
+  //     _setLoading(false);
+  //   }
+  // }
 
   /// Deletes a password entry by ID.
   Future<void> deletePassword(String id) async {
@@ -169,6 +212,12 @@ class PasswordProvider extends ChangeNotifier {
     String decryptedPassword = await _passwordController!.encrypto.decrypto(encryptedPassword);
 
     return decryptedPassword;
+  }
+
+  /// Decrypts the given encrypted field.
+  Future<String> decryptField(String fieldName, String encryptedField) async {
+    String decryptedField = await _passwordController!.encrypto.decrypto(encryptedField);
+    return decryptedField;
   }
 
   void resetToCreateMode() {
