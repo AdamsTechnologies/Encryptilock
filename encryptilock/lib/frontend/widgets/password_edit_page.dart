@@ -55,17 +55,17 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     _populateFields();
     _decryptInitialFields();
     _passwordController.text = '••••••••••';
-    // _decryptPassword(); // your existing password decryption
   }
 
   void _populateFields() {
     // Initially fill controllers with either encrypted or empty placeholders.
     // We'll overwrite them with decrypted text if needed, below.
-    _serviceController.text = widget.existingRecord['service'] ?? '';
-    _usernameController.text = widget.existingRecord['username'] ?? '';
-    _serviceTypeController.text = widget.existingRecord['servicetype'] ?? '';
-    _urlController.text = widget.existingRecord['url'] ?? '';
-    _noteController.text = widget.existingRecord['notes'] ?? '';
+
+    _originalValues['service'] = widget.existingRecord['service'];
+    _originalValues['username'] = widget.existingRecord['username'];
+    _originalValues['servicetype'] = widget.existingRecord['servicetype'];
+    _originalValues['url'] = widget.existingRecord['url'];
+    _originalValues['notes'] = widget.existingRecord['notes'];
     _isActive = widget.existingRecord['isactive'] == 1;
   }
 
@@ -87,16 +87,24 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
   /// Decrypts the controller's current text if it's non-empty.
   /// This ensures the user never sees ciphertext in the UI.
   Future<void> _maybeDecryptField(String fieldKey, TextEditingController ctrl) async {
-    final rawValue = ctrl.text.trim();
-    if (rawValue.isEmpty) return; // no need to decrypt empty
+    final rawValue = _originalValues[fieldKey]?.trim();
+    if (rawValue == null || rawValue.isEmpty) return;
+    if ({
+      'service',
+      'servicetype'
+    }.contains(fieldKey)) {
+      // Directly set text if it's plaintext
+      ctrl.text = rawValue;
+      return;
+    }
     try {
       final passwordProvider = context.read<PasswordProvider>();
       final decrypted = await passwordProvider.decryptField(fieldKey, rawValue);
-      ctrl.text = decrypted;
-    } catch (e) {
-      // If we fail to decrypt, fallback or show an error.
-      // e.g. ctrl.text = '';
-      // context.read<SnackBarProvider>().showMessage('Failed to decrypt $fieldKey');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ctrl.text = decrypted;
+      });
+    } catch (_) {
+      // Optional: fallback or notify user
     }
   }
 

@@ -431,24 +431,30 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                 const SizedBox(height: 24.0),
 
                 // Username
-                _buildNormalField(
-                  label: 'Username',
-                  controller: _usernameController,
-                  copyable: _decryptedUsername != null,
-                ),
+                if (_decryptedUsername != null)
+                  _buildNormalField(
+                    label: 'Username',
+                    controller: _usernameController,
+                    copyable: true,
+                  )
+                else
+                  const SizedBox(height: 72), // maintain layout height
 
                 // Password
                 _buildPasswordField(),
 
                 // URL if present
-                _buildNormalField(
-                  label: 'URL',
-                  controller: _urlController,
-                  copyable: _decryptedUrl != null,
-                  onSuffixTap: _decryptedUrl != null ? () => _openUrl(context, _decryptedUrl!) : null,
-                  suffixIconData: Icons.open_in_browser,
-                  suffixTooltip: 'Open URL',
-                ),
+                if (_decryptedUrl != null)
+                  _buildNormalField(
+                    label: 'URL',
+                    controller: _urlController,
+                    copyable: true,
+                    onSuffixTap: () => _openUrl(context, _decryptedUrl!),
+                    suffixIconData: Icons.open_in_browser,
+                    suffixTooltip: 'Open URL',
+                  )
+                else
+                  const SizedBox(height: 72),
 
                 const SizedBox(height: 24.0),
 
