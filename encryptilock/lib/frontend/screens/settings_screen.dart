@@ -55,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildIdleTimeoutSection(settingsProvider, themeProvider.theme),
+                            _buildSecuritySection(settingsProvider, themeProvider.theme),
                             const SizedBox(height: 16),
                             _buildPasswordSettingsSection(settingsProvider, themeProvider.theme),
                           ],
@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       // const SizedBox(height: 16),
                       _buildAppearanceSection(context, themeProvider, settingsProvider),
                       const Divider(height: 32),
-                      _buildIdleTimeoutSection(settingsProvider, themeProvider.theme),
+                      _buildSecuritySection(settingsProvider, themeProvider.theme),
                       const Divider(height: 32),
                       _buildPasswordSettingsSection(settingsProvider, themeProvider.theme),
                     ],
@@ -159,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// ----------------------
   /// SECURITY / TIMEOUT
   /// ----------------------
-  Widget _buildIdleTimeoutSection(SettingsProvider settingsProvider, ThemeData theme) {
+  Widget _buildSecuritySection(SettingsProvider settingsProvider, ThemeData theme) {
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -168,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Security / Timeout', style: theme.textTheme.titleLarge),
+            Text('Security', style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -201,6 +201,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: const Text('Save Timeout'),
             ),
+            SwitchListTile(
+              contentPadding: const EdgeInsets.all(16.0),
+              title: const Text('Allow Factory Reset'),
+              subtitle: const Text('When disabled, users cannot wipe app data'),
+              value: settingsProvider.showFactoryReset,
+              onChanged: (value) {
+                settingsProvider.toggleFactoryResetDisplay(value);
+                context.read<SnackBarProvider>().showMessage(
+                      value ? 'Factory reset available on login screen' : 'Factory reset disabled',
+                    );
+              },
+            ),
           ],
         ),
       ),
@@ -226,30 +238,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
 
             SwitchListTile(
-              title: const Text('Show Hidden Passwords'),
-              // subtitle: const Text('can be use to hide deep secrets until toggled on'),
-              value: settingsProvider.showHiddenPasswords,
-              onChanged: settingsProvider.toggleShowHiddenPasswords,
-            ),
+                title: const Text('Show Hidden Passwords'),
+                // subtitle: const Text('can be use to hide deep secrets until toggled on'),
+                value: settingsProvider.showHiddenPasswords,
+                //onChanged: settingsProvider.toggleShowHiddenPasswords,
+                onChanged: (value) {
+                  settingsProvider.toggleShowHiddenPasswords(value);
+                  context.read<SnackBarProvider>().showMessage(
+                        value ? 'Hidden passwords visible in password navigation drawer' : 'Hidden passwords are hidden', // TODO address the messages!
+                      );
+                }),
 
             SwitchListTile(
-              title: const Text('Add Delete button to password main view'),
-              value: settingsProvider.showDeleteButtonMainView,
-              onChanged: settingsProvider.toggleDeleteButtonMainView,
-            ),
+                title: const Text('Add Delete button to password main view'),
+                value: settingsProvider.showDeleteButtonMainView,
+                // onChanged: settingsProvider.toggleDeleteButtonMainView,
+                onChanged: (value) {
+                  settingsProvider.toggleDeleteButtonMainView(value);
+                  context.read<SnackBarProvider>().showMessage(
+                        value ? 'Delete button available on password detail page' : 'Delete button removed from password detail page', // TODO address the messages!
+                      );
+                }),
 
             SwitchListTile(
-              title: const Text('Do Not Ask Before Deleting'),
-              value: settingsProvider.skipDeleteConfirmation,
-              onChanged: settingsProvider.toggleSkipDeleteConfirmation,
-            ),
+                title: const Text('Do Not Ask Before Deleting'),
+                value: settingsProvider.skipDeleteConfirmation,
+                // onChanged: settingsProvider.toggleSkipDeleteConfirmation,
+                onChanged: (value) {
+                  settingsProvider.toggleSkipDeleteConfirmation(value);
+                  context.read<SnackBarProvider>().showMessage(
+                        value ? 'Deleting a password will no longer require approval. Proceed with caution' : 'You will be asked to confirm before deleting passwords', // TODO address the messages!
+                      );
+                }),
 
             const SizedBox(height: 8),
             SwitchListTile(
-              title: const Text('Define Password Generator Parameters'),
-              value: settingsProvider.definePasswordGeneratorParams,
-              onChanged: settingsProvider.toggleDefinePasswordGeneratorParams,
-            ),
+                title: const Text('Define Password Generator Parameters'),
+                value: settingsProvider.definePasswordGeneratorParams,
+                // onChanged: settingsProvider.toggleDefinePasswordGeneratorParams,
+                onChanged: (value) {
+                  settingsProvider.toggleDefinePasswordGeneratorParams(value);
+                  context.read<SnackBarProvider>().showMessage(
+                        value ? 'Password generator will use the values specified' : 'Password generator will not use predefined values', // TODO address the messages!
+                      );
+                }),
 
             if (settingsProvider.definePasswordGeneratorParams)
               Padding(
@@ -327,7 +359,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SwitchListTile(
               title: const Text('Auto-Generate & Fill Password'),
               value: settingsProvider.autoGenerateAndFill,
-              onChanged: settingsProvider.definePasswordGeneratorParams ? settingsProvider.toggleAutoGenerateAndFill : null,
+              // onChanged: settingsProvider.definePasswordGeneratorParams ? settingsProvider.toggleAutoGenerateAndFill : null,
+              onChanged: settingsProvider.definePasswordGeneratorParams
+                  ? (value) {
+                      settingsProvider.toggleAutoGenerateAndFill(value);
+                      context.read<SnackBarProvider>().showMessage(
+                            value ? 'The Key icon will now auto-generate and fill passwords' : 'The Key icon will open the password generator window',
+                          );
+                    }
+                  : null,
             ),
           ],
         ),

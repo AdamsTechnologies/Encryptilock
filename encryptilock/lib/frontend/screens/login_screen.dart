@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = false;
   bool _usernameFieldMasked = false;
   bool _passwordVisible = false;
+  bool _allowFactoryReset = true;
 
   @override
   void initState() {
@@ -38,10 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final configManager = context.read<AuthProvider>().configManager;
     final marker = await configManager.getHashedSetting('session_marker');
     final remember = await configManager.getHashedSetting('remember_user');
+    final allowFactoryReset = await configManager.getHashedSetting('show_factory_reset');
     setState(() {
       _marker = marker;
       _isRegisterMode = marker == null;
       _showWelcome = marker == null;
+      _allowFactoryReset = allowFactoryReset?.toLowerCase() == 'true';
       if (remember != null && remember.toLowerCase() == 'true') {
         _rememberMe = true;
         _usernameFieldMasked = true;
@@ -375,13 +378,13 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: _isLoading ? null : () => _submitForm(context),
             child: _isLoading ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary)) : Text(_isRegisterMode ? 'Register' : 'Login'),
           ),
-          if (!_isRegisterMode)
+          if (!_isRegisterMode && _allowFactoryReset)
             TextButton(
               onPressed: () => showDialog(
                 context: context,
                 builder: (_) => ResetAppDialog(configManager: context.read<AuthProvider>().configManager),
               ),
-              child: const Text("Having trouble logging in?"),
+              child: const Text("Having trouble logging in? Factory Reset"),
             ),
           if (_isRegisterMode) ...[
             Container(
