@@ -139,10 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeInOut,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(10),
                 child: _buildLogo(context),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 12),
               Text(
                 "Welcome to Encryptilock",
                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -155,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 duration: const Duration(milliseconds: 800),
                 height: 3,
                 width: 60,
-                margin: const EdgeInsets.only(top: 16, bottom: 24),
+                margin: const EdgeInsets.only(top: 8, bottom: 10),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),
@@ -182,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Feature highlights with improved visual presentation
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
             borderRadius: BorderRadius.circular(16),
@@ -191,14 +191,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               _buildFeatureItem(theme, Icons.cloud_off_outlined, "No online account or cloud sync"),
               Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.shield_outlined, "Full control, total privacy, zero tracking"),
+              _buildFeatureItem(theme, Icons.shield_outlined, "Fully encrypted, total privacy, zero tracking"),
               Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.lock_outline, "No password recovery — only you can access your vault"),
+              _buildFeatureItem(theme, Icons.lock_outline, "Only you can unlock your vault — there's no recovery method"),
             ],
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
 
         // Enhanced CTA button
         ElevatedButton(
