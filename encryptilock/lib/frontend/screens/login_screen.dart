@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = false;
   bool _usernameFieldMasked = false;
   bool _passwordVisible = false;
+  bool _allowFactoryReset = true;
 
   @override
   void initState() {
@@ -38,10 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final configManager = context.read<AuthProvider>().configManager;
     final marker = await configManager.getHashedSetting('session_marker');
     final remember = await configManager.getHashedSetting('remember_user');
+    final allowFactoryReset = await configManager.getHashedSetting('show_factory_reset');
     setState(() {
       _marker = marker;
       _isRegisterMode = marker == null;
       _showWelcome = marker == null;
+      _allowFactoryReset = allowFactoryReset?.toLowerCase() == 'true';
       if (remember != null && remember.toLowerCase() == 'true') {
         _rememberMe = true;
         _usernameFieldMasked = true;
@@ -136,10 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeInOut,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(10),
                 child: _buildLogo(context),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 12),
               Text(
                 "Welcome to Encryptilock",
                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -152,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 duration: const Duration(milliseconds: 800),
                 height: 3,
                 width: 60,
-                margin: const EdgeInsets.only(top: 16, bottom: 24),
+                margin: const EdgeInsets.only(top: 8, bottom: 10),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),
@@ -179,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Feature highlights with improved visual presentation
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
             borderRadius: BorderRadius.circular(16),
@@ -188,14 +191,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               _buildFeatureItem(theme, Icons.cloud_off_outlined, "No online account or cloud sync"),
               Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.shield_outlined, "Full control, total privacy, zero tracking"),
+              _buildFeatureItem(theme, Icons.shield_outlined, "Fully encrypted, total privacy, zero tracking"),
               Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.lock_outline, "No password recovery — only you can access your vault"),
+              _buildFeatureItem(theme, Icons.lock_outline, "Only you can unlock your vault — there's no recovery method"),
             ],
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
 
         // Enhanced CTA button
         ElevatedButton(
@@ -375,30 +378,30 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: _isLoading ? null : () => _submitForm(context),
             child: _isLoading ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary)) : Text(_isRegisterMode ? 'Register' : 'Login'),
           ),
-          if (!_isRegisterMode)
+          if (!_isRegisterMode && _allowFactoryReset)
             TextButton(
               onPressed: () => showDialog(
                 context: context,
                 builder: (_) => ResetAppDialog(configManager: context.read<AuthProvider>().configManager),
               ),
-              child: const Text("Having trouble logging in?"),
+              child: const Text("Having trouble logging in? Factory Reset"),
             ),
           if (_isRegisterMode) ...[
             Container(
               margin: const EdgeInsets.only(top: 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                color: theme.colorScheme.error.withOpacity(0.1), //theme.colorScheme.primaryContainer.withOpacity(0.1)
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lock_outline, color: theme.colorScheme.primary),
+                  Icon(Icons.warning, color: theme.colorScheme.error), //Icons.lock_outline, color: theme.colorScheme.primary
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "There's no password recovery, only factor reset. Be sure to remember your credentials.",
+                      "There's no password recovery, only factory reset. Be sure to remember your login credentials.",
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface),
                     ),
                   ),

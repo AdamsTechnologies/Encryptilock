@@ -17,6 +17,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _definePasswordGeneratorParams = false;
   bool _autoGenerateAndFill = false;
   bool _showHiddenPasswords = true;
+  bool _showFactoryReset = true;
 
   SettingsProvider(this.configManager);
 
@@ -35,6 +36,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get definePasswordGeneratorParams => _definePasswordGeneratorParams;
   bool get autoGenerateAndFill => _autoGenerateAndFill;
   bool get showHiddenPasswords => _showHiddenPasswords;
+  bool get showFactoryReset => _showFactoryReset;
 
   Future<void> shutdown() async {
     await configManager.close();
@@ -45,6 +47,7 @@ class SettingsProvider extends ChangeNotifier {
   // LOAD SETTINGS
   // --------------------------
   Future<void> loadSettings() async {
+    // TODO 2025-04-15 future improvement: get all settings in 1 call instead of a bunch of individual calls; not too impactful now but will be as we expand settings.
     _theme = await configManager.getSetting('theme') ?? 'light';
     _idleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
     _minLength = int.tryParse(await configManager.getSetting('min_length') ?? '8') ?? 8;
@@ -57,7 +60,7 @@ class SettingsProvider extends ChangeNotifier {
     _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true');
     _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');
     _showHiddenPasswords = (await configManager.getSetting('show_hidden_passwords') == 'true');
-
+    _showFactoryReset = (await configManager.getHashedSetting('show_factory_reset') == 'true');
     notifyListeners();
   }
 
@@ -125,6 +128,13 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> toggleAutoGenerateAndFill(bool val) async {
     _autoGenerateAndFill = val;
     await configManager.setSetting('auto_generate_and_fill', val.toString());
+    notifyListeners();
+  }
+
+  Future<void> toggleFactoryResetDisplay(bool val) async {
+    _showFactoryReset = val;
+    //hashing instead of XorObfuscating because we access this at login, before a salt is set.
+    await configManager.setHashedSetting('show_factory_reset', val.toString());
     notifyListeners();
   }
 }

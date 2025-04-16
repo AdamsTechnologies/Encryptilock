@@ -42,16 +42,20 @@ Encryptilock is built for simplicity — all encryption and data management happ
       title: "How Encryption Works",
       content: """# 🔐 How Encryption Works
 
-Encryptilock protects your data using industry-standard cryptography, all handled entirely offline and on your device.
+Encryption is the process of converting readable information into a scrambled format that can only be deciphered with a specific key. It's how we keep your data private and protected — even if someone were to access your files, they wouldn't be able to read them.  
+
+
+Encryptilock uses the strongest encryption algorithms available to keep your information secure — all entirely offline and on your device.
 
 ### Encryption Basics
 
 - All records are encrypted using the **AES-256** cipher — one of the most secure encryption algorithms available today.
+- Fields are only decrypted when necessary, remaining encrypted while not being actively viewed or updated.
 - We use **Argon2id** to derive a secure encryption key.
 - Sensitive fields are encrypted individually before being saved.
 - The entire vault is encrypted as well.
 
-🛡️ *AES-256 would take billions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
+🛡️ *AES-256 would take millions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
 
 ### Local-Only Model
 
@@ -91,7 +95,7 @@ Each entry includes the following fields:
   (If it doesn't start with `http://` or `https://`, it defaults to `https://`)
 - **Notes** - Optional free-form text
 
-Only **Title**  and **Password** are required. Use remaining fields as needed.
+Only **Title** and **Password** are required. Use remaining fields as needed.
 
 💡 *Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.*
 
@@ -163,14 +167,21 @@ You can return Encryptilock to a fresh state by performing a factory reset from 
 
 ### Factory Reset
 
-To reset the app:
+to reset the app:
+- Ensure 'Allow Factory Reset' was toggled on, (if not skip to 'Resetting Manually')
+- Open the login screen and tap the **'Having trouble logging in? Factory Reset'** button.
+- Type your case-sensitive username into the text box and select **'Delete and Restart'**.
+  - the Delete and Restart button will become enabled once you've typed your username.
 
-- Open the login screen and tap the **Help** icon.
-- Select **Factory Reset** from the dialog options.
+**Resetting Manually**
+- if you can't remember your username, or you didn't Allow Factory Reset in the settings page
+  - see the document 'Manual Backup' to find the location of your databases. 
+    - manually delete these databases, and restart your app. This is the same actions the Factory Reset does for you.
+
 
 This will:
 
-- Permanently delete your password vault (`s2.db`) and all configuration settings (`s1.db`)
+- Permanently delete your password vault and all configuration settings
 - Return the app to its first-launch state
 
 After resetting, you'll be prompted to create a new account as if launching the app for the first time.
@@ -205,13 +216,19 @@ The Settings tab allows you to personalize Encryptilock's behavior and appearanc
 
 ---
 
-### Idle Timeout
+### Security
 
-- Set a custom inactivity timeout (in minutes).
-- After the specified period with no interaction, the app auto-locks and returns to the login screen.
-- Helps protect your data during periods of inactivity.
-
+**Idle Timeout**
+  - Set a custom inactivity timeout (in minutes).
+  - After the specified period with no interaction, the app auto-locks and returns to the login screen.
+  - Helps protect your data during periods of inactivity.
 ⚠️ *Tip: Lock your device manually when stepping away. Encryptilock adds an extra layer by auto-locking if you forget.*
+
+**Allow Factory Reset**
+  - adds a Factory reset button on the login page.
+  - Allows you to reset the app to original state, requires you to input your username to delete.
+  - If you ever forget your username - delete the databases to act as a factory reset. 
+    - see Manual Backup docs to find database locations, delete the databases. restart the app and it'll prompt you to register anew.
 
 ---
 
@@ -233,7 +250,7 @@ These options allow you to fine-tune how password entries are handled and genera
   Customize how new passwords are created:
   - **Min/Max Length** - Set bounds for password length.
   - **Exclude Characters** - Enter any characters you'd like to avoid in generated passwords.  
-    For example: `ABCab198!:;'”` ensures none of these appear in new passwords.
+    For example: `ABCab198!:;'”` ensures none of these characters appear in new passwords.
   - **Auto-Generate & Fill** - When enabled, tapping the key icon will instantly create and fill a password based on your saved preferences.  
     When disabled, the password generator dialog will open instead.
 

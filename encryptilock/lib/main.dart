@@ -18,6 +18,9 @@ import 'package:encryptilock/frontend/screens/login_screen.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 
+import 'dart:io' show Platform;
+import 'package:desktop_window/desktop_window.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -25,6 +28,13 @@ void main() async {
   final settingsDb = DartSqlite(dbFile: settingsDbPath);
   settingsDb.open();
   final configManager = await ConfigSettingsController.init(settingsDb);
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await DesktopWindow.setWindowSize(const Size(850, 650)); // Set the default window size
+    // await DesktopWindow.setWindowTitle('Your App Title'); // Optional: Set the window title
+    await DesktopWindow.setMinWindowSize(const Size(400, 300)); // Optional: Set minimum size
+    await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity)); // Optional: Set maximum size
+  }
 
   runApp(
     MultiProvider(

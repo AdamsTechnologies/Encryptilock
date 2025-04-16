@@ -119,7 +119,16 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
     try {
       final snackbarProvider = Provider.of<SnackBarProvider>(context, listen: false);
       snackbarProvider.showMessage("Creating password...");
-      await passwordProvider.addOrUpdatePassword(data, passwordChanged: true);
+      await passwordProvider.addOrUpdatePassword(data, passwordChanged: true, changedFields: {
+        'service': true,
+        'username': true,
+        'servicetype': true,
+        'url': true,
+        'notes': true,
+        'isactive': true,
+        'createdt': true,
+        'updatedt': true,
+      });
 
       final newId = passwordProvider.passwords.last['id'] as String;
       widget.onSaveComplete?.call(newId);
@@ -136,7 +145,8 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 6,
-      margin: const EdgeInsets.all(16),
+      // margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

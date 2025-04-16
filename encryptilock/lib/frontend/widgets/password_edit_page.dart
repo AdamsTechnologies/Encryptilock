@@ -38,6 +38,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
   final _serviceTypeController = TextEditingController();
   final _urlController = TextEditingController();
   final _noteController = TextEditingController();
+  final Map<String, dynamic> _decryptedValues = {};
 
   String? _decryptedPassword;
   bool _passwordVisible = false;
@@ -52,16 +53,59 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
   void initState() {
     super.initState();
     _populateFields();
-    _decryptPassword();
+    _decryptInitialFields();
+    _passwordController.text = '••••••••••';
   }
 
   void _populateFields() {
-    _serviceController.text = widget.existingRecord['service'] ?? '';
-    _usernameController.text = widget.existingRecord['username'] ?? '';
-    _serviceTypeController.text = widget.existingRecord['servicetype'] ?? '';
-    _urlController.text = widget.existingRecord['url'] ?? '';
-    _noteController.text = widget.existingRecord['notes'] ?? '';
+    // Initially fill controllers with either encrypted or empty placeholders.
+    // We'll overwrite them with decrypted text if needed, below.
+
+    _originalValues['service'] = widget.existingRecord['service'];
+    _originalValues['username'] = widget.existingRecord['username'];
+    _originalValues['servicetype'] = widget.existingRecord['servicetype'];
+    _originalValues['url'] = widget.existingRecord['url'];
+    _originalValues['notes'] = widget.existingRecord['notes'];
     _isActive = widget.existingRecord['isactive'] == 1;
+  }
+
+  Future<void> _decryptInitialFields() async {
+    // You decide which fields to decrypt immediately:
+    // e.g., 'service', 'username', 'servicetype', 'url', 'notes'.
+    // If they are stored encrypted in the DB, decrypt them now.
+    final passwordProvider = context.read<PasswordProvider>();
+
+    await _maybeDecryptField('service', _serviceController);
+    await _maybeDecryptField('username', _usernameController);
+    await _maybeDecryptField('servicetype', _serviceTypeController);
+    await _maybeDecryptField('url', _urlController);
+    await _maybeDecryptField('notes', _noteController);
+
+    setState(() {});
+  }
+
+  /// Decrypts the controller's current text if it's non-empty.
+  /// This ensures the user never sees ciphertext in the UI.
+  Future<void> _maybeDecryptField(String fieldKey, TextEditingController ctrl) async {
+    final rawValue = _originalValues[fieldKey]?.trim();
+    if (rawValue == null || rawValue.isEmpty) return;
+    if ({
+      'service',
+      'servicetype'
+    }.contains(fieldKey)) {
+      // Directly set text if it's plaintext
+      ctrl.text = rawValue;
+      return;
+    }
+    try {
+      final passwordProvider = context.read<PasswordProvider>();
+      final decrypted = await passwordProvider.decryptField(fieldKey, rawValue);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ctrl.text = decrypted;
+      });
+    } catch (_) {
+      // Optional: fallback or notify user
+    }
   }
 
   Future<void> _decryptPassword() async {
@@ -82,31 +126,46 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     }
   }
 
-  void _togglePasswordVisibility() {
+  Future<void> _togglePasswordVisibility() async {
+    final passwordProv = context.read<PasswordProvider>();
+    final encrypted = widget.existingRecord['password'];
+
     if (_passwordVisible) {
-      setState(() {
-        _obscurePassword = true;
-        _passwordVisible = false;
-        _passwordController.text = '••••••••••';
-      });
+      // Hide immediately
       _hidePasswordTimer?.cancel();
+      setState(() {
+        _passwordVisible = false;
+        _obscurePassword = true;
+        _passwordController.text = '••••••••••'; // Restore masked string
+      });
     } else {
-      if (_decryptedPassword != null) {
+      setState(() {
+        _isDecrypting = true;
+        _passwordController.text = '••••••••••'; // show mask while decrypting
+      });
+
+      try {
+        final decrypted = await passwordProv.decryptPassword(encrypted);
         setState(() {
-          _obscurePassword = false;
           _passwordVisible = true;
-          _passwordController.text = _decryptedPassword!;
+          _obscurePassword = false;
+          _passwordController.text = decrypted;
         });
+
         _hidePasswordTimer?.cancel();
         _hidePasswordTimer = Timer(const Duration(seconds: 10), () {
-          setState(() {
-            _obscurePassword = true;
-            _passwordVisible = false;
-            _passwordController.text = '••••••••••';
-          });
+          if (mounted) {
+            setState(() {
+              _passwordVisible = false;
+              _obscurePassword = true;
+              _passwordController.text = '••••••••••'; // hide again
+            });
+          }
         });
-      } else {
-        context.read<SnackBarProvider>().showMessage('Password not yet decrypted.');
+      } catch (e) {
+        context.read<SnackBarProvider>().showMessage('Failed to decrypt password.');
+      } finally {
+        if (mounted) setState(() => _isDecrypting = false);
       }
     }
   }
@@ -135,11 +194,10 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
   }
 
   Future<void> _save() async {
-    // if (!_formKey.currentState!.validate()) return;
-
     final passwordProvider = context.read<PasswordProvider>();
     final snackbarProvider = context.read<SnackBarProvider>();
 
+    // Handle password masking logic first (unchanged from your code)
     final maskedValue = '••••••••••';
     final controllerText = _passwordController.text.trim();
     final isMasked = controllerText == maskedValue;
@@ -158,22 +216,57 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
       passwordToSave = widget.existingRecord['password'];
     }
 
+    // -----------------------------------------------------------
+    //  1) Compare new vs. old for non-password fields
+    // -----------------------------------------------------------
+    final original = widget.existingRecord;
+    final newService = _serviceController.text.trim();
+    final newUsername = _usernameController.text.trim();
+    final newServiceType = _serviceTypeController.text.trim();
+    final newUrl = _urlController.text.trim();
+    final newNotes = _noteController.text.trim();
+    final newIsActive = _isActive ? 1 : 0;
+
+    bool serviceChanged = newService != (original['service'] ?? '');
+    bool usernameChanged = newUsername != (original['username'] ?? '');
+    bool serviceTypeChanged = newServiceType != (original['servicetype'] ?? '');
+    bool urlChanged = newUrl != (original['url'] ?? '');
+    bool notesChanged = newNotes != (original['notes'] ?? '');
+    bool isActiveChanged = newIsActive != (original['isactive'] ?? 1);
+
+    //  2) Build the changedFields map
+    Map<String, bool> changedFields = {
+      'service': serviceChanged,
+      'username': usernameChanged,
+      'servicetype': serviceTypeChanged,
+      'url': urlChanged,
+      'notes': notesChanged,
+      'isactive': isActiveChanged,
+      // 'updatedt' or others as needed if you're encrypting them, too
+    };
+    // -----------------------------------------------------------
+    //  3) Build new data to save
+    // -----------------------------------------------------------
     final updatedData = {
-      'id': widget.existingRecord['id'],
-      'service': _serviceController.text.trim(),
-      'username': _usernameController.text.trim(),
+      'id': original['id'],
+      'service': newService,
+      'username': newUsername,
       'password': passwordToSave.trim(),
-      'servicetype': _serviceTypeController.text.trim(),
-      'url': _urlController.text.trim(),
-      'notes': _noteController.text.trim(),
-      'isactive': _isActive ? 1 : 0,
+      'servicetype': newServiceType,
+      'url': newUrl,
+      'notes': newNotes,
+      'isactive': newIsActive,
     };
 
+    // -----------------------------------------------------------
+    //  4) Make the upsert call
+    // -----------------------------------------------------------
     try {
       snackbarProvider.showMessage("Updating password");
       await passwordProvider.addOrUpdatePassword(
         updatedData,
         passwordChanged: passwordChanged,
+        changedFields: changedFields,
       );
       widget.onSaveComplete?.call(updatedData['id']);
     } catch (e) {
@@ -222,7 +315,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -234,11 +327,11 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                   Text('Edit Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   _buildSmartField('Title', _serviceController, 'service'),
-                  _buildSmartField('Username', _usernameController, 'username', required: false),
+                  _buildSmartField('Username', _usernameController, 'username', required: false, decryptFlag: true),
                   _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
                   _buildSmartField('Category', _serviceTypeController, 'serviceType', required: false),
-                  _buildSmartField('URL', _urlController, 'url', required: false),
-                  _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3),
+                  _buildSmartField('URL', _urlController, 'url', required: false, decryptFlag: true),
+                  _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3, decryptFlag: true),
                   SwitchListTile(
                     value: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
@@ -262,28 +355,61 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     );
   }
 
-  Widget _buildSmartField(String label, TextEditingController controller, String key, {bool required = false, int maxLines = 1}) {
+  Widget _buildSmartField(
+    String label,
+    TextEditingController controller,
+    String key, {
+    bool required = false,
+    int maxLines = 1,
+    bool decryptFlag = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: FocusTraversalOrder(
         order: NumericFocusOrder(maxLines.toDouble()),
         child: Focus(
           onFocusChange: (hasFocus) {
+            // If user leaves the field and it's empty, revert to original
             if (!hasFocus && _clearedFields.contains(key) && controller.text.trim().isEmpty) {
               controller.text = _originalValues[key] ?? '';
             }
           },
           child: TextFormField(
             controller: controller,
-            onTap: () {
+            onTap: () async {
+              // Check if we've never "cleared" this field before
               if (!_clearedFields.contains(key)) {
+                // Store the original text, then clear it
                 _originalValues[key] = controller.text;
                 controller.clear();
                 _clearedFields.add(key);
+
+                // If we need to decrypt the existing text
+                if (decryptFlag && (_originalValues[key]?.isNotEmpty ?? false)) {
+                  try {
+                    final passwordProvider = context.read<PasswordProvider>();
+                    final decrypted = await passwordProvider.decryptField(
+                      key,
+                      _originalValues[key]!,
+                    );
+                    if (mounted) {
+                      setState(() {
+                        controller.text = decrypted;
+                        _originalValues[key] = decrypted;
+                      });
+                    }
+                  } catch (e) {
+                    // If decryption fails, optionally show a snackbar, etc.
+                    // context.read<SnackBarProvider>().showMessage('Failed to decrypt $label.');
+                  }
+                }
               }
             },
             maxLines: maxLines,
-            decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+            decoration: InputDecoration(
+              labelText: label,
+              border: const OutlineInputBorder(),
+            ),
             validator: (value) {
               if (required && (value == null || value.trim().isEmpty)) {
                 return '$label is required';

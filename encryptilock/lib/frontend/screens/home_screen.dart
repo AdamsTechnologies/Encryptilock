@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,7 +20,6 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildWideLayout(BuildContext context) {
     final theme = Theme.of(context);
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
@@ -40,7 +40,6 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildMediumLayout(BuildContext context) {
     final theme = Theme.of(context);
-
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -109,34 +108,80 @@ class HomeScreen extends StatelessWidget {
   Widget _buildTipsAndWebsite(BuildContext context, {bool isCentered = false}) {
     final theme = Theme.of(context);
     final textAlign = isCentered ? TextAlign.center : TextAlign.left;
+    final crossAlign = isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
 
     return Column(
-      crossAxisAlignment: isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: crossAlign,
       children: [
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: _launchWebsite,
-          child: const Text('Visit Our Website'),
+          icon: const Icon(Icons.open_in_new),
+          label: const Text('Visit Encryptilock.com'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            textStyle: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ),
         const SizedBox(height: 24),
         Text(
-          'Helpful Tips:',
+          'Tips for Getting Started:',
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           textAlign: textAlign,
         ),
-        const SizedBox(height: 8),
-        const Text('- Use unique passwords for each account.'),
-        const Text('- Don’t forget your master password.'),
-        const Text('- Enable two-factor authentication.'),
+        const SizedBox(height: 12),
+        _tipItem('Visit Encryptilock.com to find helpful information and updates.', theme, textAlign),
+        _tipItem('Don’t forget your master password — it cannot be recovered.', theme, textAlign),
+        _tipItem('Explore the Info tab for help and the user manual.', theme, textAlign),
         const SizedBox(height: 16),
-        Text(
-          'Need support? Contact us at support@encryptilock.com',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-          textAlign: textAlign,
-        ),
+        _buildVersionInfo(context, isCentered),
       ],
     );
+  }
+
+  Widget _tipItem(String text, ThemeData theme, TextAlign align) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: align == TextAlign.center ? MainAxisAlignment.center : MainAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(Icons.check_circle_outline, size: 18, color: Colors.grey),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodyMedium,
+              textAlign: align,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionInfo(BuildContext context, bool isCentered) {
+    final textAlign = isCentered ? TextAlign.center : TextAlign.left;
+    return FutureBuilder<String>(
+      future: _getVersion(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        return Text(
+          'Version ${snapshot.data}',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              ),
+          textAlign: textAlign,
+        );
+      },
+    );
+  }
+
+  Future<String> _getVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    return info.version;
   }
 
   Widget _buildLogo(BuildContext context) {

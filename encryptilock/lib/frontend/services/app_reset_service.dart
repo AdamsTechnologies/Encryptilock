@@ -48,7 +48,7 @@ class AppResetService {
         await vaultFile.delete();
       }
     } catch (e) {
-      debugPrint('Vault file deletion error: $e');
+      debugPrint('Vault file deletion error.');
     }
 
     final configPath = await getLocalPath('s1.db');
