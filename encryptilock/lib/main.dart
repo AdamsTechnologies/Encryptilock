@@ -18,8 +18,9 @@ import 'package:encryptilock/frontend/screens/login_screen.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 
-import 'dart:io' show Platform;
+import 'dart:io';
 import 'package:desktop_window/desktop_window.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +31,13 @@ void main() async {
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await DesktopWindow.setWindowSize(const Size(850, 650)); // Set the default window size
-    // await DesktopWindow.setWindowTitle('Your App Title'); // Optional: Set the window title
-    await DesktopWindow.setMinWindowSize(const Size(400, 300)); // Optional: Set minimum size
-    await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity)); // Optional: Set maximum size
+    await DesktopWindow.setWindowSize(const Size(850, 650));
+    await DesktopWindow.setMinWindowSize(const Size(400, 300));
+    await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
+
+    await windowManager.ensureInitialized();
+    windowManager.setPreventClose(true);
+    windowManager.addListener(_WindowCloseHandler());
   }
 
   runApp(
@@ -79,6 +83,27 @@ void main() async {
   );
 }
 
+class _WindowCloseHandler extends WindowListener {
+  @override
+  Future onWindowClose() async {
+    final isPreventClose = await windowManager.isPreventClose();
+    if (!isPreventClose) return;
+
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (authProvider.isLoggedIn) {
+        await authProvider.logout(isAppShutdown: true);
+      }
+    }
+
+    await windowManager.setPreventClose(false);
+    await windowManager.close();
+  }
+}
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -87,8 +112,13 @@ class MyApp extends StatelessWidget {
     return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
       return MaterialApp(
         title: 'Encryptilock',
+        navigatorKey: navigatorKey,
         theme: themeProvider.theme,
-        home: auth.isLoggedIn ? const IdleWrapper(child: MainApp()) : LoginScreen(),
+        home: auth.isShuttingDown
+            ? Container()
+            : auth.isLoggedIn
+                ? const IdleWrapper(child: MainApp())
+                : LoginScreen(),
       );
     });
   }

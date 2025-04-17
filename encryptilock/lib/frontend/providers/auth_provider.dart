@@ -13,6 +13,7 @@ class AuthProvider extends ChangeNotifier {
   String? _username;
   EncryptedDatabaseManager? _encryptedDbManager;
   dynamic _inMemoryDb; // Replace with your in-memory database type
+  bool _isShuttingDown = false;
 
   final ConfigSettingsController configManager;
   late SnackBarProvider _snackBarProvider;
@@ -20,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({required this.configManager});
 
   // Getters
+  bool get isShuttingDown => _isShuttingDown;
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -94,7 +96,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // Logout method
-  Future<void> logout() async {
+  Future<void> logout({bool isAppShutdown = false}) async {
+    _isShuttingDown = isAppShutdown;
     _snackBarProvider.showMessage('cleaning up');
     _isLoading = true;
     notifyListeners();
