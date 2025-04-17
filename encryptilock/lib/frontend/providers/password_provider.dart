@@ -154,38 +154,6 @@ class PasswordProvider extends ChangeNotifier {
       _setLoading(false);
     }
   }
-  // Future<void> addOrUpdatePassword(Map<String, dynamic> data, {bool passwordChanged = false}) async {
-  //   if (!_validateDbConnection()) return;
-
-  //   _setLoading(true);
-
-  //   try {
-  //     String upsertedId = await _passwordController!.upsertRecord(
-  //       id: data['id'],
-  //       username: data['username'],
-  //       password: data['password'],
-  //       service: data['service'],
-  //       servicetype: data['servicetype'],
-  //       url: data['url'],
-  //       notes: data['notes'],
-  //       isactive: data['isactive'] ?? 1,
-  //       createdt: data['createdt'],
-  //       passwordChanged: passwordChanged, // Pass the flag here
-  //     );
-
-  //     await fetchPasswords();
-
-  //     if (_mode == 'create' || _mode == 'edit') {
-  //       selectPasswordId(upsertedId);
-  //     }
-  //   } catch (e) {
-  //     _errorMessage = 'Error saving password: $e';
-
-  //     notifyListeners();
-  //   } finally {
-  //     _setLoading(false);
-  //   }
-  // }
 
   /// Deletes a password entry by ID.
   Future<void> deletePassword(String id) async {
