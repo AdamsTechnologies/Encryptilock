@@ -236,7 +236,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Password Settings', style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
-
+            SwitchListTile(
+              title: const Text('Clear Filters on Logout'),
+              subtitle: const Text('Reset category filters whenever you log out'),
+              value: settingsProvider.clearFiltersOnLogout,
+              onChanged: (value) {
+                settingsProvider.toggleClearFiltersOnLogout(value);
+                context.read<SnackBarProvider>().showMessage(
+                      value ? 'Category filters will be cleared on logout' : 'Category filters will persist after logout',
+                    );
+              },
+            ),
             SwitchListTile(
                 title: const Text('Show Hidden Passwords'),
                 // subtitle: const Text('can be use to hide deep secrets until toggled on'),
@@ -272,6 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }),
 
             const SizedBox(height: 8),
+            const Divider(height: 32),
             SwitchListTile(
                 title: const Text('Define Password Generator Parameters'),
                 value: settingsProvider.definePasswordGeneratorParams,
@@ -283,14 +294,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                 }),
 
-            if (settingsProvider.definePasswordGeneratorParams)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'The following fields are used for the password generator logic:',
-                  style: theme.textTheme.bodyMedium,
-                ),
+            // if (settingsProvider.definePasswordGeneratorParams)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Define the password generator default values:',
+                style: theme.textTheme.bodyMedium,
               ),
+            ),
 
             // Min / Max length + Exclude characters
             // Only enabled if "definePasswordGeneratorParams" is true
@@ -358,6 +369,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // 2) The "Auto-Fill" renamed to "Auto-Generate & Fill Password"
             SwitchListTile(
               title: const Text('Auto-Generate & Fill Password'),
+              subtitle: const Text('selecting the key icon will now auto fill a password'),
               value: settingsProvider.autoGenerateAndFill,
               // onChanged: settingsProvider.definePasswordGeneratorParams ? settingsProvider.toggleAutoGenerateAndFill : null,
               onChanged: settingsProvider.definePasswordGeneratorParams

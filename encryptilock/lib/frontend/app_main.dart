@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:encryptilock/frontend/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   // static const double _drawerWidth = 250;
   double get _drawerWidth {
     final screenWidth = MediaQuery.of(context).size.width;
-    return (screenWidth * 0.25).clamp(100.0, 256.0);
+    return (screenWidth * 0.25).clamp(125.0, 256.0);
   }
 
   static const Duration _closeDelay = Duration(milliseconds: 200);
@@ -210,6 +211,12 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
+    final clearOnLogout = settingProvider.clearFiltersOnLogout;
+    if (clearOnLogout == true) {
+      await settingProvider.clearCategoryFilters();
+    }
+
     await authProvider.logout();
     SystemNavigator.pop();
   }

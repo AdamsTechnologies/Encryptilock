@@ -92,6 +92,10 @@ class _WindowCloseHandler extends WindowListener {
     final context = navigatorKey.currentContext;
     if (context != null) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
+      if (settingProvider.clearFiltersOnLogout == true) {
+        await settingProvider.clearCategoryFilters();
+      }
       if (authProvider.isLoggedIn) {
         await authProvider.logout(isAppShutdown: true);
       }

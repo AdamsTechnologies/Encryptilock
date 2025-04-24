@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart'; // For SHA-256
-
-
+import 'package:crypto/crypto.dart';
 
 /// Deterministically hashes an object using SHA-256.
+/// used to mask inputs that don't require encryption and need a deterministic value.
 String hashObject(dynamic obj, [String salt = ""]) {
   try {
     // Convert the object to a JSON string (sorted keys for determinism)
