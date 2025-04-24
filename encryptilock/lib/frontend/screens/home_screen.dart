@@ -1,6 +1,11 @@
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:encryptilock/frontend/providers/password_provider.dart';
+import 'package:encryptilock/frontend/screens/passwords_screen.dart';
+import 'package:encryptilock/frontend/screens/settings_screen.dart';
+import 'package:encryptilock/frontend/screens/info_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -8,29 +13,22 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
-    if (screenWidth > 1000) {
-      return _buildWideLayout(context);
-    } else if (screenWidth > 600) {
-      return _buildMediumLayout(context);
-    } else {
-      return _buildNarrowLayout(context);
-    }
+    if (screenWidth > 1000) return _buildWide(context);
+    if (screenWidth > 600) return _buildMedium(context);
+    return _buildNarrow(context);
   }
 
-  Widget _buildWideLayout(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget _buildWide(BuildContext ctx) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: SizedBox(
           width: 1000,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(child: _buildLogoAndTagline(context, theme)),
+              Expanded(child: _buildLogoSection(ctx)),
               const SizedBox(width: 40),
-              Expanded(child: _buildTipsAndWebsite(context)),
+              Expanded(child: _buildActionSection(ctx, false)),
             ],
           ),
         ),
@@ -38,19 +36,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMediumLayout(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget _buildMedium(BuildContext ctx) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: SizedBox(
           width: 600,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(child: _buildLogoAndTagline(context, theme)),
+              Expanded(child: _buildLogoSection(ctx)),
               const SizedBox(width: 24),
-              Expanded(child: _buildTipsAndWebsite(context)),
+              Expanded(child: _buildActionSection(ctx, false)),
             ],
           ),
         ),
@@ -58,38 +54,28 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNarrowLayout(BuildContext context) {
-    final theme = Theme.of(context);
-
+  Widget _buildNarrow(BuildContext ctx) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildLogo(context),
-          const SizedBox(height: 16),
-          Text(
-            'Encryptilock',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Data Security, just right.',
-            style: theme.textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
+          _buildLogoSection(ctx),
           const SizedBox(height: 24),
-          _buildTipsAndWebsite(context, isCentered: true),
+          _buildActionSection(ctx, true),
         ],
       ),
     );
   }
 
-  Widget _buildLogoAndTagline(BuildContext context, ThemeData theme) {
+  Widget _buildLogoSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final asset = isDark ? 'assets/icon/encryptilockIconDarkTheme.png' : 'assets/icon/encryptilockIcon.png';
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildLogo(context),
+        Image.asset(asset, width: 120, height: 120),
         const SizedBox(height: 16),
         Text(
           'Encryptilock',
@@ -105,77 +91,80 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTipsAndWebsite(BuildContext context, {bool isCentered = false}) {
+  Widget _buildActionSection(BuildContext context, bool centered) {
     final theme = Theme.of(context);
-    final textAlign = isCentered ? TextAlign.center : TextAlign.left;
-    final crossAlign = isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+    final align = centered ? TextAlign.center : TextAlign.left;
+    final cross = centered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
 
     return Column(
-      crossAxisAlignment: crossAlign,
+      crossAxisAlignment: cross,
       children: [
-        ElevatedButton.icon(
-          onPressed: _launchWebsite,
-          icon: const Icon(Icons.open_in_new),
-          label: const Text('Visit Encryptilock.com'),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            textStyle: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
+        // Quick Action
         const SizedBox(height: 24),
+
+        // Tips
         Text(
           'Tips for Getting Started:',
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          textAlign: textAlign,
+          textAlign: align,
         ),
         const SizedBox(height: 12),
-        _tipItem('Visit Encryptilock.com to find helpful information and updates.', theme, textAlign),
-        _tipItem('Don’t forget your master password — it cannot be recovered.', theme, textAlign),
-        _tipItem('Explore the Info tab for help and the user manual.', theme, textAlign),
-        const SizedBox(height: 16),
-        _buildVersionInfo(context, isCentered),
+        _tipRow('Don\'t forget your master password — it cannot be recovered.', Icons.check_circle_outline, theme, align),
+        _tipRow('Use “New Password” to add your first entry.', Icons.check_circle_outline, theme, align),
+        _tipRow('Explore the “View Vault” to browse your saved logins.', Icons.check_circle_outline, theme, align),
+        const SizedBox(height: 24),
+
+        Text(
+          'Navigation:',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          textAlign: align,
+        ),
+        const SizedBox(height: 12),
+        _tipRow('Home page (you are here.)', Icons.home, theme, align),
+        _tipRow('manage your passwords', Icons.lock, theme, align),
+        _tipRow('change theme, configuration settings', Icons.settings, theme, align),
+        _tipRow('documentation about the app', Icons.info_outline, theme, align),
+        _tipRow('logout', Icons.power_settings_new, theme, align),
+        // Tertiary website link
+        Align(
+          alignment: centered ? Alignment.center : Alignment.centerLeft,
+          child: TextButton(
+            onPressed: _launchWebsite,
+            child: const Text('Visit encryptilock.com'),
+          ),
+        ),
+
+        // Version
+        FutureBuilder<String>(
+          future: _getVersion(),
+          builder: (ctx, snap) {
+            if (!snap.hasData) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                'Version ${snap.data}',
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                textAlign: align,
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _tipItem(String text, ThemeData theme, TextAlign align) {
+  Widget _tipRow(String text, IconData icon, ThemeData theme, TextAlign align) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: align == TextAlign.center ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 2),
-            child: Icon(Icons.check_circle_outline, size: 18, color: Colors.grey),
-          ),
+          Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodyMedium,
-              textAlign: align,
-            ),
-          ),
+          Expanded(child: Text(text, style: theme.textTheme.bodyMedium, textAlign: align)),
         ],
       ),
-    );
-  }
-
-  Widget _buildVersionInfo(BuildContext context, bool isCentered) {
-    final textAlign = isCentered ? TextAlign.center : TextAlign.left;
-    return FutureBuilder<String>(
-      future: _getVersion(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
-        return Text(
-          'Version ${snapshot.data}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-          textAlign: textAlign,
-        );
-      },
     );
   }
 
@@ -184,21 +173,212 @@ class HomeScreen extends StatelessWidget {
     return info.version;
   }
 
-  Widget _buildLogo(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final asset = isDark ? 'assets/icon/encryptilockIconDarkTheme.png' : 'assets/icon/encryptilockIcon.png';
-
-    return Image.asset(
-      asset,
-      width: 100,
-      height: 100,
-    );
-  }
-
   void _launchWebsite() async {
     final url = Uri.https('www.encryptilock.com', '');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
+    if (await canLaunchUrl(url)) await launchUrl(url);
   }
 }
+// import 'package:flutter/material.dart';
+// import 'package:url_launcher/url_launcher.dart';
+// import 'package:package_info_plus/package_info_plus.dart';
+
+// class HomeScreen extends StatelessWidget {
+//   const HomeScreen({Key? key}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final screenWidth = MediaQuery.of(context).size.width;
+
+//     if (screenWidth > 1000) {
+//       return _buildWideLayout(context);
+//     } else if (screenWidth > 600) {
+//       return _buildMediumLayout(context);
+//     } else {
+//       return _buildNarrowLayout(context);
+//     }
+//   }
+
+//   Widget _buildWideLayout(BuildContext context) {
+//     final theme = Theme.of(context);
+//     return Center(
+//       child: SingleChildScrollView(
+//         padding: const EdgeInsets.all(32),
+//         child: SizedBox(
+//           width: 1000,
+//           child: Row(
+//             crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               Expanded(child: _buildLogoAndTagline(context, theme)),
+//               const SizedBox(width: 40),
+//               Expanded(child: _buildTipsAndWebsite(context)),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildMediumLayout(BuildContext context) {
+//     final theme = Theme.of(context);
+//     return Center(
+//       child: SingleChildScrollView(
+//         padding: const EdgeInsets.all(24),
+//         child: SizedBox(
+//           width: 600,
+//           child: Row(
+//             crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               Expanded(child: _buildLogoAndTagline(context, theme)),
+//               const SizedBox(width: 24),
+//               Expanded(child: _buildTipsAndWebsite(context)),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildNarrowLayout(BuildContext context) {
+//     final theme = Theme.of(context);
+
+//     return SingleChildScrollView(
+//       padding: const EdgeInsets.all(16),
+//       child: Column(
+//         children: [
+//           _buildLogo(context),
+//           const SizedBox(height: 16),
+//           Text(
+//             'Encryptilock',
+//             style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 8),
+//           Text(
+//             'Data Security, just right.',
+//             style: theme.textTheme.bodyMedium,
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 24),
+//           _buildTipsAndWebsite(context, isCentered: true),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildLogoAndTagline(BuildContext context, ThemeData theme) {
+//     return Column(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         _buildLogo(context),
+//         const SizedBox(height: 16),
+//         Text(
+//           'Encryptilock',
+//           style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+//         ),
+//         const SizedBox(height: 8),
+//         Text(
+//           'Data Security, just right.',
+//           style: theme.textTheme.bodyLarge,
+//           textAlign: TextAlign.center,
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildTipsAndWebsite(BuildContext context, {bool isCentered = false}) {
+//     final theme = Theme.of(context);
+//     final textAlign = isCentered ? TextAlign.center : TextAlign.left;
+//     final crossAlign = isCentered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+
+//     return Column(
+//       crossAxisAlignment: crossAlign,
+//       children: [
+//         ElevatedButton.icon(
+//           onPressed: _launchWebsite,
+//           icon: const Icon(Icons.open_in_new),
+//           label: const Text('Visit Encryptilock.com'),
+//           style: ElevatedButton.styleFrom(
+//             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+//             textStyle: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+//           ),
+//         ),
+//         const SizedBox(height: 24),
+//         Text(
+//           'Tips for Getting Started:',
+//           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+//           textAlign: textAlign,
+//         ),
+//         const SizedBox(height: 12),
+//         _tipItem('Visit Encryptilock.com to find helpful information and updates.', theme, textAlign),
+//         _tipItem('Don’t forget your master password — it cannot be recovered.', theme, textAlign),
+//         _tipItem('Explore the Info tab for help and the user manual.', theme, textAlign),
+//         const SizedBox(height: 16),
+//         _buildVersionInfo(context, isCentered),
+//       ],
+//     );
+//   }
+
+//   Widget _tipItem(String text, ThemeData theme, TextAlign align) {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 8),
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         mainAxisAlignment: align == TextAlign.center ? MainAxisAlignment.center : MainAxisAlignment.start,
+//         children: [
+//           const Padding(
+//             padding: EdgeInsets.only(top: 2),
+//             child: Icon(Icons.check_circle_outline, size: 18, color: Colors.grey),
+//           ),
+//           const SizedBox(width: 8),
+//           Expanded(
+//             child: Text(
+//               text,
+//               style: theme.textTheme.bodyMedium,
+//               textAlign: align,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildVersionInfo(BuildContext context, bool isCentered) {
+//     final textAlign = isCentered ? TextAlign.center : TextAlign.left;
+//     return FutureBuilder<String>(
+//       future: _getVersion(),
+//       builder: (context, snapshot) {
+//         if (!snapshot.hasData) return const SizedBox.shrink();
+//         return Text(
+//           'Version ${snapshot.data}',
+//           style: Theme.of(context).textTheme.bodySmall?.copyWith(
+//                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+//               ),
+//           textAlign: textAlign,
+//         );
+//       },
+//     );
+//   }
+
+//   Future<String> _getVersion() async {
+//     final info = await PackageInfo.fromPlatform();
+//     return info.version;
+//   }
+
+//   Widget _buildLogo(BuildContext context) {
+//     final isDark = Theme.of(context).brightness == Brightness.dark;
+//     final asset = isDark ? 'assets/icon/encryptilockIconDarkTheme.png' : 'assets/icon/encryptilockIcon.png';
+
+//     return Image.asset(
+//       asset,
+//       width: 100,
+//       height: 100,
+//     );
+//   }
+
+//   void _launchWebsite() async {
+//     final url = Uri.https('www.encryptilock.com', '');
+//     if (await canLaunchUrl(url)) {
+//       await launchUrl(url);
+//     }
+//   }
+// }

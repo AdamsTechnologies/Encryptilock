@@ -19,6 +19,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _showHiddenPasswords = true;
   bool _showFactoryReset = true;
   Set<String> _categoryFilters = {};
+  bool _clearFiltersOnLogout = false;
 
   SettingsProvider(this.configManager);
 
@@ -40,6 +41,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get showFactoryReset => _showFactoryReset;
   Set<String> get categoryFilters => _categoryFilters;
   bool get isAllCategoriesSelected => _categoryFilters.isEmpty;
+  bool get clearFiltersOnLogout => _clearFiltersOnLogout;
 
   Future<void> shutdown() async {
     await configManager.close();
@@ -66,6 +68,7 @@ class SettingsProvider extends ChangeNotifier {
     _showFactoryReset = (await configManager.getHashedSetting('show_factory_reset') == 'true');
     final savedFilters = await configManager.getSetting('category_filters');
     _categoryFilters = savedFilters?.isNotEmpty == true ? savedFilters!.split('|').toSet() : {};
+    _clearFiltersOnLogout = (await configManager.getSetting('clear_filters_on_logout') == 'true');
     notifyListeners();
   }
 
@@ -152,6 +155,12 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> clearCategoryFilters() async {
     _categoryFilters = {};
     await configManager.setSetting('category_filters', '');
+    notifyListeners();
+  }
+
+  Future<void> toggleClearFiltersOnLogout(bool enabled) async {
+    _clearFiltersOnLogout = enabled;
+    await configManager.setSetting('clear_filters_on_logout', enabled.toString());
     notifyListeners();
   }
 }
