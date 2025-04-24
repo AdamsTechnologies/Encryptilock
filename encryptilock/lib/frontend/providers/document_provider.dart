@@ -83,7 +83,7 @@ Encryptilock provides a clean, flexible interface for storing sensitive records 
 To create a new password entry:
 
 - Go to the **Passwords Tab**
-- Click **"Create New Password"**
+- Click **"Create Password"**
 
 Each entry includes the following fields:
 

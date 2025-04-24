@@ -309,6 +309,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     super.dispose();
   }
 
+  // @ove
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -320,25 +321,41 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: FocusTraversalGroup(
-              child: Column(
+          child: Column(
+            children: [
+              // Sticky Title
+              Text('Edit Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+
+              // Scrollable inputs
+              Expanded(
+                child: SingleChildScrollView(
+                  child: FocusTraversalGroup(
+                    child: Column(
+                      children: [
+                        _buildSmartField('Title', _serviceController, 'service'),
+                        _buildSmartField('Username', _usernameController, 'username', required: false, decryptFlag: true),
+                        _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
+                        _buildSmartField('Category', _serviceTypeController, 'serviceType', required: false),
+                        _buildSmartField('URL', _urlController, 'url', required: false, decryptFlag: true),
+                        _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3, decryptFlag: true),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Sticky Toggle + Action Bar
+              Column(
                 children: [
-                  Text('Edit Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  _buildSmartField('Title', _serviceController, 'service'),
-                  _buildSmartField('Username', _usernameController, 'username', required: false, decryptFlag: true),
-                  _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
-                  _buildSmartField('Category', _serviceTypeController, 'serviceType', required: false),
-                  _buildSmartField('URL', _urlController, 'url', required: false, decryptFlag: true),
-                  _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3, decryptFlag: true),
                   SwitchListTile(
                     value: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
                     title: const Text('Show Record'),
                     contentPadding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   BottomActionBar(
                     isEditMode: true,
                     showDeleteButton: true,
@@ -347,8 +364,8 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                     onCancel: widget.onCancel,
                   ),
                 ],
-              ),
-            ),
+              )
+            ],
           ),
         ),
       ),

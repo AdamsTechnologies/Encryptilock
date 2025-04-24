@@ -18,6 +18,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _autoGenerateAndFill = false;
   bool _showHiddenPasswords = true;
   bool _showFactoryReset = true;
+  Set<String> _categoryFilters = {};
 
   SettingsProvider(this.configManager);
 
@@ -37,6 +38,8 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoGenerateAndFill => _autoGenerateAndFill;
   bool get showHiddenPasswords => _showHiddenPasswords;
   bool get showFactoryReset => _showFactoryReset;
+  Set<String> get categoryFilters => _categoryFilters;
+  bool get isAllCategoriesSelected => _categoryFilters.isEmpty;
 
   Future<void> shutdown() async {
     await configManager.close();
@@ -61,6 +64,8 @@ class SettingsProvider extends ChangeNotifier {
     _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');
     _showHiddenPasswords = (await configManager.getSetting('show_hidden_passwords') == 'true');
     _showFactoryReset = (await configManager.getHashedSetting('show_factory_reset') == 'true');
+    final savedFilters = await configManager.getSetting('category_filters');
+    _categoryFilters = savedFilters?.isNotEmpty == true ? savedFilters!.split('|').toSet() : {};
     notifyListeners();
   }
 
@@ -135,6 +140,18 @@ class SettingsProvider extends ChangeNotifier {
     _showFactoryReset = val;
     //hashing instead of XorObfuscating because we access this at login, before a salt is set.
     await configManager.setHashedSetting('show_factory_reset', val.toString());
+    notifyListeners();
+  }
+
+  Future<void> setCategoryFilters(Set<String> newFilters) async {
+    _categoryFilters = newFilters;
+    await configManager.setSetting('category_filters', newFilters.join('|'));
+    notifyListeners();
+  }
+
+  Future<void> clearCategoryFilters() async {
+    _categoryFilters = {};
+    await configManager.setSetting('category_filters', '');
     notifyListeners();
   }
 }

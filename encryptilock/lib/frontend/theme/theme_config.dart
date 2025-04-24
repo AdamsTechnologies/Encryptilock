@@ -42,6 +42,7 @@ class ThemeConfig {
             primary: Color(0xFF007AFF), // macOS controlAccentColor (blue)
             secondary: Color(0xFFE5E5EA), // separatorColor / secondaryGroupBG
             tertiary: Color(0xFF8E8E93), // secondaryLabelColor
+            error: Color.fromARGB(255, 185, 52, 11),
             surface: Color(0xFFFFFFFF), // controlBackgroundColor
             background: Color(0xFFF2F2F7), // systemBackground
             onPrimary: Colors.white,
@@ -655,7 +656,7 @@ class ThemeConfig {
             primary: Color(0xFF0A84FF), // macOS dark mode accent
             secondary: Color(0xFF3A3A3C), // secondarySurface / separator
             tertiary: Color(0xFF8E8E93), // secondaryLabelColor
-            error: Color.fromARGB(255, 247, 7, 7),
+            error: Color.fromARGB(255, 94, 10, 10),
             surface: Color(0xFF2C2C2E), // card background
             background: Color(0xFF1C1C1E), // system background
             onPrimary: Colors.white,

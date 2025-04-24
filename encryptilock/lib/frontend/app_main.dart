@@ -32,7 +32,12 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   Timer? _closeTimer;
 
   static const double _navRailWidth = 72;
-  static const double _drawerWidth = 250;
+  // static const double _drawerWidth = 250;
+  double get _drawerWidth {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return (screenWidth * 0.25).clamp(100.0, 256.0);
+  }
+
   static const Duration _closeDelay = Duration(milliseconds: 200);
 
   bool get isDesktop => MediaQuery.of(context).size.width > 750;
@@ -83,41 +88,11 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                   // }
                 },
                 tabs: const [
-                  Tab(
-                    icon: Tooltip(
-                      message: 'Go to Home',
-                      child: Icon(Icons.home),
-                    ),
-                    text: 'Home',
-                  ),
-                  Tab(
-                    icon: Tooltip(
-                      message: 'Manage Passwords',
-                      child: Icon(Icons.lock),
-                    ),
-                    text: 'Passwords',
-                  ),
-                  Tab(
-                    icon: Tooltip(
-                      message: 'App Settings',
-                      child: Icon(Icons.settings),
-                    ),
-                    text: 'Settings',
-                  ),
-                  Tab(
-                    icon: Tooltip(
-                      message: 'Info & Help',
-                      child: Icon(Icons.info_outline),
-                    ),
-                    text: 'Info',
-                  ),
+                  Tab(icon: Icon(Icons.home), text: 'Home'),
+                  Tab(icon: Icon(Icons.lock), text: 'Passwords'),
+                  Tab(icon: Icon(Icons.settings), text: 'Settings'),
+                  Tab(icon: Icon(Icons.info_outline), text: 'Info'),
                 ],
-                // tabs: const [
-                //   Tab(icon: Icon(Icons.home), text: 'Home'),
-                //   Tab(icon: Icon(Icons.lock), text: 'Passwords'),
-                //   Tab(icon: Icon(Icons.settings), text: 'Settings'),
-                //   Tab(icon: Icon(Icons.info_outline), text: 'Info'),
-                // ],
               ),
             ),
       body: Stack(
@@ -134,7 +109,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
                 children: [
                   const HomeScreen(),
                   Padding(
-                    padding: const EdgeInsets.only(left: _drawerWidth),
+                    // padding: const EdgeInsets.only(left: _drawerWidth),
+                    padding: EdgeInsets.only(left: _drawerWidth),
                     child: const PasswordsScreen(),
                   ),
                   const SettingsScreen(),
@@ -157,10 +133,10 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
             TabBarView(
               controller: _tabController,
               physics: const NeverScrollableScrollPhysics(), // Optional: only if you want to disable swipe on mobile too
-              children: const [
-                HomeScreen(),
-                PasswordsScreen(),
-                SettingsScreen(),
+              children: [
+                const HomeScreen(),
+                const PasswordsScreen(),
+                const SettingsScreen(),
                 InfoScreen(isDrawerPinned: false, drawerWidth: _drawerWidth),
               ],
             ),
@@ -208,44 +184,22 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
     return NavigationRailDestination(
-      icon: Tooltip(
-        message: label,
-        child: SizedBox(
-          width: _navRailWidth,
-          child: MouseRegion(
-            onEnter: (_) {
-              _closeTimer?.cancel();
-              setState(() => hoveredIndex = index);
-            },
-            onExit: (_) => _startCloseTimer(),
-            child: Center(
-              child: Icon(icon, color: _iconColorFor(index)),
-            ),
+      icon: SizedBox(
+        width: _navRailWidth,
+        child: MouseRegion(
+          onEnter: (_) {
+            _closeTimer?.cancel();
+            setState(() => hoveredIndex = index);
+          },
+          onExit: (_) => _startCloseTimer(),
+          child: Center(
+            child: Icon(icon, color: _iconColorFor(index)),
           ),
         ),
       ),
       label: Text(label),
     );
   }
-  // VERSION WITHOUT TOOLTIP
-  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-  //   return NavigationRailDestination(
-  //     icon: SizedBox(
-  //       width: _navRailWidth,
-  //       child: MouseRegion(
-  //         onEnter: (_) {
-  //           _closeTimer?.cancel();
-  //           setState(() => hoveredIndex = index);
-  //         },
-  //         onExit: (_) => _startCloseTimer(),
-  //         child: Center(
-  //           child: Icon(icon, color: _iconColorFor(index)),
-  //         ),
-  //       ),
-  //     ),
-  //     label: Text(label),
-  //   );
-  // }
 
   Color? _iconColorFor(int index) {
     final isSelected = (_tabController.index == index);

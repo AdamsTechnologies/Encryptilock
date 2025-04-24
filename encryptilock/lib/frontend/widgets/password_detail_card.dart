@@ -73,29 +73,32 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
       _decryptedUrl = null;
 
       if (selected != null) {
-        final encryptedUsername = selected['username'] ?? '';
-        final encryptedUrl = selected['url'] ?? '';
+        final encryptedUsername = selected['username'];
+        final encryptedUrl = selected['url'];
 
-        // Decrypt asynchronously
         final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-        // Decrypt username
-        passwordProvider.decryptField('username', encryptedUsername).then((value) {
-          if (mounted) {
-            setState(() {
-              _decryptedUsername = value;
-              _usernameController.text = value;
-            });
-          }
-        });
-        // Decrypt URL
-        passwordProvider.decryptField('url', encryptedUrl).then((value) {
-          if (mounted) {
-            setState(() {
-              _decryptedUrl = value;
-              _urlController.text = value;
-            });
-          }
-        });
+
+        if (encryptedUsername != null && encryptedUsername.trim().isNotEmpty) {
+          passwordProvider.decryptField('username', encryptedUsername).then((value) {
+            if (mounted) {
+              setState(() {
+                _decryptedUsername = value;
+                _usernameController.text = value ?? '';
+              });
+            }
+          });
+        }
+
+        if (encryptedUrl != null && encryptedUrl.trim().isNotEmpty) {
+          passwordProvider.decryptField('url', encryptedUrl).then((value) {
+            if (mounted) {
+              setState(() {
+                _decryptedUrl = value;
+                _urlController.text = value ?? '';
+              });
+            }
+          });
+        }
       }
     }
   }
