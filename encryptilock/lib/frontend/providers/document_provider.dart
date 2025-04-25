@@ -201,6 +201,7 @@ After resetting, you'll be prompted to create a new account as if launching the 
 <!-- tags: factory reset, delete account, start over, lost password, restart -->
 """,
     ),
+    // TODO INCLUDE INFORMATION ABOUT THE CLEAR FILTER ON LOGOUT SETTING NOW ADDED
     DocItem(
       title: "Config Settings",
       content: """# ⚙️ Settings & Customization
@@ -235,6 +236,9 @@ The Settings tab allows you to personalize Encryptilock's behavior and appearanc
 ### Password Settings
 
 These options allow you to fine-tune how password entries are handled and generated:
+
+- **Clear Filters on Logout**  
+  Turning this on will clear any password list filters applied when logged out. default is off, meaning it saves your preference.
 
 - **Show Hidden Passwords**  
   Displays entries marked as inactive in the password list.  

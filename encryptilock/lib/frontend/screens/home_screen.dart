@@ -114,19 +114,6 @@ class HomeScreen extends StatelessWidget {
         _tipRow('Update themes and configure app', Icons.settings, theme, align),
         _tipRow('Read the user manual', Icons.info_outline, theme, align),
 
-        // const SizedBox(height: 24),
-        // Text(
-        //   'Navigation:',
-        //   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        //   textAlign: align,
-        // ),
-        // const SizedBox(height: 12),
-        // _tipRow('Home page (you are here.)', Icons.home, theme, align),
-        // _tipRow('manage your passwords', Icons.lock, theme, align),
-        // _tipRow('change theme, configuration settings', Icons.settings, theme, align),
-        // _tipRow('documentation about the app', Icons.info_outline, theme, align),
-        // _tipRow('logout', Icons.power_settings_new, theme, align),
-        // Tertiary website link
         Align(
           alignment: centered ? Alignment.center : Alignment.centerLeft,
           child: TextButton(

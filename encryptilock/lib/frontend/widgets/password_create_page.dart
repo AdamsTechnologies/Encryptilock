@@ -162,6 +162,7 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
                   child: FocusTraversalGroup(
                     child: Column(
                       children: [
+                        const SizedBox(height: 4),
                         TextFormField(
                           controller: _serviceNameController,
                           decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),

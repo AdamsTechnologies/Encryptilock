@@ -26,7 +26,8 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
+  Timer? _hoverDelayTimer;
+  int? previewHoveredIndex;
   int? pinnedIndex;
   int? hoveredIndex;
   bool isDrawerHovered = false;
@@ -51,10 +52,24 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
+    _hoverDelayTimer?.cancel();
     _closeTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
+  // @override
+  // void dispose() {
+  //   _closeTimer?.cancel();
+  //   _hoverDelayTimer?.cancel();
+  //   _tabController.dispose();
+  //   super.dispose();
+  // }
+  // @override
+  // void dispose() {
+  //   _closeTimer?.cancel();
+  //   _tabController.dispose();
+  //   super.dispose();
+  // }
 
   int? get displayedDrawerIndex {
     if (pinnedIndex == 1 || pinnedIndex == 3) return pinnedIndex;
@@ -189,10 +204,21 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
         width: _navRailWidth,
         child: MouseRegion(
           onEnter: (_) {
-            _closeTimer?.cancel();
-            setState(() => hoveredIndex = index);
+            previewHoveredIndex = index;
+            _hoverDelayTimer?.cancel();
+            _hoverDelayTimer = Timer(const Duration(milliseconds: 250), () {
+              if (!mounted) return;
+              setState(() => hoveredIndex = index);
+            });
+            setState(() {}); // for previewHoveredIndex
           },
-          onExit: (_) => _startCloseTimer(),
+          onExit: (_) {
+            _hoverDelayTimer?.cancel();
+            setState(() {
+              previewHoveredIndex = null;
+            });
+            _startCloseTimer();
+          },
           child: Center(
             child: Icon(icon, color: _iconColorFor(index)),
           ),
@@ -201,13 +227,61 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       label: Text(label),
     );
   }
+  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+  //   return NavigationRailDestination(
+  //     icon: SizedBox(
+  //       width: _navRailWidth,
+  //       child: MouseRegion(
+  //         onEnter: (_) {
+  //           _hoverDelayTimer?.cancel();
+  //           _hoverDelayTimer = Timer(const Duration(milliseconds: 250), () {
+  //             if (!mounted) return;
+  //             setState(() => hoveredIndex = index);
+  //           });
+  //         },
+  //         onExit: (_) {
+  //           _hoverDelayTimer?.cancel();
+  //           _startCloseTimer();
+  //         },
+  //         child: Center(
+  //           child: Icon(icon, color: _iconColorFor(index)),
+  //         ),
+  //       ),
+  //     ),
+  //     label: Text(label),
+  //   );
+  // }
+  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
+  //   return NavigationRailDestination(
+  //     icon: SizedBox(
+  //       width: _navRailWidth,
+  //       child: MouseRegion(
+  //         onEnter: (_) {
+  //           _closeTimer?.cancel();
+  //           setState(() => hoveredIndex = index);
+  //         },
+  //         onExit: (_) => _startCloseTimer(),
+  //         child: Center(
+  //           child: Icon(icon, color: _iconColorFor(index)),
+  //         ),
+  //       ),
+  //     ),
+  //     label: Text(label),
+  //   );
+  // }
 
   Color? _iconColorFor(int index) {
     final isSelected = (_tabController.index == index);
     final isPinned = (pinnedIndex == index);
-    final isHovered = (hoveredIndex == index);
+    final isHovered = (previewHoveredIndex == index);
     return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
   }
+  // Color? _iconColorFor(int index) {
+  //   final isSelected = (_tabController.index == index);
+  //   final isPinned = (pinnedIndex == index);
+  //   final isHovered = (hoveredIndex == index);
+  //   return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
+  // }
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
