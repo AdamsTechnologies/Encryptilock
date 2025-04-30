@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // _buildGeneralSection(settingsProvider, themeProvider.theme),
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildAppearanceSection(context, themeProvider, settingsProvider),
                       const Divider(height: 32),
                       _buildSecuritySection(settingsProvider, themeProvider.theme),
@@ -100,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Figure out which themeName currently matches the active ThemeData
     final currentThemeName = ThemeConfig.themes.firstWhere(
       (themeName) => ThemeConfig.getTheme(themeName) == themeProvider.theme,
-      orElse: () => 'light',
+      orElse: () => 'Light',
     );
 
     return Card(
@@ -201,6 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: const Text('Save Timeout'),
             ),
+            const Divider(height: 32),
             SwitchListTile(
               contentPadding: const EdgeInsets.all(16.0),
               title: const Text('Allow Factory Reset'),

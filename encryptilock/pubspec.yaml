@@ -47,6 +47,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  msix: ^3.16.9
 
 dev_dependencies:
   flutter_launcher_icons: "^0.14.3"
@@ -60,6 +61,30 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+
+msix_config:
+  display_name: Encryptilock
+  # publisher_display_name: Adams Technologies LLC
+  identity_name: com.adamstechnologies.encryptilock
+  msix_version: 1.0.0.0
+  # publisher: "CN=\"ADAMS TECHNOLOGIES, LLC\""
+  logo_path: assets/icon/encryptilockIcon.png
+  languages: en-us
+  signtool_options: 
+  capabilities: ''
+
+# msix_config:
+#   display_name: Encryptilock
+#   publisher_display_name: Adams Technologies LLC
+#   identity_name: com.adamstechnologies.encryptilock
+#   msix_version: 1.0.0.0
+#   publisher: "CN=\"ADAMS TECHNOLOGIES, LLC\""
+#   logo_path: assets/icon/encryptilockIcon.png
+#   languages: en-us
+#   signtool_options: 
+#   capabilities: ''
+#   store: true
+  
 
 flutter_launcher_icons:
   android: true   # or "launcher_icon" if you want a custom icon name

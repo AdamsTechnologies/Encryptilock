@@ -53,19 +53,19 @@ class SettingsProvider extends ChangeNotifier {
   // --------------------------
   Future<void> loadSettings() async {
     // TODO 2025-04-15 future improvement: get all settings in 1 call instead of a bunch of individual calls; not too impactful now but will be as we expand settings.
-    _theme = await configManager.getSetting('theme') ?? 'light';
-    _idleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5;
-    _minLength = int.tryParse(await configManager.getSetting('min_length') ?? '8') ?? 8;
-    _maxLength = int.tryParse(await configManager.getSetting('max_length') ?? '32') ?? 32;
-    _excludeChars = await configManager.getSetting('exclude_chars') ?? '';
-    _autoFill = (await configManager.getSetting('auto_fill') == 'true');
-    _showDeleteButton = (await configManager.getSetting('show_delete_button') == 'true');
-    _skipDeleteConfirmation = (await configManager.getSetting('skip_delete_confirmation') == 'true');
-    _showDeleteButtonMainView = (await configManager.getSetting('show_delete_button_main_view') == 'true');
-    _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true');
-    _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true');
-    _showHiddenPasswords = (await configManager.getSetting('show_hidden_passwords') == 'true');
-    _showFactoryReset = (await configManager.getHashedSetting('show_factory_reset') == 'true');
+    _theme = await configManager.getSetting('theme') ?? 'Light'; // default 'Light'
+    _idleTimeout = int.tryParse(await configManager.getSetting('idle_timeout') ?? '5') ?? 5; // default 5
+    _minLength = int.tryParse(await configManager.getSetting('min_length') ?? '8') ?? 8; // default 8
+    _maxLength = int.tryParse(await configManager.getSetting('max_length') ?? '32') ?? 32; // default 32
+    _excludeChars = await configManager.getSetting('exclude_chars') ?? ''; // default ''
+    _autoFill = (await configManager.getSetting('auto_fill') == 'true'); // default false
+    _showDeleteButton = (await configManager.getSetting('show_delete_button') == 'true'); // default false
+    _skipDeleteConfirmation = (await configManager.getSetting('skip_delete_confirmation') == 'true'); // default false
+    _showDeleteButtonMainView = (await configManager.getSetting('show_delete_button_main_view') == 'true'); // default false
+    _definePasswordGeneratorParams = (await configManager.getSetting('define_password_generator_params') == 'true'); // default false
+    _autoGenerateAndFill = (await configManager.getSetting('auto_generate_and_fill') == 'true'); // default false
+    _showHiddenPasswords = (await configManager.getSetting('show_hidden_passwords') == 'true'); // default false
+    _showFactoryReset = (await configManager.getHashedSetting('show_factory_reset') != 'false'); //default true
     final savedFilters = await configManager.getSetting('category_filters');
     _categoryFilters = savedFilters?.isNotEmpty == true ? savedFilters!.split('|').toSet() : {};
     _clearFiltersOnLogout = (await configManager.getSetting('clear_filters_on_logout') == 'true');
@@ -142,7 +142,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> toggleFactoryResetDisplay(bool val) async {
     _showFactoryReset = val;
     //hashing instead of XorObfuscating because we access this at login, before a salt is set.
-    await configManager.setHashedSetting('show_factory_reset', val.toString());
+    await configManager.setHashedSetting('show_factory_reset', val.toString().toLowerCase());
     notifyListeners();
   }
 
