@@ -62,6 +62,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+# Local Installer
 msix_config:
   display_name: Encryptilock
   # publisher_display_name: Adams Technologies LLC
@@ -73,6 +74,7 @@ msix_config:
   signtool_options: 
   capabilities: ''
 
+# Microsoft Play store.
 # msix_config:
 #   display_name: Encryptilock
 #   publisher_display_name: Adams Technologies LLC
@@ -81,7 +83,7 @@ msix_config:
 #   publisher: "CN=\"ADAMS TECHNOLOGIES, LLC\""
 #   logo_path: assets/icon/encryptilockIcon.png
 #   languages: en-us
-#   signtool_options: 
+#   # signtool_options: 
 #   capabilities: ''
 #   store: true
   

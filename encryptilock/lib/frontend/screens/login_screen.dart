@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,8 @@ import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 import 'package:encryptilock/frontend/providers/auth_provider.dart';
 import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
 import 'package:encryptilock/frontend/widgets/reset_app_dialog.dart';
+
+import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -28,11 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _usernameFieldMasked = false;
   bool _passwordVisible = false;
   bool _allowFactoryReset = true;
+  bool _windowSized = false;
 
   @override
   void initState() {
     super.initState();
     _checkIfFirstTime();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _adjustWindowSize());
   }
 
   Future<void> _checkIfFirstTime() async {
@@ -51,6 +56,22 @@ class _LoginScreenState extends State<LoginScreen> {
         _usernameController.text = '••••••••••';
       }
     });
+  }
+
+  Future<void> _adjustWindowSize() async {
+    if (_windowSized) return;
+    _windowSized = true;
+
+    const targetSize = Size(850, 650);
+    final dpi = ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+
+    final physicalSize = Size(
+      targetSize.width / dpi,
+      targetSize.height / dpi,
+    );
+
+    await windowManager.setSize(physicalSize);
+    await windowManager.center();
   }
 
   void _submitForm(BuildContext context) async {
@@ -105,18 +126,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDesktop = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
       body: Stack(
         children: [
           Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: 400,
-                maxWidth: 550,
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Container(
+                constraints: isDesktop ? const BoxConstraints(maxWidth: 500) : null,
                 child: _showWelcome ? _buildWelcome(context, theme) : _buildForm(context, theme),
               ),
             ),
@@ -126,28 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  // @override
-  // Widget build(BuildContext context) {
-  //   final theme = Theme.of(context);
-  //   final isDesktop = MediaQuery.of(context).size.width > 600;
-
-  //   return Scaffold(
-  //     body: Stack(
-  //       children: [
-  //         Center(
-  //           child: SingleChildScrollView(
-  //             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-  //             child: Container(
-  //               constraints: isDesktop ? const BoxConstraints(maxWidth: 500) : null,
-  //               child: _showWelcome ? _buildWelcome(context, theme) : _buildForm(context, theme),
-  //             ),
-  //           ),
-  //         ),
-  //         const PermanentSnackBar(),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildWelcome(BuildContext context, ThemeData theme) {
     return Material(
@@ -432,7 +429,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-
+// ---------------------------------------------------------------------------------------------------------------------------
 
 // Widget _buildWelcome(BuildContext context, ThemeData theme) {
   //   return Column(

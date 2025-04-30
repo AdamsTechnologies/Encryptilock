@@ -34,9 +34,10 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
   Timer? _closeTimer;
 
   static const double _navRailWidth = 72;
-  // static const double _drawerWidth = 250;
+
   double get _drawerWidth {
     final screenWidth = MediaQuery.of(context).size.width;
+
     return (screenWidth * 0.25).clamp(125.0, 256.0);
   }
 
@@ -57,19 +58,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     _tabController.dispose();
     super.dispose();
   }
-  // @override
-  // void dispose() {
-  //   _closeTimer?.cancel();
-  //   _hoverDelayTimer?.cancel();
-  //   _tabController.dispose();
-  //   super.dispose();
-  // }
-  // @override
-  // void dispose() {
-  //   _closeTimer?.cancel();
-  //   _tabController.dispose();
-  //   super.dispose();
-  // }
 
   int? get displayedDrawerIndex {
     if (pinnedIndex == 1 || pinnedIndex == 3) return pinnedIndex;
@@ -97,12 +85,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               ],
               bottom: TabBar(
                 controller: _tabController,
-                onTap: (index) {
-                  // if (index == 0) {
-                  //   final docsProvider = Provider.of<DocProvider>(context, listen: false);
-                  //   docsProvider.clearSelection();
-                  // }
-                },
+                onTap: (index) {},
                 tabs: const [
                   Tab(icon: Icon(Icons.home), text: 'Home'),
                   Tab(icon: Icon(Icons.lock), text: 'Passwords'),
@@ -121,11 +104,10 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
               bottom: 0,
               child: TabBarView(
                 controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(), // ← disables swipe/scroll nav
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   const HomeScreen(),
                   Padding(
-                    // padding: const EdgeInsets.only(left: _drawerWidth),
                     padding: EdgeInsets.only(left: _drawerWidth),
                     child: const PasswordsScreen(),
                   ),
@@ -148,7 +130,7 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           ] else ...[
             TabBarView(
               controller: _tabController,
-              physics: const NeverScrollableScrollPhysics(), // Optional: only if you want to disable swipe on mobile too
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 const HomeScreen(),
                 const PasswordsScreen(),
@@ -227,48 +209,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
       label: Text(label),
     );
   }
-  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-  //   return NavigationRailDestination(
-  //     icon: SizedBox(
-  //       width: _navRailWidth,
-  //       child: MouseRegion(
-  //         onEnter: (_) {
-  //           _hoverDelayTimer?.cancel();
-  //           _hoverDelayTimer = Timer(const Duration(milliseconds: 250), () {
-  //             if (!mounted) return;
-  //             setState(() => hoveredIndex = index);
-  //           });
-  //         },
-  //         onExit: (_) {
-  //           _hoverDelayTimer?.cancel();
-  //           _startCloseTimer();
-  //         },
-  //         child: Center(
-  //           child: Icon(icon, color: _iconColorFor(index)),
-  //         ),
-  //       ),
-  //     ),
-  //     label: Text(label),
-  //   );
-  // }
-  // NavigationRailDestination _buildRailDestination(IconData icon, String label, int index) {
-  //   return NavigationRailDestination(
-  //     icon: SizedBox(
-  //       width: _navRailWidth,
-  //       child: MouseRegion(
-  //         onEnter: (_) {
-  //           _closeTimer?.cancel();
-  //           setState(() => hoveredIndex = index);
-  //         },
-  //         onExit: (_) => _startCloseTimer(),
-  //         child: Center(
-  //           child: Icon(icon, color: _iconColorFor(index)),
-  //         ),
-  //       ),
-  //     ),
-  //     label: Text(label),
-  //   );
-  // }
 
   Color? _iconColorFor(int index) {
     final isSelected = (_tabController.index == index);
@@ -276,12 +216,6 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
     final isHovered = (previewHoveredIndex == index);
     return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
   }
-  // Color? _iconColorFor(int index) {
-  //   final isSelected = (_tabController.index == index);
-  //   final isPinned = (pinnedIndex == index);
-  //   final isHovered = (hoveredIndex == index);
-  //   return (isSelected || isPinned || isHovered) ? Theme.of(context).colorScheme.primary : null;
-  // }
 
   void _appLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);

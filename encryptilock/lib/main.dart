@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,12 +32,15 @@ void main() async {
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await DesktopWindow.setWindowSize(const Size(850, 650));
+    await windowManager.ensureInitialized();
+
+    const targetSize = Size(850, 650); // logical pixels
+
     await DesktopWindow.setMinWindowSize(const Size(400, 300));
     await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
-
-    await windowManager.ensureInitialized();
-    windowManager.setPreventClose(true);
+    await windowManager.setSize(targetSize);
+    await windowManager.center();
+    await windowManager.setPreventClose(true);
     windowManager.addListener(_WindowCloseHandler());
   }
 
@@ -82,6 +86,66 @@ void main() async {
     ),
   );
 }
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   final settingsDbPath = await getLocalPath('s1.db');
+//   final settingsDb = DartSqlite(dbFile: settingsDbPath);
+//   settingsDb.open();
+//   final configManager = await ConfigSettingsController.init(settingsDb);
+
+//   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+//     await DesktopWindow.setWindowSize(const Size(750, 650));
+//     await DesktopWindow.setMinWindowSize(const Size(400, 300));
+//     await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
+
+//     await windowManager.ensureInitialized();
+//     windowManager.setPreventClose(true);
+//     windowManager.addListener(_WindowCloseHandler());
+//   }
+
+//   runApp(
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (_) => SnackBarProvider()),
+//         ChangeNotifierProxyProvider<SnackBarProvider, AuthProvider>(
+//           create: (_) => AuthProvider(configManager: configManager),
+//           update: (_, snackBarProvider, authProvider) => authProvider!..updateSnackBarProvider(snackBarProvider),
+//         ),
+//         ChangeNotifierProvider(create: (_) => SettingsProvider(configManager)..loadSettings()),
+//         ChangeNotifierProxyProvider<SettingsProvider, ThemeProvider>(
+//           create: (context) {
+//             final settings = Provider.of<SettingsProvider>(context, listen: false);
+//             final themeData = ThemeConfig.getTheme(settings.settingsTheme);
+//             return ThemeProvider(themeData);
+//           },
+//           update: (context, settings, themeProvider) {
+//             themeProvider?.setTheme(ThemeConfig.getTheme(settings.settingsTheme));
+//             return themeProvider!;
+//           },
+//         ),
+//         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider, IdleTimeoutService>(
+//           create: (_) => IdleTimeoutService(),
+//           update: (_, auth, settings, idleService) {
+//             idleService ??= IdleTimeoutService();
+//             idleService.configure(authProvider: auth, settingsProvider: settings);
+//             return idleService;
+//           },
+//         ),
+//         ChangeNotifierProxyProvider<AuthProvider, PasswordProvider>(
+//           create: (_) => PasswordProvider(),
+//           update: (_, auth, passwordProvider) {
+//             passwordProvider ??= PasswordProvider();
+//             passwordProvider.updateAuthProvider(auth);
+//             return passwordProvider;
+//           },
+//         ),
+//         ChangeNotifierProvider(create: (_) => DocProvider()),
+//       ],
+//       child: const MyApp(),
+//     ),
+//   );
+// }
 
 class _WindowCloseHandler extends WindowListener {
   @override
