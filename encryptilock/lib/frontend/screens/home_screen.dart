@@ -113,14 +113,21 @@ class HomeScreen extends StatelessWidget {
         _tipRow('Create secure passwords, use the generator', Icons.lock, theme, align),
         _tipRow('Update themes and configure app', Icons.settings, theme, align),
         _tipRow('Read the user manual', Icons.info_outline, theme, align),
-
+        _tipRow('Submit feedback: from new feature requests, to bug reports or general info: ', Icons.help, theme, align),
         Align(
           alignment: centered ? Alignment.center : Alignment.centerLeft,
           child: TextButton(
             onPressed: _launchWebsite,
-            child: const Text('Visit encryptilock.com'),
+            child: const Text('Send Feedback'),
           ),
         ),
+        // Align(
+        //   alignment: centered ? Alignment.center : Alignment.centerLeft,
+        //   child: TextButton(
+        //     onPressed: _launchWebsite,
+        //     child: const Text('Visit encryptilock.com'),
+        //   ),
+        // ),
 
         // Version
         FutureBuilder<String>(
@@ -162,7 +169,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _launchWebsite() async {
-    final url = Uri.https('www.encryptilock.com', '');
+    final url = Uri.https('www.encryptilock.com/contact', '');
     if (await canLaunchUrl(url)) await launchUrl(url);
   }
 }
