@@ -55,7 +55,7 @@ Encryptilock uses the strongest encryption algorithms available to keep your inf
 - Sensitive fields are encrypted individually before being saved.
 - The entire vault is encrypted as well.
 
-🛡️ *AES-256 would take millions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
+🛡️ *While no encryption standard is truly 100% unbreakable, AES-256 would take millions of years to crack with current computing technology effectively making it unbreakable with current technology. Argon2 adds another layer of protection by hashing your password into a very strong key.*
 
 ### Local-Only Model
 
