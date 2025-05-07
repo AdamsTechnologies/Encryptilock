@@ -1,4 +1,4 @@
-import 'dart:ui' as ui;
+// import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,7 +8,7 @@ import 'package:encryptilock/frontend/providers/auth_provider.dart';
 import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
 import 'package:encryptilock/frontend/widgets/reset_app_dialog.dart';
 
-import 'package:window_manager/window_manager.dart';
+// import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -31,13 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _usernameFieldMasked = false;
   bool _passwordVisible = false;
   bool _allowFactoryReset = true;
-  bool _windowSized = false;
+  // bool _windowSized = false;
 
   @override
   void initState() {
     super.initState();
     _checkIfFirstTime();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _adjustWindowSize());
+    // WidgetsBinding.instance.addPostFrameCallback((_) => _adjustWindowSize());
   }
 
   Future<void> _checkIfFirstTime() async {
@@ -58,21 +58,21 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> _adjustWindowSize() async {
-    if (_windowSized) return;
-    _windowSized = true;
+  // Future<void> _adjustWindowSize() async {
+  //   if (_windowSized) return;
+  //   _windowSized = true;
 
-    const targetSize = Size(850, 650);
-    final dpi = ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+  //   const targetSize = Size(850, 650);
+  //   final dpi = ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
 
-    final physicalSize = Size(
-      targetSize.width / dpi,
-      targetSize.height / dpi,
-    );
+  //   final physicalSize = Size(
+  //     targetSize.width / dpi,
+  //     targetSize.height / dpi,
+  //   );
 
-    await windowManager.setSize(physicalSize);
-    await windowManager.center();
-  }
+  //   await windowManager.setSize(physicalSize);
+  //   await windowManager.center();
+  // }
 
   void _submitForm(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;

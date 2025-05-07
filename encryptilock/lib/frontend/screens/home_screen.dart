@@ -169,7 +169,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _launchWebsite() async {
-    final url = Uri.https('www.encryptilock.com/contact', '');
+    final url = Uri.https('www.encryptilock.com', '/contact');
     if (await canLaunchUrl(url)) await launchUrl(url);
   }
 }

@@ -20,8 +20,10 @@ import 'package:encryptilock/frontend/theme/theme_config.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 
 import 'dart:io';
-import 'package:desktop_window/desktop_window.dart';
+// import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'package:encryptilock/frontend/services/desktop_window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,16 +34,8 @@ void main() async {
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await windowManager.ensureInitialized();
-
-    const targetSize = Size(850, 650); // logical pixels
-
-    await DesktopWindow.setMinWindowSize(const Size(400, 300));
-    await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
-    await windowManager.setSize(targetSize);
-    await windowManager.center();
-    await windowManager.setPreventClose(true);
-    windowManager.addListener(_WindowCloseHandler());
+    await DesktopWindowManager.initialize(configManager);
+    windowManager.addListener(_WindowCloseHandler(configManager));
   }
 
   runApp(
@@ -86,6 +80,96 @@ void main() async {
     ),
   );
 }
+
+class _WindowCloseHandler extends WindowListener {
+  final ConfigSettingsController config;
+  _WindowCloseHandler(this.config);
+
+  @override
+  Future onWindowClose() async {
+    final isPreventClose = await windowManager.isPreventClose();
+    if (!isPreventClose) return;
+
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
+      if (settingProvider.clearFiltersOnLogout == true) {
+        await settingProvider.clearCategoryFilters();
+      }
+      if (authProvider.isLoggedIn) {
+        await authProvider.logout(isAppShutdown: true);
+      }
+    }
+    // Persist window state
+    await DesktopWindowManager.saveWindowState(config);
+
+    await windowManager.setPreventClose(false);
+    await windowManager.close();
+  }
+}
+// class _WindowCloseHandler extends WindowListener {
+//   @override
+//   Future onWindowClose() async {
+//     final isPreventClose = await windowManager.isPreventClose();
+//     if (!isPreventClose) return;
+
+//     final context = navigatorKey.currentContext;
+//     if (context != null) {
+//       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+//       final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
+//       if (settingProvider.clearFiltersOnLogout == true) {
+//         await settingProvider.clearCategoryFilters();
+//       }
+//       if (authProvider.isLoggedIn) {
+//         await authProvider.logout(isAppShutdown: true);
+//       }
+//     }
+
+//     await windowManager.setPreventClose(false);
+//     await windowManager.close();
+//   }
+// }
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
+      return MaterialApp(
+        title: 'Encryptilock',
+        navigatorKey: navigatorKey,
+        theme: themeProvider.theme,
+        home: auth.isShuttingDown
+            ? Container()
+            : auth.isLoggedIn
+                ? const IdleWrapper(child: MainApp())
+                : LoginScreen(),
+      );
+    });
+  }
+}
+
+class IdleWrapper extends StatelessWidget {
+  final Widget child;
+  const IdleWrapper({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final idleService = Provider.of<IdleTimeoutService>(context, listen: false);
+
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => idleService.resetTimer(),
+      onPointerMove: (_) => idleService.resetTimer(),
+      child: child,
+    );
+  }
+}
+
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
 
@@ -146,65 +230,3 @@ void main() async {
 //     ),
 //   );
 // }
-
-class _WindowCloseHandler extends WindowListener {
-  @override
-  Future onWindowClose() async {
-    final isPreventClose = await windowManager.isPreventClose();
-    if (!isPreventClose) return;
-
-    final context = navigatorKey.currentContext;
-    if (context != null) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
-      if (settingProvider.clearFiltersOnLogout == true) {
-        await settingProvider.clearCategoryFilters();
-      }
-      if (authProvider.isLoggedIn) {
-        await authProvider.logout(isAppShutdown: true);
-      }
-    }
-
-    await windowManager.setPreventClose(false);
-    await windowManager.close();
-  }
-}
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer2<AuthProvider, ThemeProvider>(builder: (ctx, auth, themeProvider, _) {
-      return MaterialApp(
-        title: 'Encryptilock',
-        navigatorKey: navigatorKey,
-        theme: themeProvider.theme,
-        home: auth.isShuttingDown
-            ? Container()
-            : auth.isLoggedIn
-                ? const IdleWrapper(child: MainApp())
-                : LoginScreen(),
-      );
-    });
-  }
-}
-
-class IdleWrapper extends StatelessWidget {
-  final Widget child;
-  const IdleWrapper({Key? key, required this.child}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final idleService = Provider.of<IdleTimeoutService>(context, listen: false);
-
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => idleService.resetTimer(),
-      onPointerMove: (_) => idleService.resetTimer(),
-      child: child,
-    );
-  }
-}
