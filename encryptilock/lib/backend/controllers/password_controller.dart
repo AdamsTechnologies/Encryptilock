@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:encryptilock/backend/devsec/encrypto.dart';
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+
+// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/databaseManager/database_abstraction.dart';
 
 class PasswordController {
-  final DartSqlite dbController;
+  // final DartSqlite dbController;
+  final EncryptilockDatabase dbController;
   final Encrypto encrypto;
   final String tableName;
   final List<String> uniqueKeys;
@@ -68,7 +71,8 @@ class PasswordController {
     List<String>? decryptFields,
   }) async {
     final sql = "SELECT * FROM $tableName";
-    final results = dbController.query(sql);
+    // final results = dbController.query(sql);
+    final results = await dbController.query(sql);
 
     if (decryptFields == null || decryptFields.isEmpty) {
       return results;
@@ -191,7 +195,10 @@ class PasswordController {
   // --------------------------------------------------------------------------
   Future<Map<String, dynamic>?> _getRecordById(String id) async {
     final sql = "SELECT * FROM $tableName WHERE id = ?";
-    final results = dbController.query(sql, [
+    // final results = dbController.query(sql, [
+    //   id
+    // ]);
+    final results = await dbController.query(sql, [
       id
     ]);
     if (results.isEmpty) return null;

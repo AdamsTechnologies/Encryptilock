@@ -31,13 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _usernameFieldMasked = false;
   bool _passwordVisible = false;
   bool _allowFactoryReset = true;
-  // bool _windowSized = false;
 
   @override
   void initState() {
     super.initState();
-    _checkIfFirstTime();
-    // WidgetsBinding.instance.addPostFrameCallback((_) => _adjustWindowSize());
+    // _checkIfFirstTime();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkIfFirstTime();
+    });
   }
 
   Future<void> _checkIfFirstTime() async {
@@ -45,6 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final marker = await configManager.getHashedSetting('session_marker');
     final remember = await configManager.getHashedSetting('remember_user');
     final allowFactoryReset = await configManager.getHashedSetting('show_factory_reset');
+
+    if (!mounted) return;
+
     setState(() {
       _marker = marker;
       _isRegisterMode = marker == null;
@@ -58,20 +62,22 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  // Future<void> _adjustWindowSize() async {
-  //   if (_windowSized) return;
-  //   _windowSized = true;
-
-  //   const targetSize = Size(850, 650);
-  //   final dpi = ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
-
-  //   final physicalSize = Size(
-  //     targetSize.width / dpi,
-  //     targetSize.height / dpi,
-  //   );
-
-  //   await windowManager.setSize(physicalSize);
-  //   await windowManager.center();
+  // Future<void> _checkIfFirstTime() async {
+  //   final configManager = context.read<AuthProvider>().configManager;
+  //   final marker = await configManager.getHashedSetting('session_marker');
+  //   final remember = await configManager.getHashedSetting('remember_user');
+  //   final allowFactoryReset = await configManager.getHashedSetting('show_factory_reset');
+  //   setState(() {
+  //     _marker = marker;
+  //     _isRegisterMode = marker == null;
+  //     _showWelcome = marker == null;
+  //     _allowFactoryReset = allowFactoryReset?.toLowerCase() != 'false';
+  //     if (remember != null && remember.toLowerCase() == 'true') {
+  //       _rememberMe = true;
+  //       _usernameFieldMasked = true;
+  //       _usernameController.text = '••••••••••';
+  //     }
+  //   });
   // }
 
   void _submitForm(BuildContext context) async {

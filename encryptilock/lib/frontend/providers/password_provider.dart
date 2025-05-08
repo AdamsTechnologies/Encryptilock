@@ -103,7 +103,9 @@ class PasswordProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      _passwords = await _passwordController!.getAllRecords();
+      // _passwords = await _passwordController!.getAllRecords();
+      final rawResults = await _passwordController!.getAllRecords();
+      _passwords = List<Map<String, dynamic>>.from(rawResults);
 
       _errorMessage = null;
       notifyListeners(); // Notify listeners after fetching

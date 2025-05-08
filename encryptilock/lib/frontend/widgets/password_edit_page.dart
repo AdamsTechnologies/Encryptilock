@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -309,9 +310,9 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
     super.dispose();
   }
 
-  // @ove
   @override
   Widget build(BuildContext context) {
+    final isMobile = Platform.isAndroid || Platform.isIOS;
     final theme = Theme.of(context);
     return Card(
       elevation: 6,
@@ -347,24 +348,59 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
               ),
 
               // Sticky Toggle + Action Bar
-              Column(
-                children: [
-                  SwitchListTile(
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                    title: const Text('Show Record'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(height: 10),
-                  BottomActionBar(
-                    isEditMode: true,
-                    showDeleteButton: true,
-                    onSave: _save,
-                    onDelete: _delete,
-                    onCancel: widget.onCancel,
-                  ),
-                ],
-              )
+              if (!isMobile)
+                Column(
+                  children: [
+                    SwitchListTile(
+                      value: _isActive,
+                      onChanged: (v) => setState(() => _isActive = v),
+                      title: const Text('Show Record'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    const SizedBox(height: 10),
+                    BottomActionBar(
+                      isEditMode: true,
+                      showDeleteButton: true,
+                      onSave: _save,
+                      onDelete: _delete,
+                      onCancel: widget.onCancel,
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton.icon(
+                          // icon: const Icon(Icons.delete),
+                          label: const Text('Delete'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                          ),
+                          onPressed: _delete,
+                        ),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              // icon: const Icon(Icons.save),
+                              label: const Text('Save'),
+                              onPressed: _save,
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton.icon(
+                              // icon: const Icon(Icons.cancel),
+                              label: const Text('Cancel'),
+                              onPressed: widget.onCancel,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

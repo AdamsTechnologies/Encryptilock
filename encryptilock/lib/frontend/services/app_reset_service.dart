@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+// import 'package:encryptilock/backend/databaseManager/database_abstraction.dart';
+import 'package:encryptilock/backend/helpers/encryptilock_database_factory.dart';
 
 import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
 import 'package:encryptilock/frontend/providers/auth_provider.dart';
@@ -52,8 +54,9 @@ class AppResetService {
     }
 
     final configPath = await getLocalPath('s1.db');
-    final newConn = DartSqlite(dbFile: configPath);
-    newConn.open();
+    // final newConn = DartSqlite(dbFile: configPath);
+    final newConn = await createEncryptilockDatabase(configPath);
+    await newConn.open();
     final newConfigManager = await ConfigSettingsController.init(newConn);
 
     runApp(

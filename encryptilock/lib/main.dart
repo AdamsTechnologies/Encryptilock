@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:encryptilock/frontend/app_main.dart';
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+
+// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/helpers/encryptilock_database_factory.dart';
+
 import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
 
 import 'package:encryptilock/frontend/services/idle_timeout_service.dart';
@@ -29,8 +32,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final settingsDbPath = await getLocalPath('s1.db');
-  final settingsDb = DartSqlite(dbFile: settingsDbPath);
-  settingsDb.open();
+  // final settingsDb = DartSqlite(dbFile: settingsDbPath);
+  final settingsDb = await createEncryptilockDatabase(settingsDbPath);
+  await settingsDb.open();
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
