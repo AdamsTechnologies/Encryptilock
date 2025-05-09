@@ -168,32 +168,32 @@ class HomeScreen extends StatelessWidget {
     return info.version;
   }
 
-  // void _launchWebsite() async {
-  //   final url = Uri.parse('https://www.encryptilock.com/contact');
-  //   if (await canLaunchUrl(url)) {
-  //     await launchUrl(
-  //       url,
-  //       mode: LaunchMode.externalApplication,
-  //     );
-  //   }
-  // }
   void _launchWebsite() async {
     final url = Uri.parse('https://www.encryptilock.com/contact');
-
-    final canLaunch = await canLaunchUrl(url);
-    print('[DEBUG] canLaunchUrl: $canLaunch');
-
-    if (canLaunch) {
-      final launched = await launchUrl(
+    if (await canLaunchUrl(url)) {
+      await launchUrl(
         url,
         mode: LaunchMode.externalApplication,
       );
-      print('[DEBUG] launchUrl success: $launched');
-      if (!launched) {
-        print('[ERROR] launchUrl failed to open URL.');
-      }
-    } else {
-      print('[ERROR] Invalid URL: $url');
     }
   }
+  // void _launchWebsite() async {
+  //   final url = Uri.parse('https://www.encryptilock.com/contact');
+
+  //   final canLaunch = await canLaunchUrl(url);
+  //   print('[DEBUG] canLaunchUrl: $canLaunch');
+
+  //   if (canLaunch) {
+  //     final launched = await launchUrl(
+  //       url,
+  //       mode: LaunchMode.externalApplication,
+  //     );
+  //     print('[DEBUG] launchUrl success: $launched');
+  //     if (!launched) {
+  //       print('[ERROR] launchUrl failed to open URL.');
+  //     }
+  //   } else {
+  //     print('[ERROR] Invalid URL: $url');
+  //   }
+  // }
 }
