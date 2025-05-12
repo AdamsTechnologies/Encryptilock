@@ -336,7 +336,8 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 24),
+                        // padding: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 24),
                         physics: const ClampingScrollPhysics(),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -406,45 +407,70 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Left: Delete button
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: ElevatedButton(
-                              onPressed: _delete,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.colorScheme.error,
                                 foregroundColor: Colors.white,
-                                minimumSize: const Size(48, 48),
-                                padding: const EdgeInsets.all(12.0),
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
                               ),
-                              child: const Icon(Icons.delete),
+                              onPressed: _delete,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.delete, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Delete"),
+                                ],
+                              ),
                             ),
                           ),
+
+                          // Right: Save and Cancel
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                                 child: ElevatedButton(
-                                  onPressed: _save,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: theme.colorScheme.secondary,
                                     foregroundColor: Colors.white,
-                                    minimumSize: const Size(48, 48),
-                                    padding: const EdgeInsets.all(12.0),
+                                    minimumSize: const Size(100, 48),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
                                   ),
-                                  child: const Icon(Icons.save),
+                                  onPressed: _save,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.save, size: 18),
+                                      SizedBox(width: 8),
+                                      Text("Save"),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                                 child: ElevatedButton(
-                                  onPressed: widget.onCancel,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: theme.colorScheme.secondary,
                                     foregroundColor: Colors.white,
-                                    minimumSize: const Size(48, 48),
-                                    padding: const EdgeInsets.all(12.0),
+                                    minimumSize: const Size(100, 48),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
                                   ),
-                                  child: const Icon(Icons.cancel),
+                                  onPressed: widget.onCancel,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.cancel, size: 18),
+                                      SizedBox(width: 8),
+                                      Text("Cancel"),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -452,7 +478,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                         ],
                       ),
                     ],
-                  ),
+                  )
               ],
             ),
           ),

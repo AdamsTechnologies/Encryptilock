@@ -419,7 +419,8 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 16),
+                        // padding: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
                         physics: const ClampingScrollPhysics(),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),

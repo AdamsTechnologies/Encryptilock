@@ -163,7 +163,8 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 24),
+                        // padding: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 24),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),
                           child: FocusTraversalGroup(
@@ -287,36 +288,57 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
                   )
                 else
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton(
-                          onPressed: _savePassword,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.secondary,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(48, 48),
-                            padding: const EdgeInsets.all(12.0),
+                      const SizedBox(width: 100), // space match for possible delete button
+
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.secondary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              ),
+                              onPressed: _savePassword,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.save, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Save"),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: const Icon(Icons.save),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton(
-                          onPressed: widget.onCancel,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.secondary,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(48, 48),
-                            padding: const EdgeInsets.all(12.0),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.secondary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              ),
+                              onPressed: widget.onCancel,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.cancel, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Cancel"),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: const Icon(Icons.cancel),
-                        ),
+                        ],
                       ),
                     ],
-                  ),
+                  )
               ],
             ),
           ),
