@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth_provider.dart'; // For database connection state
+import 'auth_provider.dart';
 import 'package:encryptilock/backend/controllers/password_controller.dart';
 
 class PasswordProvider extends ChangeNotifier {

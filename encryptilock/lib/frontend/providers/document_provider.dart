@@ -201,7 +201,6 @@ After resetting, you'll be prompted to create a new account as if launching the 
 <!-- tags: factory reset, delete account, start over, lost password, restart -->
 """,
     ),
-    // TODO INCLUDE INFORMATION ABOUT THE CLEAR FILTER ON LOGOUT SETTING NOW ADDED
     DocItem(
       title: "Config Settings",
       content: """# ⚙️ Settings & Customization

@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:encryptilock/backend/devsec/encrypto.dart';
-
-// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
 import 'package:encryptilock/backend/databaseManager/database_abstraction.dart';
 
 class PasswordController {
-  // final DartSqlite dbController;
   final EncryptilockDatabase dbController;
   final Encrypto encrypto;
   final String tableName;
@@ -14,7 +11,7 @@ class PasswordController {
   final Map<String, String>? schema;
 
   /// Defines which fields should be stored encrypted by default.
-  /// Example usage: ['password','username','service','servicetype','url','notes']
+  /// Example usage: ['password','username','url','notes']
   final List<String> encryptedFields;
 
   PasswordController({
@@ -36,7 +33,7 @@ class PasswordController {
     }
   }
 
-  /// Get a single field (usually 'password'), optionally decrypt it.
+  /// Get password with option to decrypt it.
   Future<String?> getPassword(String id, {bool decrypt = false}) async {
     final record = await _getRecordById(id);
     if (record == null) {
@@ -139,7 +136,6 @@ class PasswordController {
     // or it's unchanged, so we leave it alone.
     for (final field in encryptedFields) {
       if (field == 'password') {
-        // Same logic you already have
         if (passwordChanged) {
           final newPlain = row['password'];
           if (newPlain is String && newPlain.isNotEmpty) {
@@ -162,7 +158,6 @@ class PasswordController {
   }
 
   /// Upserts multiple records in batch, always encrypting all fields for simplicity.
-  /// If you need "changed fields" logic in batch, you can adapt similarly.
   Future<void> upsertMultipleRecords(List<Map<String, dynamic>> data) async {
     final transformedData = <Map<String, dynamic>>[];
 
@@ -190,14 +185,8 @@ class PasswordController {
     ]);
   }
 
-  // --------------------------------------------------------------------------
-  // INTERNALS
-  // --------------------------------------------------------------------------
   Future<Map<String, dynamic>?> _getRecordById(String id) async {
     final sql = "SELECT * FROM $tableName WHERE id = ?";
-    // final results = dbController.query(sql, [
-    //   id
-    // ]);
     final results = await dbController.query(sql, [
       id
     ]);

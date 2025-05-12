@@ -5,12 +5,11 @@ import 'package:cryptography/cryptography.dart';
 
 /// Generates a 256-bit key using Argon2id KDF.
 Future<Map<String, dynamic>> generateKey(String password, [dynamic salt]) async {
-  // NOTE: can use DartArgon2id if needing synchroneous operations.
   if (password.isEmpty) {
     throw ArgumentError("Password must be a non-empty string.");
   }
 
-  if (salt==null){
+  if (salt == null) {
     salt = Uint8List.fromList(List<int>.generate(16, (_) => Random.secure().nextInt(256)));
   } else if (salt is String) {
     salt = base64Url.decode(salt);

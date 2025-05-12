@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
-// import 'package:encryptilock/backend/databaseManager/database_abstraction.dart';
 import 'package:encryptilock/backend/helpers/encryptilock_database_factory.dart';
 
 import 'package:encryptilock/backend/controllers/config_settings_controller.dart';

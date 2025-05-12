@@ -1,14 +1,17 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
+/// sqflite is for mobile devices.
 class SqfliteSqlite {
   final String dbFile; // just the filename, e.g. 's1.db'
   Database? _db;
 
   SqfliteSqlite({required this.dbFile});
 
+  // ---------------------------------------------------------------------------
+  //   OPEN / CLOSE
+  // ---------------------------------------------------------------------------
   Future<void> open() async {
     if (_db != null) return;
     final docs = await getApplicationDocumentsDirectory();
@@ -27,12 +30,20 @@ class SqfliteSqlite {
     if (_db == null) throw Exception('Database not opened');
   }
 
+  // ---------------------------------------------------------------------------
+  //   CREATE TABLE
+  // ---------------------------------------------------------------------------
+
   Future<void> createTableIfNotExists(String table, Map<String, String> schema) async {
     _checkOpen();
     final columns = schema.entries.map((e) => '${e.key} ${e.value}').join(', ');
     final sql = 'CREATE TABLE IF NOT EXISTS $table ($columns)';
     await _db!.execute(sql);
   }
+
+  // ---------------------------------------------------------------------------
+  //   INSERT
+  // ---------------------------------------------------------------------------
 
   Future<void> insert(String table, Map<String, dynamic> values) async {
     _checkOpen();
@@ -48,6 +59,10 @@ class SqfliteSqlite {
     await batch.commit(noResult: true);
   }
 
+  // ---------------------------------------------------------------------------
+  //   UPDATE
+  // ---------------------------------------------------------------------------
+
   Future<void> update(
     String table,
     Map<String, dynamic> values, {
@@ -56,25 +71,6 @@ class SqfliteSqlite {
   }) async {
     _checkOpen();
     await _db!.update(table, values, where: whereClause, whereArgs: whereArgs);
-  }
-
-  Future<List<Map<String, dynamic>>> query(String sql, [List<Object?> params = const []]) async {
-    _checkOpen();
-    return await _db!.rawQuery(sql, params);
-  }
-
-  Future<void> executeCommand(String sql, [List<Object?> params = const []]) async {
-    _checkOpen();
-    if (params.isEmpty) {
-      await _db!.execute(sql);
-    } else {
-      await _db!.rawQuery(sql, params);
-    }
-  }
-
-  Future<void> delete(String table, String whereClause, List<Object?> whereArgs) async {
-    _checkOpen();
-    await _db!.delete(table, where: whereClause, whereArgs: whereArgs);
   }
 
   Future<void> upsert(String table, Map<String, dynamic> values, List<String> conflictColumns) async {
@@ -93,6 +89,32 @@ class SqfliteSqlite {
       batch.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);
+  }
+  // ---------------------------------------------------------------------------
+  //   EXEC / QUERY
+  // ---------------------------------------------------------------------------
+
+  Future<List<Map<String, dynamic>>> query(String sql, [List<Object?> params = const []]) async {
+    _checkOpen();
+    return await _db!.rawQuery(sql, params);
+  }
+
+  Future<void> executeCommand(String sql, [List<Object?> params = const []]) async {
+    _checkOpen();
+    if (params.isEmpty) {
+      await _db!.execute(sql);
+    } else {
+      await _db!.rawQuery(sql, params);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  //   DELETE
+  // ---------------------------------------------------------------------------
+
+  Future<void> delete(String table, String whereClause, List<Object?> whereArgs) async {
+    _checkOpen();
+    await _db!.delete(table, where: whereClause, whereArgs: whereArgs);
   }
 
   Future<int?> getBatchNo(String table, String field) async {

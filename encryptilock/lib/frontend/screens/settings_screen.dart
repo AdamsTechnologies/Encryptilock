@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:encryptilock/frontend/providers/theme_provider.dart';
 import 'package:encryptilock/frontend/providers/settings_provider.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
-import 'package:encryptilock/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -113,27 +113,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Appearance', style: themeProvider.theme.textTheme.titleLarge),
             const SizedBox(height: 16),
-
-            // Rewritten to use DropdownMenu (M3) instead of DropdownButtonFormField
             Container(
               width: double.infinity, // Takes full width of parent
               child: DropdownButtonFormField<String>(
                 value: currentThemeName,
                 decoration: InputDecoration(
                   labelText: 'Select Theme',
-                  // This ensures the dropdown matches parent width
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-                // This is critical - it controls the dropdown items width
                 isExpanded: true,
-                // This controls the alignment of the dropdown list
                 alignment: AlignmentDirectional.centerStart,
-                // Optional: customize the button
                 icon: Icon(Icons.arrow_drop_down),
-                // Optional: customize dropdown
                 dropdownColor: Theme.of(context).colorScheme.surface,
-                // Map your theme items
                 items: ThemeConfig.themes.map((themeName) {
                   return DropdownMenuItem<String>(
                     value: themeName,

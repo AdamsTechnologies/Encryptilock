@@ -1,10 +1,5 @@
-// import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-// import 'package:encryptilock/frontend/providers/password_provider.dart';
-// import 'package:encryptilock/frontend/screens/passwords_screen.dart';
-// import 'package:encryptilock/frontend/screens/settings_screen.dart';
-// import 'package:encryptilock/frontend/screens/info_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -121,13 +116,6 @@ class HomeScreen extends StatelessWidget {
             child: const Text('Send Feedback'),
           ),
         ),
-        // Align(
-        //   alignment: centered ? Alignment.center : Alignment.centerLeft,
-        //   child: TextButton(
-        //     onPressed: _launchWebsite,
-        //     child: const Text('Visit encryptilock.com'),
-        //   ),
-        // ),
 
         // Version
         FutureBuilder<String>(
@@ -177,23 +165,4 @@ class HomeScreen extends StatelessWidget {
       );
     }
   }
-  // void _launchWebsite() async {
-  //   final url = Uri.parse('https://www.encryptilock.com/contact');
-
-  //   final canLaunch = await canLaunchUrl(url);
-  //   print('[DEBUG] canLaunchUrl: $canLaunch');
-
-  //   if (canLaunch) {
-  //     final launched = await launchUrl(
-  //       url,
-  //       mode: LaunchMode.externalApplication,
-  //     );
-  //     print('[DEBUG] launchUrl success: $launched');
-  //     if (!launched) {
-  //       print('[ERROR] launchUrl failed to open URL.');
-  //     }
-  //   } else {
-  //     print('[ERROR] Invalid URL: $url');
-  //   }
-  // }
 }

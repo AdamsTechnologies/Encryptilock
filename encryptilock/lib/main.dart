@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:encryptilock/frontend/app_main.dart';
-
-// import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
 import 'package:encryptilock/backend/helpers/encryptilock_database_factory.dart';
 
 import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
@@ -23,9 +21,7 @@ import 'package:encryptilock/frontend/theme/theme_config.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 
 import 'dart:io';
-// import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
-
 import 'package:encryptilock/frontend/services/desktop_window_manager.dart';
 
 void main() async {
@@ -112,28 +108,6 @@ class _WindowCloseHandler extends WindowListener {
     await windowManager.close();
   }
 }
-// class _WindowCloseHandler extends WindowListener {
-//   @override
-//   Future onWindowClose() async {
-//     final isPreventClose = await windowManager.isPreventClose();
-//     if (!isPreventClose) return;
-
-//     final context = navigatorKey.currentContext;
-//     if (context != null) {
-//       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-//       final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
-//       if (settingProvider.clearFiltersOnLogout == true) {
-//         await settingProvider.clearCategoryFilters();
-//       }
-//       if (authProvider.isLoggedIn) {
-//         await authProvider.logout(isAppShutdown: true);
-//       }
-//     }
-
-//     await windowManager.setPreventClose(false);
-//     await windowManager.close();
-//   }
-// }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -173,64 +147,3 @@ class IdleWrapper extends StatelessWidget {
     );
   }
 }
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   final settingsDbPath = await getLocalPath('s1.db');
-//   final settingsDb = DartSqlite(dbFile: settingsDbPath);
-//   settingsDb.open();
-//   final configManager = await ConfigSettingsController.init(settingsDb);
-
-//   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-//     await DesktopWindow.setWindowSize(const Size(750, 650));
-//     await DesktopWindow.setMinWindowSize(const Size(400, 300));
-//     await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
-
-//     await windowManager.ensureInitialized();
-//     windowManager.setPreventClose(true);
-//     windowManager.addListener(_WindowCloseHandler());
-//   }
-
-//   runApp(
-//     MultiProvider(
-//       providers: [
-//         ChangeNotifierProvider(create: (_) => SnackBarProvider()),
-//         ChangeNotifierProxyProvider<SnackBarProvider, AuthProvider>(
-//           create: (_) => AuthProvider(configManager: configManager),
-//           update: (_, snackBarProvider, authProvider) => authProvider!..updateSnackBarProvider(snackBarProvider),
-//         ),
-//         ChangeNotifierProvider(create: (_) => SettingsProvider(configManager)..loadSettings()),
-//         ChangeNotifierProxyProvider<SettingsProvider, ThemeProvider>(
-//           create: (context) {
-//             final settings = Provider.of<SettingsProvider>(context, listen: false);
-//             final themeData = ThemeConfig.getTheme(settings.settingsTheme);
-//             return ThemeProvider(themeData);
-//           },
-//           update: (context, settings, themeProvider) {
-//             themeProvider?.setTheme(ThemeConfig.getTheme(settings.settingsTheme));
-//             return themeProvider!;
-//           },
-//         ),
-//         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider, IdleTimeoutService>(
-//           create: (_) => IdleTimeoutService(),
-//           update: (_, auth, settings, idleService) {
-//             idleService ??= IdleTimeoutService();
-//             idleService.configure(authProvider: auth, settingsProvider: settings);
-//             return idleService;
-//           },
-//         ),
-//         ChangeNotifierProxyProvider<AuthProvider, PasswordProvider>(
-//           create: (_) => PasswordProvider(),
-//           update: (_, auth, passwordProvider) {
-//             passwordProvider ??= PasswordProvider();
-//             passwordProvider.updateAuthProvider(auth);
-//             return passwordProvider;
-//           },
-//         ),
-//         ChangeNotifierProvider(create: (_) => DocProvider()),
-//       ],
-//       child: const MyApp(),
-//     ),
-//   );
-// }
