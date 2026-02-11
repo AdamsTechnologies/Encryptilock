@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth_provider.dart'; // For database connection state
+import 'auth_provider.dart';
 import 'package:encryptilock/backend/controllers/password_controller.dart';
 
 class PasswordProvider extends ChangeNotifier {
@@ -103,7 +103,9 @@ class PasswordProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      _passwords = await _passwordController!.getAllRecords();
+      // _passwords = await _passwordController!.getAllRecords();
+      final rawResults = await _passwordController!.getAllRecords();
+      _passwords = List<Map<String, dynamic>>.from(rawResults);
 
       _errorMessage = null;
       notifyListeners(); // Notify listeners after fetching

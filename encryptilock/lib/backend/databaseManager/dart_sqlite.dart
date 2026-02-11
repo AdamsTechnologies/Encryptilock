@@ -1,5 +1,3 @@
-import 'dart:ffi'; // For FFI (this is typically needed by sqlite3)
-import 'dart:io';
 import 'package:sqlite3/sqlite3.dart';
 
 /// A consolidated class that wraps [sqlite3] for easy database operations,
@@ -27,16 +25,10 @@ class DartSqlite {
   /// Closes the connection if open.
   void close() {
     if (!_isOpen || _db == null) return;
-    _db!.dispose(); // dispose is correct for sqlite3.dart
+    _db!.dispose();
     _db = null;
     _isOpen = false;
   }
-  // void close() {
-  //   if (!_isOpen) return;
-  //   _db?.dispose();
-  //   _db = null;
-  //   _isOpen = false;
-  // }
 
   /// Ensures the DB is open before any operation.
   void _checkOpen() {
@@ -231,11 +223,10 @@ class DartSqlite {
   }
 
   // ---------------------------------------------------------------------------
-  //   GET MAX BATCH NO (like your getBatchNo)
+  //   GET MAX BATCH NO
   // ---------------------------------------------------------------------------
 
   /// Retrieves "COALESCE(MAX($incrField),0)+1" from the table, if you have
-  /// an incremental field. Otherwise returns null if error or table empty.
   int? getBatchNo(String tableName, String incrField) {
     _checkOpen();
     try {

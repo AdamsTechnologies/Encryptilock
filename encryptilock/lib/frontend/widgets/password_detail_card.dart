@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +28,7 @@ class PasswordDetailCard extends StatefulWidget {
 }
 
 class _PasswordDetailCardState extends State<PasswordDetailCard> {
-  bool _showPlaintext = false; // Whether we display the decrypted password
+  bool _showPlaintext = false; // Whether we decrypt and display the password
   Future<String?>? _decryptFuture; // Tracks the ongoing decryption
   Timer? _hideTimer; // Hides the password after 2.5s
   String? _lastSelectedId; // To detect if the user changed to a new record
@@ -73,29 +74,32 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
       _decryptedUrl = null;
 
       if (selected != null) {
-        final encryptedUsername = selected['username'] ?? '';
-        final encryptedUrl = selected['url'] ?? '';
+        final encryptedUsername = selected['username'];
+        final encryptedUrl = selected['url'];
 
-        // Decrypt asynchronously
         final passwordProvider = Provider.of<PasswordProvider>(context, listen: false);
-        // Decrypt username
-        passwordProvider.decryptField('username', encryptedUsername).then((value) {
-          if (mounted) {
-            setState(() {
-              _decryptedUsername = value;
-              _usernameController.text = value;
-            });
-          }
-        });
-        // Decrypt URL
-        passwordProvider.decryptField('url', encryptedUrl).then((value) {
-          if (mounted) {
-            setState(() {
-              _decryptedUrl = value;
-              _urlController.text = value;
-            });
-          }
-        });
+
+        if (encryptedUsername != null && encryptedUsername.trim().isNotEmpty) {
+          passwordProvider.decryptField('username', encryptedUsername).then((value) {
+            if (mounted) {
+              setState(() {
+                _decryptedUsername = value;
+                _usernameController.text = value ?? '';
+              });
+            }
+          });
+        }
+
+        if (encryptedUrl != null && encryptedUrl.trim().isNotEmpty) {
+          passwordProvider.decryptField('url', encryptedUrl).then((value) {
+            if (mounted) {
+              setState(() {
+                _decryptedUrl = value;
+                _urlController.text = value ?? '';
+              });
+            }
+          });
+        }
       }
     }
   }
@@ -199,7 +203,6 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
         url = 'https://$url';
       }
     }
-
     return url;
   }
 
@@ -246,6 +249,7 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Platform.isAndroid || Platform.isIOS;
     final theme = Theme.of(context);
     return Consumer3<PasswordProvider, SettingsProvider, SnackBarProvider>(
       builder: (ctx, passwordProv, settingsProv, snackbarProv, _) {
@@ -405,90 +409,102 @@ class _PasswordDetailCardState extends State<PasswordDetailCard> {
             borderRadius: BorderRadius.circular(12.0),
           ),
           elevation: 6,
-          // margin: const EdgeInsets.all(16.0),
           margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header: Service name + Action Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        serviceName,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        // padding: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                        physics: const ClampingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        serviceName,
+                                        style: theme.textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24.0),
+                                if (_decryptedUsername != null)
+                                  _buildNormalField(
+                                    label: 'Username',
+                                    controller: _usernameController,
+                                    copyable: true,
+                                  )
+                                else
+                                  const SizedBox(height: 72),
+                                _buildPasswordField(),
+                                if (_decryptedUrl != null)
+                                  _buildNormalField(
+                                    label: 'URL',
+                                    controller: _urlController,
+                                    copyable: true,
+                                    onSuffixTap: () => _openUrl(context, _decryptedUrl!),
+                                    suffixIconData: Icons.open_in_browser,
+                                    suffixTooltip: 'Open URL',
+                                  ),
+                                const SizedBox(height: 24.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'Category: $serviceType',
+                                        style: theme.textTheme.bodyMedium,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    Flexible(
+                                      child: Text(
+                                        'Created: $formattedDate',
+                                        style: theme.textTheme.bodyMedium,
+                                        textAlign: TextAlign.right,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Inline action bar for both mobile and desktop
+                                BottomActionBar(
+                                  isEditMode: false,
+                                  showDeleteButton: settingsProv.showDeleteButtonMainView,
+                                  onCancel: widget.onClose,
+                                  onEdit: widget.onEdit,
+                                  onDelete: settingsProv.showDeleteButtonMainView ? () => _onDeletePassword(context, passwordId) : null,
+                                  style: BottomActionBarStyle.iconOnly,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis, // Ensures the text truncates with "..."
-                        maxLines: 1, // Prevents wrapping to a new line
                       ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 24.0),
-
-                // Username
-                if (_decryptedUsername != null)
-                  _buildNormalField(
-                    label: 'Username',
-                    controller: _usernameController,
-                    copyable: true,
-                  )
-                else
-                  const SizedBox(height: 72), // maintain layout height
-
-                // Password
-                _buildPasswordField(),
-
-                // URL if present
-                if (_decryptedUrl != null)
-                  _buildNormalField(
-                    label: 'URL',
-                    controller: _urlController,
-                    copyable: true,
-                    onSuffixTap: () => _openUrl(context, _decryptedUrl!),
-                    suffixIconData: Icons.open_in_browser,
-                    suffixTooltip: 'Open URL',
-                  ),
-                // else
-                // const SizedBox(height: 72),
-
-                const SizedBox(height: 24.0),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Category: $serviceType',
-                        style: theme.textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    SizedBox(width: 8.0), // Add spacing between the texts if needed
-                    Flexible(
-                      child: Text(
-                        'Created: $formattedDate',
-                        style: theme.textTheme.bodyMedium,
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                BottomActionBar(
-                  isEditMode: false,
-                  showDeleteButton: settingsProv.showDeleteButtonMainView,
-                  onCancel: widget.onClose,
-                  onEdit: widget.onEdit,
-                  onDelete: settingsProv.showDeleteButtonMainView ? () => _onDeletePassword(context, passwordId) : null,
-                  style: BottomActionBarStyle.iconOnly,
-                ),
-              ],
+                );
+              },
             ),
           ),
         );

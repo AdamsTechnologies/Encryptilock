@@ -1,15 +1,14 @@
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/databaseManager/database_abstraction.dart';
 import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
-import 'package:flutter/material.dart';
 
 class ConfigSettingsController {
-  final DartSqlite db;
+  final EncryptilockDatabase db;
   String? _xorKey;
   String? get xorKey => _xorKey;
 
   ConfigSettingsController._(this.db);
 
-  static Future<ConfigSettingsController> init(DartSqlite db) async {
+  static Future<ConfigSettingsController> init(EncryptilockDatabase db) async {
     db.createTableIfNotExists('settings', {
       'key': 'TEXT PRIMARY KEY',
       'value': 'TEXT',
@@ -31,9 +30,10 @@ class ConfigSettingsController {
 
   Future<String?> getSetting(String key, {bool plaintextValue = false}) async {
     final obfuscatedKey = _obfuscateKey(key);
-    final result = db.query('SELECT value FROM settings WHERE key = ?', [
+    final result = await db.query('SELECT value FROM settings WHERE key = ?', [
       obfuscatedKey
     ]);
+
     if (result.isEmpty) return null;
 
     final encoded = result.first['value'] as String;
@@ -61,7 +61,7 @@ class ConfigSettingsController {
 
   Future<String?> getHashedSetting(String key) async {
     final hashedKey = ObfuscationUtil.hashObject(key);
-    final result = db.query('SELECT value FROM settings WHERE key = ?', [
+    final result = await db.query('SELECT value FROM settings WHERE key = ?', [
       hashedKey
     ]);
     if (result.isEmpty) return null;

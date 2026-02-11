@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:encryptilock/frontend/providers/auth_provider.dart';
 import 'package:encryptilock/frontend/providers/settings_provider.dart';
 
-// import 'package:flutter/services.dart';
-// import 'package:provider/provider.dart';
-// import 'package:Encryptilock/frontend/screens/login_screen.dart';
-
 class IdleTimeoutService with ChangeNotifier {
   AuthProvider? _auth;
   SettingsProvider? _settings;

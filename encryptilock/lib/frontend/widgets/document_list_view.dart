@@ -1,4 +1,3 @@
-// doc_list_view.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';

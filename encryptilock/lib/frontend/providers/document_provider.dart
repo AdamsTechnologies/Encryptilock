@@ -9,258 +9,271 @@ class DocItem {
 
 class DocProvider extends ChangeNotifier {
   final List<DocItem> _docs = [
+    // -------------- HOW ENCRYPTION WORKS
+    DocItem(
+      title: "How Encryptilock Works",
+      content: """# 🛡️ How Encryptilock Works
+---
+### Encryption Overview
+
+- **AES-256** is used to encrypt all stored data.
+- **Argon2id** is used to derive the encryption key from your master password.
+- Each record is encrypted field-by-field before being saved.
+- The entire vault is encrypted as an additional layer.
+- Data remains encrypted unless actively decrypted for display or modification.
+
+---
+
+### Local-Only Model
+
+- All cryptographic operations run entirely on your device.
+- No data is ever uploaded, synced, or stored in the cloud.
+- The master password is never saved, cached, or transmitted.
+
+---
+
+### Notes
+
+- AES-256 and Argon2id are widely regarded as industry-leading encryption algorithms.
+- Security depends on the strength of your master password. Choose one that is long and unique.
+- The only network-facing feature is the optional feedback button on the Home Page. If used, it opens your browser to `https://encryptilock.com/contact`.   
+  No app data is ever transmitted anywhere.
+
+<!-- tags: encryption, AES-256, argon2id, local only, local first, local-only, local-first, password manager, secure, offline encryption, cryptography -->
+""",
+    ),
+    // -------------- NAVIGATING THE APP
     DocItem(
       title: "Navigating the App",
       content: """# 🚀 Getting Started
-
-Encryptilock is a privacy-first password manager designed for local, offline use. This guide introduces the core areas of the app and how to navigate them.
-
 ---
 
 ### Main Navigation
+- 🏠 **Home Tab** 
+  Hints, app version details, link to submit feedback to Encryptilock.
 
-- **Info Tab (🛈)**  
-  Access help documentation, app version info, and a direct link to the Encryptilock website.
+- 🔐 **Passwords Tab**  
+  View, create, edit, and manage your password entries. Supports filtering and hidden records.
 
-- **Passwords Tab (🔐)**  
-  Your secure vault for viewing, creating, editing, and organizing password entries.
+- ⚙️ **Settings Tab**  
+  Configure themes, idle timeout, password generation settings, and other preferences.
 
-- **Settings Tab (⚙️)**  
-  Customize themes, auto-lock timeout, password generation rules, and other preferences.
+- 🛈 **Info Tab**  
+  Documentation and User Manual.
 
-- **Logout Button (⏻)**  
-  Instantly lock the app and return to the login screen. Your data remains encrypted and stored securely on your device.
+- ⏻ **Logout Button**  
+  Saves changes, and logs out of the app.
 
 ---
 
-Encryptilock is built for simplicity — all encryption and data management happens locally. No internet required, no cloud syncing, no middlemen.
+### Notes
+
+Encryptilock operates entirely offline. No data is ever synced, uploaded, or transmitted.  
+All encryption and data storage remain local.
 
 <!-- tags: navigation, getting started, interface, onboarding -->
 """,
     ),
-    DocItem(
-      title: "How Encryption Works",
-      content: """# 🔐 How Encryption Works
-
-Encryption is the process of converting readable information into a scrambled format that can only be deciphered with a specific key. It's how we keep your data private and protected — even if someone were to access your files, they wouldn't be able to read them.  
-
-
-Encryptilock uses the strongest encryption algorithms available to keep your information secure — all entirely offline and on your device.
-
-### Encryption Basics
-
-- All records are encrypted using the **AES-256** cipher — one of the most secure encryption algorithms available today.
-- Fields are only decrypted when necessary, remaining encrypted while not being actively viewed or updated.
-- We use **Argon2id** to derive a secure encryption key.
-- Sensitive fields are encrypted individually before being saved.
-- The entire vault is encrypted as well.
-
-🛡️ *AES-256 would take millions of years to crack with current computing technology. Argon2id adds another layer of protection by making password guessing extremely difficult, even with dedicated hardware.*
-
-### Local-Only Model
-
-- All encryption and decryption happens on your device.
-- No data is synced, uploaded, or stored in the cloud.
-- Your master password is never saved or transmitted.
-
-Encryptilock ensures that only **you** hold the key to your data.
-
----
-
-<!-- tags: encryption, AES-256, argon2id, local only, local encryption, security, secure data, secure password manager -->
-""",
-    ),
+    // -------------- ADD EDIT AND VIEW PASSWORDS
     DocItem(
       title: "Add, Edit & View Passwords",
       content: """# 🔐 Add, Edit & View Passwords
-
-Encryptilock provides a clean, flexible interface for storing sensitive records securely.
-
 ---
 
 ### Creating a New Entry
 
-To create a new password entry:
+To add a new password:
 
-- Go to the **Passwords Tab**
-- Click **"Create New Password"**
+1. Open the **Passwords** tab.
+2. Tap **“Create Password.”**
 
-Each entry includes the following fields:
+Available fields:
 
-- **Title** - e.g. "Bank of Example"
-- **Username** - Your login identifier
-- **Password** - The actual secret
-- **Category** - e.g. "Banking", "Email", "Social Media"
-- **URL** - A website address.\
-  (If it doesn't start with `http://` or `https://`, it defaults to `https://`)
-- **Notes** - Optional free-form text
-
-Only **Title** and **Password** are required. Use remaining fields as needed.
-
-💡 *Use the vault for more than just passwords—license keys, secure notes, or private records are all supported.*
+- **Title** *(required)* — e.g. "Bank of Example"
+- **Password** *(encrypted, required)* — The actual credential or secret
+- **Username** *(encrypted, optional)* —  login identifier
+- **Category** *(optional)* — grouping label (e.g. "Social Media", "Banking")
+- **URL** *(encrypted, optional)* —  Automatically normalized to use `https://` if not specified
+- **Notes** *(encrypted, optional)* — Optional free-form text
 
 ---
 
-### Viewing, Editing & Deleting
+### Viewing and Editing Entries
 
-- Tap a saved item to view its details.
-- From the view screen, you can:
-  - **Copy credentials**
-  - **Open the saved URL**
-  - **Edit the entry** by clicking the **Edit** icon
-- All changes are encrypted and saved automatically.
+- Tap any entry to view its details.
+- From the detail view, you can:
+  - Copy fields (username, password)
+  - Launch the associated URL
+  - Tap the **Edit** icon to modify the entry
 
----
-
-### Hidden (Inactive) Entries
-
-- Entries can be marked as **Hidden**, removing them from the main list and search results.
-- To view hidden records, enable **"Show Hidden Passwords"** in the Settings tab.
-- Use this to archive or obscure sensitive items without deleting them.
+Changes are saved automatically and re-encrypted on save.
 
 ---
 
-<!-- tags: passwords, create entry, title, username, category, URL, note, show Record, edit, delete, url, hidden passwords, notes, view password -->
+### Hidden Entries
+
+- Entries can be marked as **Hidden**, removing them from the default list and search results.
+- To view hidden items, enable **Show Hidden Passwords** in Settings.
+- Use this to archive sensitive or infrequently used records without deleting them.
+
+---
+
+### Notes
+
+- Entries are not limited to passwords. Use it to store important notes, license keys, anything text-based you need to securely store.
+- Most fields are individually encrypted.  
+However, **Title** and **Category** are stored in plaintext to support search, filtering, and hidden entry management. Do not place sensitive or identifying information in these fields.
+
+<!-- tags: passwords, password entry, create, create entry, edit, delete, view, hidden passwords, vault, secure notes, title, username, category, URL, url, note, show Record, view password -->
 """,
     ),
+    // -------------- MANUAL BACKUP
     DocItem(
       title: "Manual Backup",
       content: """# 💾 Manual Backup
-
-Built-in backup and restore functionality is planned for a future release, you can back up your data manually in the meantime.
-
 ---
 
-### What to Back Up
+### Files to Back Up
 
-To safeguard your encrypted data, back up the following two database files:
+To retain your configuration and password data, back up both of the following files:
 
-- **Config Settings Database**: `s1.db`  
-- **Password Vault Database**: `s2.db`
+- `s1.db` — Configuration Settings
+- `s2.db` — Encrypted Password Vault
 
-These files are located in your system's app data directory:
-
+These files are located in the app's data directory:
 ```
 {{DB_PATH}}
 ```
-💡 *You can copy these files to an external drive, encrypted archive, or any secure offline location.*
 
 ---
 
-### Important Notes
-- ⚠️ **Handle backups with care.** Modifying, misplacing, or renaming these databases can render your vault unusable.
+### Risks and Considerations
 
-Encryptilock will include automatic backup and recovery tools in an upcoming update. Until then, this manual method is your primary recovery option.
+- ❌ Do not rename or modify these files outside of Encryptilock.
+- ⚠️ Deleting these files resets Encryptilock to first-launch state.
+- ✅ backups should be stored in a private and secure location.
 
 ---
 
-<!-- tags: backup, back-up, back up, sync, save data -->
+### Notes
+
+- Manual backups are currently the only recovery option.
+- Built-in backup and restore tools are planned for a future update.
+
+<!-- tags: backup, back-up, save, export, recovery, config, database, vault -->
 """,
     ),
+    // -------------- RESETTING THE APP
     DocItem(
       title: "Resetting the App",
       content: """# 🔄 Resetting the App
+---
 
-You can return Encryptilock to a fresh state by performing a factory reset from the login screen.
+### Factory Reset via Login Screen
+
+If the **Allow Factory Reset** option was enabled in Settings:
+
+1. Open the **Login screen**.
+2. Tap **“Having trouble logging in? Factory Reset”**.
+3. Enter your exact, case-sensitive username.
+4. Tap **“Delete and Restart”** (button will enable after valid input).
 
 ---
 
-### Factory Reset
+### Manual Reset (if factory reset is unavailable)
 
-to reset the app:
-- Ensure 'Allow Factory Reset' was toggled on, (if not skip to 'Resetting Manually')
-- Open the login screen and tap the **'Having trouble logging in? Factory Reset'** button.
-- Type your case-sensitive username into the text box and select **'Delete and Restart'**.
-  - the Delete and Restart button will become enabled once you've typed your username.
+If you did not enable factory reset or no longer know your username:
 
-**Resetting Manually**
-- if you can't remember your username, or you didn't Allow Factory Reset in the settings page
-  - see the document 'Manual Backup' to find the location of your databases. 
-    - manually delete these databases, and restart your app. This is the same actions the Factory Reset does for you.
-
-
-This will:
-
-- Permanently delete your password vault and all configuration settings
-- Return the app to its first-launch state
-
-After resetting, you'll be prompted to create a new account as if launching the app for the first time.
-
-⚠️ *This action is irreversible. Ensure you've backed up any important data beforehand.*
+1. Locate the application database files. See **Manual Backup** for file locations.
+2. Delete both:
+   - `s1.db` — Config Settings
+   - `s2.db` — Password Vault
+3. Restart the app. You will be prompted to create a new account.
 
 ---
 
-### When to Use Factory Reset
+### What This Does
 
-- If you've forgotten your master password
-- If your vault is no longer accessible
-- If you want to completely wipe your data and start over
+- Deletes all encrypted data and configuration
+- Returns Encryptilock to its first-launch state
+- Cannot be undone
+
+⚠️ Back up any important data before resetting. This action is permanent.
 
 ---
 
-<!-- tags: factory reset, delete account, start over, lost password, restart -->
+### When to Use This
+
+- You forgot your master password
+- Your data is no longer accessible
+- You want to start over with a clean slate
+
+<!-- tags: factory reset, delete account, delete data, start over, reset app, lost password, restart -->
 """,
     ),
+    // -------------- CONFIG SETTINGS
     DocItem(
       title: "Config Settings",
       content: """# ⚙️ Settings & Customization
-
-The Settings tab allows you to personalize Encryptilock's behavior and appearance to your preferences.
-
 ---
 
-### Theme Selection
+### Appearance
 
-- Choose from 20 available themes.
-- Changes apply instantly and persist across sessions.
+- **Theme Selection**  
+  Choose from 20 predefined color themes. Changes apply immediately and persist across sessions.
 
 ---
 
 ### Security
 
-**Idle Timeout**
-  - Set a custom inactivity timeout (in minutes).
-  - After the specified period with no interaction, the app auto-locks and returns to the login screen.
-  - Helps protect your data during periods of inactivity.
-⚠️ *Tip: Lock your device manually when stepping away. Encryptilock adds an extra layer by auto-locking if you forget.*
+- **Idle Timeout**  
+  Sets an inactivity timer (in minutes). When the app detects no interaction for the specified duration, it saves data, locks, and returns to the login screen.
 
-**Allow Factory Reset**
-  - adds a Factory reset button on the login page.
-  - Allows you to reset the app to original state, requires you to input your username to delete.
-  - If you ever forget your username - delete the databases to act as a factory reset. 
-    - see Manual Backup docs to find database locations, delete the databases. restart the app and it'll prompt you to register anew.
+- **Allow Factory Reset**  
+  Enables a reset button on the login screen. This allows the app to be restored to its original state by confirming the username.
+
+  If your username is forgotten or the option is disabled, you can manually delete the application's database files to reset.  
+  See **Manual Backup** for file locations.
 
 ---
 
-### Password Settings
+### Password List Behavior
 
-These options allow you to fine-tune how password entries are handled and generated:
+- **Clear Filters on Logout**  
+  If enabled, clears active category filters when logging out.  
+  Default is off (filters persist across sessions).
 
 - **Show Hidden Passwords**  
-  Displays entries marked as inactive in the password list.  
-  Useful for archived records or low-use secrets you'd like to keep out of sight.
+  Displays entries marked as inactive in the password list.
 
-- **Add Delete Button to Password Main View**  
-  Enables a delete button on the password detail screen for quicker access, without entering edit mode.
+- **Add Delete Button to Password View**  
+  Adds a delete button directly to the detail view of each password entry.
 
 - **Do Not Ask Before Deleting**  
-  Disables the confirmation prompt when deleting a password. Use with caution.
-
-- **Define Password Generator Parameters**  
-  Customize how new passwords are created:
-  - **Min/Max Length** - Set bounds for password length.
-  - **Exclude Characters** - Enter any characters you'd like to avoid in generated passwords.  
-    For example: `ABCab198!:;'”` ensures none of these characters appear in new passwords.
-  - **Auto-Generate & Fill** - When enabled, tapping the key icon will instantly create and fill a password based on your saved preferences.  
-    When disabled, the password generator dialog will open instead.
-
- ⚠️ *Tip: Exclude only necessary characters to maintain strong entropy in generated passwords.*
-
-All changes are saved automatically to your encrypted configuration database.
+  Removes the delete confirmation prompt.  
+  ⚠️ Use with caution to avoid accidental data loss.
 
 ---
 
-<!-- tags: settings, appearance, theme, timeout, timer, add delete, do not ask, ask delete, parameters, min length, max length, exclude characters, generator, show hidden, delete button, auto generate, config -->""",
+### Password Generator Settings
+
+These options define how generated passwords behave.
+
+- **Minimum and Maximum Length**  
+  Set bounds for password length.
+
+- **Exclude Characters**  
+  Prevent specific characters from appearing in generated passwords (e.g. `!@&.`).
+
+- **Auto-Generate & Fill**  
+  If enabled, tapping the key icon auto-fills a generated password.  
+  If disabled, the generator dialog opens for review before use.
+
+---
+The Settings tab allows you to configure Encryptilock's appearance, security behavior, and password handling preferences.
+All configuration changes are saved automatically to your settings database.
+
+<!-- tags: settings, appearance, theme, timeout, password options, delete confirmation, generator settings, filters, factory reset -->""",
     ),
   ];
 

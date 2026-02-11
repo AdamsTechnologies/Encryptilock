@@ -1,8 +1,22 @@
+/*
+ * Encryptilock
+ * Copyright (C) 2026 Adams Technologies LLC
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:encryptilock/frontend/app_main.dart';
-import 'package:encryptilock/backend/databaseManager/dart_sqlite.dart';
+import 'package:encryptilock/backend/helpers/encryptilock_database_factory.dart';
+
 import 'package:encryptilock/backend/controllers/config_settings_controller.dart';
 
 import 'package:encryptilock/frontend/services/idle_timeout_service.dart';
@@ -19,25 +33,21 @@ import 'package:encryptilock/frontend/theme/theme_config.dart';
 import 'package:encryptilock/frontend/providers/document_provider.dart';
 
 import 'dart:io';
-import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:encryptilock/frontend/services/desktop_window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final settingsDbPath = await getLocalPath('s1.db');
-  final settingsDb = DartSqlite(dbFile: settingsDbPath);
-  settingsDb.open();
+  // final settingsDb = DartSqlite(dbFile: settingsDbPath);
+  final settingsDb = await createEncryptilockDatabase(settingsDbPath);
+  await settingsDb.open();
   final configManager = await ConfigSettingsController.init(settingsDb);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await DesktopWindow.setWindowSize(const Size(850, 650));
-    await DesktopWindow.setMinWindowSize(const Size(400, 300));
-    await DesktopWindow.setMaxWindowSize(const Size(double.infinity, double.infinity));
-
-    await windowManager.ensureInitialized();
-    windowManager.setPreventClose(true);
-    windowManager.addListener(_WindowCloseHandler());
+    await DesktopWindowManager.initialize(configManager);
+    windowManager.addListener(_WindowCloseHandler(configManager));
   }
 
   runApp(
@@ -84,6 +94,9 @@ void main() async {
 }
 
 class _WindowCloseHandler extends WindowListener {
+  final ConfigSettingsController config;
+  _WindowCloseHandler(this.config);
+
   @override
   Future onWindowClose() async {
     final isPreventClose = await windowManager.isPreventClose();
@@ -92,10 +105,16 @@ class _WindowCloseHandler extends WindowListener {
     final context = navigatorKey.currentContext;
     if (context != null) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final settingProvider = Provider.of<SettingsProvider>(context, listen: false);
+      if (settingProvider.clearFiltersOnLogout == true) {
+        await settingProvider.clearCategoryFilters();
+      }
       if (authProvider.isLoggedIn) {
         await authProvider.logout(isAppShutdown: true);
       }
     }
+    // Persist window state
+    await DesktopWindowManager.saveWindowState(config);
 
     await windowManager.setPreventClose(false);
     await windowManager.close();

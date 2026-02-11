@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:encryptilock/frontend/providers/theme_provider.dart';
 import 'package:encryptilock/frontend/providers/settings_provider.dart';
 import 'package:encryptilock/frontend/theme/theme_config.dart';
-import 'package:encryptilock/frontend/providers/snackbar_provider.dart'; // Snackbar providers!
+import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // _buildGeneralSection(settingsProvider, themeProvider.theme),
-                      // const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildAppearanceSection(context, themeProvider, settingsProvider),
                       const Divider(height: 32),
                       _buildSecuritySection(settingsProvider, themeProvider.theme),
@@ -100,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Figure out which themeName currently matches the active ThemeData
     final currentThemeName = ThemeConfig.themes.firstWhere(
       (themeName) => ThemeConfig.getTheme(themeName) == themeProvider.theme,
-      orElse: () => 'light',
+      orElse: () => 'Light',
     );
 
     return Card(
@@ -113,27 +113,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Appearance', style: themeProvider.theme.textTheme.titleLarge),
             const SizedBox(height: 16),
-
-            // Rewritten to use DropdownMenu (M3) instead of DropdownButtonFormField
             Container(
               width: double.infinity, // Takes full width of parent
               child: DropdownButtonFormField<String>(
                 value: currentThemeName,
                 decoration: InputDecoration(
                   labelText: 'Select Theme',
-                  // This ensures the dropdown matches parent width
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-                // This is critical - it controls the dropdown items width
                 isExpanded: true,
-                // This controls the alignment of the dropdown list
                 alignment: AlignmentDirectional.centerStart,
-                // Optional: customize the button
                 icon: Icon(Icons.arrow_drop_down),
-                // Optional: customize dropdown
                 dropdownColor: Theme.of(context).colorScheme.surface,
-                // Map your theme items
                 items: ThemeConfig.themes.map((themeName) {
                   return DropdownMenuItem<String>(
                     value: themeName,
@@ -201,6 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: const Text('Save Timeout'),
             ),
+            const Divider(height: 32),
             SwitchListTile(
               contentPadding: const EdgeInsets.all(16.0),
               title: const Text('Allow Factory Reset'),
@@ -236,7 +229,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('Password Settings', style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
-
+            SwitchListTile(
+              title: const Text('Clear Filters on Logout'),
+              subtitle: const Text('Reset category filters whenever you log out'),
+              value: settingsProvider.clearFiltersOnLogout,
+              onChanged: (value) {
+                settingsProvider.toggleClearFiltersOnLogout(value);
+                context.read<SnackBarProvider>().showMessage(
+                      value ? 'Category filters will be cleared on logout' : 'Category filters will persist after logout',
+                    );
+              },
+            ),
             SwitchListTile(
                 title: const Text('Show Hidden Passwords'),
                 // subtitle: const Text('can be use to hide deep secrets until toggled on'),
@@ -272,6 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }),
 
             const SizedBox(height: 8),
+            const Divider(height: 32),
             SwitchListTile(
                 title: const Text('Define Password Generator Parameters'),
                 value: settingsProvider.definePasswordGeneratorParams,
@@ -283,14 +287,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                 }),
 
-            if (settingsProvider.definePasswordGeneratorParams)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'The following fields are used for the password generator logic:',
-                  style: theme.textTheme.bodyMedium,
-                ),
+            // if (settingsProvider.definePasswordGeneratorParams)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Define the password generator default values:',
+                style: theme.textTheme.bodyMedium,
               ),
+            ),
 
             // Min / Max length + Exclude characters
             // Only enabled if "definePasswordGeneratorParams" is true
@@ -358,6 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // 2) The "Auto-Fill" renamed to "Auto-Generate & Fill Password"
             SwitchListTile(
               title: const Text('Auto-Generate & Fill Password'),
+              subtitle: const Text('selecting the key icon will now auto fill a password'),
               value: settingsProvider.autoGenerateAndFill,
               // onChanged: settingsProvider.definePasswordGeneratorParams ? settingsProvider.toggleAutoGenerateAndFill : null,
               onChanged: settingsProvider.definePasswordGeneratorParams

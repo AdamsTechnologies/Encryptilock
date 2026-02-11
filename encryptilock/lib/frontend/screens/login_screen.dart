@@ -1,3 +1,4 @@
+// import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,8 @@ import 'package:encryptilock/frontend/providers/snackbar_provider.dart';
 import 'package:encryptilock/frontend/providers/auth_provider.dart';
 import 'package:encryptilock/backend/devsec/obfuscation_util.dart';
 import 'package:encryptilock/frontend/widgets/reset_app_dialog.dart';
+
+// import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -32,7 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkIfFirstTime();
+    // _checkIfFirstTime();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkIfFirstTime();
+    });
   }
 
   Future<void> _checkIfFirstTime() async {
@@ -40,11 +46,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final marker = await configManager.getHashedSetting('session_marker');
     final remember = await configManager.getHashedSetting('remember_user');
     final allowFactoryReset = await configManager.getHashedSetting('show_factory_reset');
+
+    if (!mounted) return;
+
     setState(() {
       _marker = marker;
       _isRegisterMode = marker == null;
       _showWelcome = marker == null;
-      _allowFactoryReset = allowFactoryReset?.toLowerCase() == 'true';
+      _allowFactoryReset = allowFactoryReset?.toLowerCase() != 'false';
       if (remember != null && remember.toLowerCase() == 'true') {
         _rememberMe = true;
         _usernameFieldMasked = true;
@@ -126,110 +135,94 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildWelcome(BuildContext context, ThemeData theme) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Enhanced welcome experience
-        Container(
-          width: double.infinity,
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              // Animated container for the logo
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.all(10),
-                child: _buildLogo(context),
+    return Material(
+      color: Colors.transparent,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeInOut,
+              padding: const EdgeInsets.all(10),
+              child: _buildLogo(context),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Welcome to Encryptilock",
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
-              const SizedBox(height: 12),
-              Text(
-                "Welcome to Encryptilock",
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
+              textAlign: TextAlign.center,
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 800),
+              height: 3,
+              width: 60,
+              margin: const EdgeInsets.only(top: 8, bottom: 10),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                "Data security, just right.",
+                style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
                 textAlign: TextAlign.center,
               ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 800),
-                height: 3,
-                width: 60,
-                margin: const EdgeInsets.only(top: 8, bottom: 10),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Description section with enhanced styling
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            // "Encryptilock is an offline password vault. Your data is stored only on this device.",
-            "Encryptilock is a private, offline password vault. Your data stays 100% on this device — in your control.",
-            style: theme.textTheme.bodyLarge?.copyWith(
-              height: 1.5,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-
-        const SizedBox(height: 32),
-
-        // Feature highlights with improved visual presentation
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              _buildFeatureItem(theme, Icons.cloud_off_outlined, "No online account or cloud sync"),
-              Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.shield_outlined, "Fully encrypted, total privacy, zero tracking"),
-              Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
-              _buildFeatureItem(theme, Icons.lock_outline, "Only you can unlock your vault — there's no recovery method"),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // Enhanced CTA button
-        ElevatedButton(
-          onPressed: () => setState(() => _showWelcome = false),
-          style: ElevatedButton.styleFrom(
-            // foregroundColor: theme.colorScheme.onPrimary,
-            backgroundColor: theme.colorScheme.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-            elevation: 4,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Create Account",
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 20,
-                color: theme.colorScheme.onPrimary,
+              child: Column(
+                children: [
+                  _buildFeatureItem(theme, Icons.cloud_off_outlined, "No cloud. No network access. Everything stays on your device."),
+                  Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
+                  _buildFeatureItem(theme, Icons.shield_outlined, "AES-256 encryption with Argon2id password protection"),
+                  Divider(height: 24, color: theme.colorScheme.outline.withOpacity(0.3)),
+                  _buildFeatureItem(theme, Icons.lock_outline, "Only you can unlock your vault. If you forget your main password, the only option is a factory reset."),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => setState(() => _showWelcome = false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                elevation: 4,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Create Account",
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 20,
+                    color: theme.colorScheme.onPrimary,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

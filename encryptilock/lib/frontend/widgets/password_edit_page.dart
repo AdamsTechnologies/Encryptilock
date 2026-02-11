@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
   final _serviceTypeController = TextEditingController();
   final _urlController = TextEditingController();
   final _noteController = TextEditingController();
-  final Map<String, dynamic> _decryptedValues = {};
+  // final Map<String, dynamic> _decryptedValues = {};
 
   String? _decryptedPassword;
   bool _passwordVisible = false;
@@ -311,43 +312,174 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Platform.isAndroid || Platform.isIOS;
     final theme = Theme.of(context);
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: FocusTraversalGroup(
-              child: Column(
-                children: [
-                  Text('Edit Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  _buildSmartField('Title', _serviceController, 'service'),
-                  _buildSmartField('Username', _usernameController, 'username', required: false, decryptFlag: true),
-                  _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
-                  _buildSmartField('Category', _serviceTypeController, 'serviceType', required: false),
-                  _buildSmartField('URL', _urlController, 'url', required: false, decryptFlag: true),
-                  _buildSmartField('Note', _noteController, 'note', required: false, maxLines: 3, decryptFlag: true),
-                  SwitchListTile(
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                    title: const Text('Show Record'),
-                    contentPadding: EdgeInsets.zero,
+
+    return SafeArea(
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Sticky Title
+                Text('Edit Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+
+                // Scrollable inputs
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        // padding: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 24),
+                        physics: const ClampingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: FocusTraversalGroup(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildSmartField('Title', _serviceController, 'service'),
+                                _buildSmartField(
+                                  'Username',
+                                  _usernameController,
+                                  'username',
+                                  required: false,
+                                  decryptFlag: true,
+                                ),
+                                _isDecrypting ? const CircularProgressIndicator() : _buildPasswordField(context),
+                                _buildSmartField(
+                                  'Category',
+                                  _serviceTypeController,
+                                  'serviceType',
+                                  required: false,
+                                ),
+                                _buildSmartField(
+                                  'URL',
+                                  _urlController,
+                                  'url',
+                                  required: false,
+                                  decryptFlag: true,
+                                ),
+                                _buildSmartField(
+                                  'Note',
+                                  _noteController,
+                                  'note',
+                                  required: false,
+                                  maxLines: 3,
+                                  decryptFlag: true,
+                                ),
+                                const SizedBox(height: 20),
+                                SwitchListTile(
+                                  value: _isActive,
+                                  onChanged: (v) => setState(() => _isActive = v),
+                                  title: const Text('Show Record'),
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 20),
+                ),
+
+                // Action Buttons
+                if (!isMobile)
                   BottomActionBar(
                     isEditMode: true,
                     showDeleteButton: true,
                     onSave: _save,
                     onDelete: _delete,
                     onCancel: widget.onCancel,
-                  ),
-                ],
-              ),
+                  )
+                else
+                  Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left: Delete button
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.error,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              ),
+                              onPressed: _delete,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.delete, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Delete"),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Right: Save and Cancel
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.secondary,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(100, 48),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                                  ),
+                                  onPressed: _save,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.save, size: 18),
+                                      SizedBox(width: 8),
+                                      Text("Save"),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.secondary,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(100, 48),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                                  ),
+                                  onPressed: widget.onCancel,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.cancel, size: 18),
+                                      SizedBox(width: 8),
+                                      Text("Cancel"),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+              ],
             ),
           ),
         ),
@@ -369,22 +501,21 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
         order: NumericFocusOrder(maxLines.toDouble()),
         child: Focus(
           onFocusChange: (hasFocus) {
-            // If user leaves the field and it's empty, revert to original
             if (!hasFocus && _clearedFields.contains(key) && controller.text.trim().isEmpty) {
               controller.text = _originalValues[key] ?? '';
+              _clearedFields.remove(key);
             }
           },
           child: TextFormField(
             controller: controller,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
             onTap: () async {
-              // Check if we've never "cleared" this field before
               if (!_clearedFields.contains(key)) {
-                // Store the original text, then clear it
                 _originalValues[key] = controller.text;
                 controller.clear();
                 _clearedFields.add(key);
 
-                // If we need to decrypt the existing text
                 if (decryptFlag && (_originalValues[key]?.isNotEmpty ?? false)) {
                   try {
                     final passwordProvider = context.read<PasswordProvider>();
@@ -399,8 +530,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                       });
                     }
                   } catch (e) {
-                    // If decryption fails, optionally show a snackbar, etc.
-                    // context.read<SnackBarProvider>().showMessage('Failed to decrypt $label.');
+                    // Silent fail
                   }
                 }
               }
@@ -424,6 +554,7 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
 
   Widget _buildPasswordField(BuildContext context) {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: FocusTraversalOrder(
@@ -439,6 +570,8 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
           },
           child: TextFormField(
             controller: _passwordController,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
             onTap: () {
               if (!_clearedFields.contains('password')) {
                 _originalValues['password'] = _passwordController.text;
@@ -472,7 +605,10 @@ class _PasswordEditPageState extends State<PasswordEditPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, color: theme.colorScheme.primary),
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      color: theme.colorScheme.primary,
+                    ),
                     onPressed: _togglePasswordVisibility,
                   ),
                   IconButton(

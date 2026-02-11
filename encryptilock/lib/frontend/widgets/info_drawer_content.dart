@@ -11,7 +11,6 @@ class InfoDrawerContent extends StatelessWidget {
 
   void _launchWebsite() async {
     Uri url = Uri.https(websiteUrl);
-    // Uri url = Uri.parse(websiteUrl); // Handle potential deep links
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }

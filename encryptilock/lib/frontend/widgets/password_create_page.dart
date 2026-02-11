@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -141,94 +142,140 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isMobile = Platform.isAndroid || Platform.isIOS;
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 6,
-      // margin: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: FocusTraversalGroup(
-              child: Column(
-                children: [
-                  Text('Create Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _serviceNameController,
-                    decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
-                    validator: (value) => value == null || value.isEmpty ? 'Service name is required' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
-                    // validator: (value) => value == null || value.isEmpty ? 'Username is required' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    onChanged: (val) {
-                      if (_obscurePassword && !_passwordVisible) {
-                        setState(() {
-                          _obscurePassword = false;
-                          _passwordVisible = true;
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              color: theme.colorScheme.primary,
+    return SafeArea(
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 6,
+        margin: const EdgeInsets.only(left: 16, top: 0, right: 16, bottom: 40),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Create Password', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        // padding: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.fromLTRB(0, 0, 16, 24),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: FocusTraversalGroup(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(1.0),
+                                  child: TextFormField(
+                                    controller: _serviceNameController,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+                                    validator: (value) => value == null || value.isEmpty ? 'Title is required' : null,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(2.0),
+                                  child: TextFormField(
+                                    controller: _usernameController,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(3.0),
+                                  child: TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    textInputAction: TextInputAction.next,
+                                    onChanged: (val) {
+                                      if (_obscurePassword && !_passwordVisible) {
+                                        setState(() {
+                                          _obscurePassword = false;
+                                          _passwordVisible = true;
+                                        });
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Password',
+                                      border: const OutlineInputBorder(),
+                                      suffixIcon: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                                            icon: Icon(
+                                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                            onPressed: _togglePasswordVisibility,
+                                          ),
+                                          IconButton(
+                                            tooltip: 'Generate Password',
+                                            icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
+                                            onPressed: _generatePassword,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(4.0),
+                                  child: TextFormField(
+                                    controller: _serviceTypeController,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(5.0),
+                                  child: TextFormField(
+                                    controller: _urlController,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(labelText: 'URL', border: OutlineInputBorder()),
+                                    keyboardType: TextInputType.url,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FocusTraversalOrder(
+                                  order: const NumericFocusOrder(6.0),
+                                  child: TextFormField(
+                                    controller: _noteController,
+                                    textInputAction: TextInputAction.done,
+                                    decoration: const InputDecoration(labelText: 'Note', border: OutlineInputBorder()),
+                                    maxLines: 3,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                SwitchListTile(
+                                  value: _isActive,
+                                  onChanged: (val) => setState(() => _isActive = val),
+                                  title: const Text('Show Record'),
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ],
                             ),
-                            onPressed: _togglePasswordVisibility,
                           ),
-                          IconButton(
-                            tooltip: 'Generate Password',
-                            icon: Icon(Icons.vpn_key, color: theme.colorScheme.primary),
-                            onPressed: _generatePassword,
-                          ),
-                        ],
-                      ),
-                    ),
-                    validator: (value) => value == null || value.isEmpty ? 'Password is required' : null,
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _serviceTypeController,
-                    decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _urlController,
-                    decoration: const InputDecoration(labelText: 'URL', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.url,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _noteController,
-                    decoration: const InputDecoration(labelText: 'Note', border: OutlineInputBorder()),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    value: _isActive,
-                    onChanged: (val) => setState(() => _isActive = val),
-                    title: const Text('Show Record'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(height: 20),
+                ),
+
+                // Bottom Buttons
+                if (!isMobile)
                   BottomActionBar(
                     isEditMode: false,
                     showDeleteButton: false,
@@ -238,9 +285,61 @@ class _PasswordCreatePageState extends State<PasswordCreatePage> {
                     },
                     onSave: _savePassword,
                     style: BottomActionBarStyle.iconOnly,
-                  ),
-                ],
-              ),
+                  )
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 100), // space match for possible delete button
+
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.secondary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              ),
+                              onPressed: _savePassword,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.save, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Save"),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.secondary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(100, 48),
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                              ),
+                              onPressed: widget.onCancel,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.cancel, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Cancel"),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+              ],
             ),
           ),
         ),

@@ -104,7 +104,8 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       if (_encryptedDbManager != null && _inMemoryDb != null) {
-        await _encryptedDbManager!.close(_inMemoryDb);
+        // await _encryptedDbManager!.close(_inMemoryDb);
+        await _encryptedDbManager!.close();
       }
     } catch (error) {
       _errorMessage = "Error during logout: ${error.toString()}";
