@@ -11,7 +11,13 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
-
+*.keystore
+*.p12
+*.pfx
+*.snk
+*.pem
+*.key
+windows/certificate/*
 # IntelliJ related
 *.iml
 *.ipr
@@ -45,11 +51,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-
-configsettings.db
-datastore.db
-configsettingsR.db
-configsettingsRR.db
-datastoreR.db
-s1.db
-s2.db

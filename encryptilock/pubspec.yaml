@@ -62,17 +62,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
-# Local Installer
-# msix_config:
-#   display_name: Encryptilock
-#   # publisher_display_name: Adams Technologies LLC
-#   identity_name: com.adamstechnologies.encryptilock
-#   msix_version: 1.0.0.0
-#   # publisher: "CN=\"ADAMS TECHNOLOGIES, LLC\""
-#   logo_path: assets/icon/encryptilockIcon.png
-#   languages: en-us
-#   signtool_options: /sha1 BD4FF2F19FC1E4EE4734A6904175301B7C634487 /tr http://timestamp.digicert.com /td sha256 /fd sha256
-#   capabilities: ''
 
 # Microsoft Play store.
 msix_config:
@@ -80,7 +69,6 @@ msix_config:
   publisher_display_name: ADAMS TECHNOLOGIES
   identity_name: AdamsTechnologies.Encryptilock
   msix_version: 1.0.0.0
-  publisher: CN=CE57A1E7-A9AA-4071-BF27-1ABFC76F20E2
   logo_path: assets/icon/encryptilockIcon.png
   languages: en-us
   capabilities: ''
